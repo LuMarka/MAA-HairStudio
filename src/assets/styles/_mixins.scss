@@ -1,0 +1,189 @@
+
+// Importa las variables de breakpoints y otros valores desde variables.scss
+@use 'variables.scss' as variables;
+
+/**
+ * Mixin para aplicar estilos en pantallas de escritorio grandes (desktop-large) o superiores.
+ * Usa el breakpoint definido en variables.$desktop-large.
+
+@mixin big-desktop() { ... }
+ */
+/**
+ * Mixin para aplicar estilos en pantallas de escritorio (desktop) o superiores.
+ * Usa el breakpoint definido en variables.$desktop.
+
+@mixin desktop() { ... }
+ */
+/**
+ * Mixin para aplicar estilos en pantallas de tablet o superiores.
+ * Usa el breakpoint definido en variables.$tablet.
+
+@mixin tablet() { ... }
+ */
+/**
+ * Mixin para aplicar estilos en pantallas móviles (mobile).
+ * Aplica hasta un pixel antes del breakpoint de tablet.
+
+@mixin mobile() { ... }
+ */
+/**
+ * Mixin para aplicar estilos en pantallas móviles (mobile) y superiores.
+ * Útil para enfoques mobile-first.
+
+@mixin mobile-up() { ... }
+ */
+/**
+ * Mixin para aplicar estilos en pantallas de tablet y superiores.
+ * Útil para enfoques mobile-first.
+
+@mixin tablet-up() { ... }
+ */
+/**
+ * Mixin para aplicar estilos en pantallas de escritorio (desktop) y superiores.
+ * Útil para enfoques mobile-first.
+
+@mixin desktop-up() { ... }
+ */
+/**
+ * Mixin para aplicar estilos en pantallas de escritorio grandes (desktop-large) y superiores.
+ * Útil para enfoques mobile-first.
+
+@mixin desktop-large-up() { ... }
+ */
+/**
+ * Mixin para aplicar estilos en pantallas extra grandes (desktop-xl) y superiores.
+ * Útil para enfoques mobile-first.
+
+@mixin desktop-xl-up() { ... }
+ */
+/**
+ * Mixin para aplicar estilos solo en pantallas móviles (mobile).
+ * Aplica hasta un pixel antes del breakpoint de tablet.
+
+@mixin mobile-only() { ... }
+ */
+/**
+ * Mixin para aplicar estilos solo en pantallas de tablet.
+ * Aplica desde el breakpoint de tablet hasta un pixel antes del breakpoint de desktop.
+
+@mixin tablet-only() { ... }
+ */
+/**
+ * Mixin específico para breakpoints personalizados de PrimeNG (primengsize1).
+ * Usa el valor definido en variables.$prime-mixins1.
+
+@mixin primengsize1() { ... }
+ */
+/**
+ * Mixin específico para breakpoints personalizados de PrimeNG (primengsize2).
+ * Usa el valor definido en variables.$prime-mixins2.
+
+@mixin primengsize2() { ... }
+ */
+/**
+ * Mixin para aplicar estilos de enfoque (focus) accesibles.
+ * Elimina el contorno por defecto y aplica una sombra personalizada.
+
+@mixin focused() { ... }
+ */
+/**
+ * Mixin para aplicar estilos de enfoque (focus) accesibles con sombra interna (inset).
+ * Elimina el contorno por defecto y aplica una sombra interna personalizada.
+
+@mixin focused-inset() { ... }
+ */
+// Actualizados para usar las variables correctas de _variables.scss
+@mixin big-desktop() {
+  @media screen and (min-width: variables.$desktop-large) {
+    @content;
+  }
+}
+
+@mixin desktop() {
+  @media screen and (min-width: variables.$desktop) {
+    @content;
+  }
+}
+
+@mixin tablet() {
+  @media screen and (min-width: variables.$tablet) {
+    @content;
+  }
+}
+
+@mixin mobile() {
+  @media screen and (max-width: calc(#{variables.$tablet} - 1px)) {
+    @content;
+  }
+}
+
+// Nuevos mixins para mobile-first approach
+@mixin mobile-up() {
+  @media screen and (min-width: variables.$mobile) {
+    @content;
+  }
+}
+
+@mixin tablet-up() {
+  @media screen and (min-width: variables.$tablet) {
+    @content;
+  }
+}
+
+@mixin desktop-up() {
+  @media screen and (min-width: variables.$desktop) {
+    @content;
+  }
+}
+
+@mixin desktop-large-up() {
+  @media screen and (min-width: variables.$desktop-large) {
+    @content;
+  }
+}
+
+@mixin desktop-xl-up() {
+  @media screen and (min-width: variables.$desktop-xl) {
+    @content;
+  }
+}
+
+// Rangos específicos
+@mixin mobile-only() {
+  @media screen and (max-width: calc(#{variables.$tablet} - 1px)) {
+    @content;
+  }
+}
+
+@mixin tablet-only() {
+  @media screen and (min-width: variables.$tablet) and (max-width: calc(#{variables.$desktop} - 1px)) {
+    @content;
+  }
+}
+
+// Mantener los mixins de PrimeNG si los necesitas
+/* @mixin primengsize1() {
+  @media screen and (min-width: variables.$prime-mixins1) {
+    @content;
+  }
+}
+
+@mixin primengsize2() {
+  @media screen and (min-width: variables.$prime-mixins2) {
+    @content;
+  }
+} */
+
+@mixin focused() {
+  outline: 0 none;
+  outline-offset: 0;
+  transition: box-shadow variables.$transitionDuration;
+  box-shadow: var(--focus-ring);
+}
+
+@mixin focused-inset() {
+  outline: 0 none;
+  outline-offset: 0;
+  transition: box-shadow variables.$transitionDuration;
+  box-shadow: inset var(--focus-ring);
+}

@@ -1,0 +1,94 @@
+@use "sass:map";
+
+$colors: (
+  primary: #4FB9A7,
+  secondary: #C2410C,
+  black1: #000000,
+  black2: #0B0D39,
+  // Similar a slate-900 oscuro
+  black3:#1F2937,
+  // Similar a slate-800
+  green1: #D3E4DE,
+  green2: #21B836,
+  gray0:#CBD5E1,
+  gray1: #DBDBE6,
+  gray2: #DCDCE3,
+  gray3: #CFE2DB,
+  gray4: #707070,
+  gray5: #748F99,
+  gray6:#64748B,
+  // Similar a text-muted-foreground
+  gray7:#475569,
+  // Similar a slate-600
+  gray8:#94A3B8,
+  // Similar a slate-400
+  white1: #FFFFFF,
+  white2: #FEFEFE,
+  white3: #F2F2F2,
+  // Similar a slate-50
+  bg-gray1:#f1f5f9,
+  bg-gray2:#E2E8F0,
+  // Nuevos colores azules añadidos para consistencia con las clases de Tailwind
+  blue400: #60a5fa,
+  // Original de Tailwind text-blue-400
+  blue600: #2563eb,
+  // Original de Tailwind bg-blue-600, border-blue-600, text-blue-600
+  blue700: #1d4ed8,
+  // Original de Tailwind hover:bg-blue-700, hover:text-blue-700
+  custom-cursor-blue: #3182ce,
+  // El azul específico que se usaba para el cursor
+);
+
+@function color($color-name) {
+  @return map.get($colors, $color-name);
+}
+
+// Breakpoints - Mobile First
+$mobile-small: 320px;
+$mobile: 375px;
+$tablet: 768px;
+$desktop: 1024px;
+$desktop-large: 1440px;
+$desktop-xl: 1920px;
+
+// Typography
+$font-size-title: 5.125rem;    // 82px
+$font-size-text: 1.25rem;      // 20px
+$font-size-sm: 0.875rem;       // 14px
+$font-size-ultra-sm: 0.75rem;  // 12px
+
+// Responsive typography
+$font-size-title-mobile: 2.5rem;   // 40px
+$font-size-text-mobile: 1rem;      // 16px
+
+// Layout
+$padding-box: 0 24px;
+$margin-box: 0px;
+$container-max-width: 1200px;
+
+// UI Elements
+$borderRadius: 12px;
+$borderRadius-sm: 6px;
+$borderRadius-lg: 16px;
+
+// Transitions
+$transitionDuration: 0.2s;
+$transitionEasing: ease-in-out;
+
+// Spacing scale (múltiplos de 8px)
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-xxl: 48px;
+
+// Z-index scale
+$z-dropdown: 1000;
+$z-modal: 1050;
+$z-tooltip: 1070;
+
+// PrimeNG compatibility (si los necesitas)
+/* $prime-mixins1: 992px;
+$prime-mixins2: 991px; */
+$scale: 14px;
