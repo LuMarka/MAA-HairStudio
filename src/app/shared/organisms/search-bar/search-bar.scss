@@ -1,0 +1,67 @@
+@use '../../../../assets/styles/variables' as vars;
+@use '../../../../assets/styles/mixins' as mixins;
+
+.search-bar {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+
+  &__container {
+    position: relative;
+    width: 100%;
+  }
+
+  &__loading {
+    position: absolute;
+    top: 50%;
+    right: 60px; // Espacio para el botón de búsqueda
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+
+    @include mixins.tablet-up() {
+      right: 70px;
+    }
+  }
+
+  &__spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid vars.color(gray2);
+    border-top: 2px solid vars.color(accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+
+    @include mixins.tablet-up() {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive adjustments
+@include mixins.mobile-only() {
+  .search-bar {
+    max-width: 100%;
+    padding: 0 vars.$spacing-sm;
+  }
+}
+
+@include mixins.tablet-up() {
+  .search-bar {
+    max-width: 500px;
+  }
+}
+
+@include mixins.desktop-up() {
+  .search-bar {
+    max-width: 600px;
+  }
+}

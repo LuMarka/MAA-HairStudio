@@ -1,0 +1,19 @@
+@if (suggestions().length > 0 && isVisible()) {
+<div class="search-suggestions">
+  <ul class="search-suggestions__list" role="listbox">
+    @for (suggestion of suggestions(); track suggestion.id) {
+    <li class="search-suggestions__item" [class.search-suggestions__item--highlighted]="highlightedIndex() === $index"
+      role="option" [attr.aria-selected]="highlightedIndex() === $index" (click)="onSuggestionClick(suggestion)"
+      (mouseenter)="onSuggestionHover($index)">
+      <div class="search-suggestions__content">
+        @if (suggestion.icon) {
+        <span class="search-suggestions__icon">{{ suggestion.icon }}</span>
+        }
+        <span class="search-suggestions__text">{{ suggestion.text }}</span>
+        <span class="search-suggestions__type">{{ getTypeLabel(suggestion.type) }}</span>
+      </div>
+    </li>
+    }
+  </ul>
+</div>
+}

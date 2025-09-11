@@ -1,0 +1,118 @@
+@use '../../../../assets/styles/variables' as vars;
+@use '../../../../assets/styles/mixins' as mixins;
+
+.search-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: vars.color(surface);
+  border: 2px solid vars.color(gray2);
+  border-radius: vars.$borderRadius;
+  transition: all vars.$transitionDuration vars.$transitionEasing;
+  overflow: hidden;
+
+  // Estados hover y focus
+  &:hover {
+    border-color: vars.color(accent);
+    box-shadow: 0 2px 8px rgba(vars.color(accent), 0.1);
+  }
+
+  &:focus-within,
+  &--focused {
+    border-color: vars.color(accent);
+    box-shadow: 0 0 0 3px rgba(vars.color(accent), 0.1);
+  }
+
+  &__field {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: vars.$spacing-sm vars.$spacing-md;
+    font-size: vars.$font-size-text-mobile;
+    color: vars.color(text-dark);
+    outline: none;
+    min-width: 0; // Permite que el input se contraiga
+
+    @include mixins.tablet-up() {
+      padding: vars.$spacing-md vars.$spacing-lg;
+      font-size: vars.$font-size-text;
+    }
+
+    &::placeholder {
+      color: vars.color(text-muted);
+      font-size: vars.$font-size-sm;
+
+      @include mixins.tablet-up() {
+        font-size: vars.$font-size-text-mobile;
+      }
+    }
+
+    // Estilos para autocomplete
+    &:-webkit-autofill {
+      background-color: transparent !important;
+      -webkit-box-shadow: 0 0 0 1000px vars.color(surface) inset;
+    }
+  }
+
+  &__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: vars.$spacing-sm;
+    border: none;
+    background-color: vars.color(accent);
+    color: vars.color(text-light);
+    cursor: pointer;
+    transition: all vars.$transitionDuration vars.$transitionEasing;
+    min-width: 44px; // Mínimo para accesibilidad táctil
+    height: 44px;
+
+    @include mixins.tablet-up() {
+      padding: vars.$spacing-md;
+      min-width: 48px;
+      height: 48px;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: vars.color(green-600);
+      transform: scale(1.05);
+    }
+
+    &:focus {
+      @include mixins.focused();
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    &:disabled {
+      background-color: vars.color(gray4);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
+  &__icon {
+    width: 18px;
+    height: 18px;
+    
+    @include mixins.tablet-up() {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// Responsive adjustments
+@include mixins.mobile-only() {
+  .search-input {
+    &__field {
+      font-size: vars.$font-size-sm;
+      
+      &::placeholder {
+        font-size: vars.$font-size-ultra-sm;
+      }
+    }
+  }
+}

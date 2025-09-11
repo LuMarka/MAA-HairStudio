@@ -1,0 +1,91 @@
+@use '../../../../assets/styles/variables' as vars;
+@use '../../../../assets/styles/mixins' as mixins;
+
+.search-template {
+  padding: vars.$spacing-xl vars.$spacing-md;
+  background: linear-gradient(135deg, vars.color(bg-alt) 0%, vars.color(surface) 100%);
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+
+  @include mixins.tablet-up() {
+    padding: vars.$spacing-xxl vars.$spacing-lg;
+    min-height: 500px;
+  }
+
+  &__container {
+    width: 100%;
+    max-width: vars.$container-max-width;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  &__title {
+    font-size: vars.$font-size-title-mobile;
+    color: vars.color(text-dark);
+    margin-bottom: vars.$spacing-xl;
+    font-weight: 700;
+
+    @include mixins.tablet-up() {
+      font-size: 3rem;
+      margin-bottom: vars.$spacing-xxl;
+    }
+
+    @include mixins.desktop-up() {
+      font-size: 3.5rem;
+    }
+  }
+
+  &__recent {
+    margin-top: vars.$spacing-xl;
+    text-align: left;
+
+    @include mixins.mobile-only() {
+      text-align: center;
+    }
+  }
+
+  &__recent-title {
+    font-size: vars.$font-size-text;
+    color: vars.color(text-muted);
+    margin-bottom: vars.$spacing-md;
+    font-weight: 600;
+
+    @include mixins.tablet-up() {
+      font-size: 1.125rem;
+    }
+  }
+
+  &__recent-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: vars.$spacing-sm;
+    justify-content: center;
+
+    @include mixins.tablet-up() {
+      justify-content: flex-start;
+    }
+  }
+
+  &__recent-item {
+    background-color: vars.color(surface);
+    border: 1px solid vars.color(gray2);
+    border-radius: vars.$borderRadius-lg;
+    padding: vars.$spacing-sm vars.$spacing-md;
+    font-size: vars.$font-size-sm;
+    color: vars.color(text-muted);
+    cursor: pointer;
+    transition: all vars.$transitionDuration vars.$transitionEasing;
+
+    &:hover {
+      background-color: vars.color(accent);
+      color: vars.color(text-light);
+      border-color: vars.color(accent);
+      transform: translateY(-2px);
+    }
+
+    &:focus {
+      @include mixins.focused();
+    }
+  }
+}
