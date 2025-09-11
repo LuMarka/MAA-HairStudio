@@ -105,11 +105,6 @@ export const pagesRoutes: Routes = [
           description: "Formulario de contacto.",
           keywords: "form, contact, inquiries",
         }
-      },
-      {
-        path: '**',
-        redirectTo: '',
-        pathMatch: 'full'  // Redirect any unknown paths to the home page
       }
     ]
   },
@@ -136,7 +131,7 @@ export const pagesRoutes: Routes = [
         }
       },
       {
-        path: 'product',
+        path: 'products',
         component: AdminProducts,
         data: {
           title: "admin product",
