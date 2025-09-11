@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { LoginTemplate } from "../../shared/templates/login-template/login-template";
 
 @Component({
   selector: 'app-login',
-  imports: [],
+  imports: [LoginTemplate],
   templateUrl: './login.html',
   styleUrl: './login.scss'
 })

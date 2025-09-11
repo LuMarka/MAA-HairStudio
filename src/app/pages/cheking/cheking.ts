@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { ChekingTemplate } from "../../shared/templates/cheking-template/cheking-template";
 
 @Component({
   selector: 'app-cheking',
-  imports: [],
+  imports: [ChekingTemplate],
   templateUrl: './cheking.html',
   styleUrl: './cheking.scss'
 })
