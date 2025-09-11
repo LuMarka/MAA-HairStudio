@@ -1,0 +1,6 @@
+<button class="menu-toggle" [class.menu-toggle--active]="isOpen()" (click)="onToggle()"
+  [attr.aria-label]="isOpen() ? 'Cerrar menú' : 'Abrir menú'" [attr.aria-expanded]="isOpen()">
+  <span class="menu-toggle__line"></span>
+  <span class="menu-toggle__line"></span>
+  <span class="menu-toggle__line"></span>
+</button>

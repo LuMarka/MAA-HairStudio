@@ -1,0 +1,97 @@
+@use '../../../../assets/styles/variables' as vars;
+@use '../../../../assets/styles/mixins' as mixins;
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: vars.$z-dropdown;
+  background-color: vars.color(primary);
+  transition: all vars.$transitionDuration vars.$transitionEasing;
+  backdrop-filter: blur(10px);
+
+  // Estado al hacer scroll
+  &--scrolled {
+    background-color: rgba(vars.color(primary), 0.95);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    
+    .navbar__container {
+      padding: vars.$spacing-sm vars.$spacing-lg;
+    }
+  }
+
+  &__container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: vars.$container-max-width;
+    margin: 0 auto;
+    padding: vars.$spacing-md vars.$spacing-lg;
+    transition: padding vars.$transitionDuration vars.$transitionEasing;
+
+    @include mixins.mobile-only() {
+      padding: vars.$spacing-md vars.$spacing-md;
+    }
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    z-index: 11;
+  }
+
+  &__desktop-menu {
+    display: none;
+
+    @include mixins.tablet-up() {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  &__mobile-toggle {
+    display: flex;
+    align-items: center;
+    z-index: 11;
+
+    @include mixins.tablet-up() {
+      display: none;
+    }
+  }
+
+  &__mobile-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: vars.color(primary);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    animation: slideDown 0.3s ease-out;
+
+    @include mixins.tablet-up() {
+      display: none;
+    }
+  }
+}
+
+// Animación para el menú móvil
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Prevenir scroll cuando el menú móvil está abierto
+:global(body.menu-open) {
+  overflow: hidden;
+  
+  @include mixins.tablet-up() {
+    overflow: auto;
+  }
+}

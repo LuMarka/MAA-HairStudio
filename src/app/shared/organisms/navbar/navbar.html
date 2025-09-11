@@ -1,1 +1,21 @@
-<p>navbar works!</p>
+<header class="navbar" [class.navbar--scrolled]="isScrolled()">
+  <div class="navbar__container">
+    <div class="navbar__brand">
+      <app-logo [isSmall]="isScrolled()" />
+    </div>
+
+    <div class="navbar__desktop-menu">
+      <app-nav-menu [navItems]="navItems()" (linkClicked)="onNavLinkClick()" />
+    </div>
+
+    <div class="navbar__mobile-toggle">
+      <app-menu-toggle [isOpen]="isMobileMenuOpen()" (toggle)="onMobileMenuToggle($event)" />
+    </div>
+  </div>
+
+  @if (isMobileMenuOpen()) {
+  <div class="navbar__mobile-menu">
+    <app-nav-menu [navItems]="navItems()" [isMobile]="true" (linkClicked)="onNavLinkClick()" />
+  </div>
+  }
+</header>

@@ -1,42 +1,96 @@
 @use "sass:map";
 
 $colors: (
-  primary: #4FB9A7,
+  // ==========================
+  // BRANDING PRINCIPAL
+  // ==========================
+  primary: #728F70,
+  // Fondo principal (green-500)
   secondary: #C2410C,
+  // Botones, CTAs (naranja)
+  accent: #4FB9A7,
+  // Detalles, iconos, hover
+  background: #728F70,
+  // Alias para fondo
+  surface: #FFFFFF,
+  // Tarjetas, cajas sobre el verde
+
+  // ==========================
+  // ESCALA DE VERDES (BRAND SCALE)
+  // ==========================
+  green-50: #F1F4F1,
+  green-100: #D7E0D7,
+  green-200: #BECBBD,
+  green-300: #A5B7A4,
+  green-400: #96AB95,
+  green-500: #728F70,
+  // Primary
+  green-600: #5D755C,
+  green-700: #495B48,
+  green-800: #344234,
+  green-900: #20281F,
+  green-950: #0B0E0B,
+
+  // ==========================
+  // TEXTO
+  // ==========================
+  text-light: #FFFFFF,
+  // Texto sobre fondo verde
+  text-light-muted: #F2F2F2,
+  text-dark: #1F2937,
+  // Texto sobre fondo blanco
+  text-muted: #475569,
+  // Texto secundario oscuro
+
+  // ==========================
+  // NEUTROS
+  // ==========================
   black1: #000000,
   black2: #0B0D39,
-  // Similar a slate-900 oscuro
-  black3:#1F2937,
-  // Similar a slate-800
-  green1: #D3E4DE,
-  green2: #21B836,
-  gray0:#CBD5E1,
+  black3: #1F2937,
+  // slate-900
+  gray0: #CBD5E1,
   gray1: #DBDBE6,
   gray2: #DCDCE3,
   gray3: #CFE2DB,
   gray4: #707070,
   gray5: #748F99,
-  gray6:#64748B,
-  // Similar a text-muted-foreground
-  gray7:#475569,
-  // Similar a slate-600
-  gray8:#94A3B8,
-  // Similar a slate-400
+  gray6: #64748B,
+  gray7: #475569,
+  // slate-600
+  gray8: #94A3B8,
+  // slate-400
   white1: #FFFFFF,
   white2: #FEFEFE,
   white3: #F2F2F2,
-  // Similar a slate-50
-  bg-gray1:#f1f5f9,
-  bg-gray2:#E2E8F0,
-  // Nuevos colores azules añadidos para consistencia con las clases de Tailwind
+
+  // ==========================
+  // BACKGROUNDS
+  // ==========================
+  bg-main: #728F70,
+  // Fondo principal
+  bg-alt: #F1F4F1,
+  // Alterno claro
+  bg-gray1: #F1F5F9,
+  // slate-50
+  bg-gray2: #E2E8F0,
+  // slate-200
+
+  // ==========================
+  // ACCIONES Y ESTADOS
+  // ==========================
+  success: #21B836,
+  error: #DC2626,
+  warning: #F59E0B,
+  info: #2563EB,
+
+  // ==========================
+  // AZULES (INTERACTIVOS)
+  // ==========================
   blue400: #60a5fa,
-  // Original de Tailwind text-blue-400
   blue600: #2563eb,
-  // Original de Tailwind bg-blue-600, border-blue-600, text-blue-600
   blue700: #1d4ed8,
-  // Original de Tailwind hover:bg-blue-700, hover:text-blue-700
-  custom-cursor-blue: #3182ce,
-  // El azul específico que se usaba para el cursor
+  custom-cursor-blue: #3182ce
 );
 
 @function color($color-name) {

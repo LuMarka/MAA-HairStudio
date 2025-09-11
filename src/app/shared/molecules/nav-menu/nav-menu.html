@@ -1,0 +1,12 @@
+<nav class="nav-menu" [class.nav-menu--mobile]="isMobile()">
+  <ul class="nav-menu__list">
+    @for (item of navItems(); track item.route) {
+    <li class="nav-menu__item">
+      <a class="nav-menu__link" [routerLink]="item.route" routerLinkActive="nav-menu__link--active"
+        [routerLinkActiveOptions]="{exact: item.route === '/'}" (click)="onLinkClick(item)">
+        {{ item.label }}
+      </a>
+    </li>
+    }
+  </ul>
+</nav>

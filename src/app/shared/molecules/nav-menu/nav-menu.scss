@@ -1,0 +1,91 @@
+@use '../../../../assets/styles/variables' as vars;
+@use '../../../../assets/styles/mixins' as mixins;
+
+.nav-menu {
+  &__list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: vars.$spacing-lg;
+
+    @include mixins.mobile-only() {
+      flex-direction: column;
+      gap: vars.$spacing-md;
+      width: 100%;
+    }
+  }
+
+  &__item {
+    display: flex;
+  }
+
+  &__link {
+    display: block;
+    padding: vars.$spacing-sm vars.$spacing-md;
+    text-decoration: none;
+    color: vars.color(text-light);
+    font-weight: 500;
+    font-size: vars.$font-size-text-mobile;
+    border-radius: vars.$borderRadius-sm;
+    transition: all vars.$transitionDuration vars.$transitionEasing;
+    position: relative;
+
+    @include mixins.tablet-up() {
+      font-size: vars.$font-size-text;
+      padding: vars.$spacing-sm vars.$spacing-lg;
+    }
+
+    // Estados hover y focus
+    &:hover,
+    &:focus {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+      
+      @include mixins.focused();
+    }
+
+    // Estado activo
+    &--active {
+      background-color: vars.color(accent);
+      color: vars.color(text-dark);
+      font-weight: 600;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        height: 2px;
+        background-color: vars.color(text-light);
+        border-radius: 1px;
+        
+        @include mixins.mobile-only() {
+          display: none;
+        }
+      }
+    }
+  }
+
+  // Modificador para móvil
+  &--mobile {
+    .nav-menu__list {
+      padding: vars.$spacing-lg;
+      background-color: rgba(vars.color(primary), 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: vars.$borderRadius;
+      margin-top: vars.$spacing-md;
+    }
+
+    .nav-menu__link {
+      padding: vars.$spacing-md;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+}

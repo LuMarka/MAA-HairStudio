@@ -1,0 +1,40 @@
+@use '../../../../assets/styles/variables' as vars;
+@use '../../../../assets/styles/mixins' as mixins;
+
+.logo {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: transform vars.$transitionDuration vars.$transitionEasing;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  &__text {
+    font-size: vars.$font-size-text;
+    font-weight: 700;
+    color: vars.color(text-light);
+    margin: 0;
+    letter-spacing: 0.5px;
+    
+    @include mixins.tablet-up() {
+      font-size: 1.5rem;
+    }
+
+    @include mixins.desktop-up() {
+      font-size: 1.75rem;
+    }
+  }
+
+  // Modificador para logo pequeño
+  &--small {
+    .logo__text {
+      font-size: 1rem;
+      
+      @include mixins.tablet-up() {
+        font-size: 1.25rem;
+      }
+    }
+  }
+}
