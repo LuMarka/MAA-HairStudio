@@ -1,4 +1,4 @@
-<div>
+<!-- <div>
   <section>
     <app-navbar />
     <app-search />
@@ -7,4 +7,16 @@
     <router-outlet />
   </main>
   <app-footer />
+</div> -->
+<div class="layout">
+  <header class="layout__header">
+    <app-navbar />
+    <app-search />
+  </header>
+
+  <main class="layout__main">
+    <router-outlet />
+  </main>
+
+  <app-footer class="layout__footer" />
 </div>

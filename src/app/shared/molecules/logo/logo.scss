@@ -11,13 +11,16 @@
     transform: scale(1.05);
   }
 
+  &__image {
+    transition: all vars.$transitionDuration vars.$transitionEasing;
+  }
   &__text {
     font-size: vars.$font-size-text;
     font-weight: 700;
     color: vars.color(text-light);
     margin: 0;
     letter-spacing: 0.5px;
-    
+
     @include mixins.tablet-up() {
       font-size: 1.5rem;
     }
@@ -31,10 +34,13 @@
   &--small {
     .logo__text {
       font-size: 1rem;
-      
+
       @include mixins.tablet-up() {
         font-size: 1.25rem;
       }
+    }
+        .logo__image {
+      transform: scale(0.8);
     }
   }
 }

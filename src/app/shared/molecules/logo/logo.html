@@ -1,3 +1,12 @@
 <div class="logo" [class.logo--small]="isSmall()">
-  <h1 class="logo__text">MAA Hair Studio</h1>
+  <img
+    ngSrc="images/Isologo Blanco PNG.png"
+    [width]="isSmall() ? 80 : 120"
+    [height]="isSmall() ? 40 : 60"
+    alt="MAA Hair Style Logo"
+    class="logo__image"
+  />
+ @if (showText()) {
+    <h1 class="logo__text">MAA Hair Studio</h1>
+  }
 </div>

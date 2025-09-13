@@ -187,3 +187,8 @@
   transition: box-shadow variables.$transitionDuration;
   box-shadow: inset var(--focus-ring);
 }
+
+
+@mixin use-secondary-font {
+  font-family: v.$font-family-secondary;
+}

@@ -34,3 +34,25 @@ body {
 .container--payment .p-inputnumber {
   width: 100%;
 }
+
+
+:root {
+  font-family: variables.$font-family-primary;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+}
+
+body {
+  font-family: variables.$font-family-primary;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+// Utility class for secondary font
+.font-secondary {
+  font-family: variables.$font-family-secondary;
+}

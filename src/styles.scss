@@ -1,4 +1,18 @@
 /* @use "tailwindcss"; */
 /* @use "bootstrap-icons/font/bootstrap-icons.css";
 @use "primeicons/primeicons.css"; */
-@use "./assets/styles/root.scss";
+//use "./assets/styles/root.scss";
+
+
+@use 'assets/styles/root';
+@use 'assets/styles/mixins';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}

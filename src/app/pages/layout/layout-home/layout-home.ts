@@ -6,7 +6,7 @@ import { Search } from '../../../shared/organisms/search/search';
 
 @Component({
   selector: 'app-layout-home',
-  imports: [RouterOutlet, Navbar,Footer, Search],
+  imports: [RouterOutlet, Navbar, Search, Footer],
   templateUrl: './layout-home.html',
   styleUrl: './layout-home.scss'
 })

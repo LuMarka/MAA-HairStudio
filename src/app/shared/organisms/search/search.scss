@@ -1,91 +1,114 @@
-@use '../../../../assets/styles/variables' as vars;
-@use '../../../../assets/styles/mixins' as mixins;
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
 
-.search-template {
-  padding: vars.$spacing-xl vars.$spacing-md;
-  background: linear-gradient(135deg, vars.color(bg-alt) 0%, vars.color(surface) 100%);
-  min-height: 400px;
-  display: flex;
-  align-items: center;
-
-  @include mixins.tablet-up() {
-    padding: vars.$spacing-xxl vars.$spacing-lg;
-    min-height: 500px;
-  }
+.search {
+  width: 100%;
+  background: linear-gradient(135deg, v.color('bg-alt') 0%, v.color('white1') 100%);
+  box-shadow: 0 1px 3px rgba(v.color('black1'), 0.08);
+  position: fixed;
+  top: 95px;
+  left: 0;
+  right: 0;
+  z-index: 100;
 
   &__container {
-    width: 100%;
-    max-width: vars.$container-max-width;
+    width: 95%; // Reduced from 100% to prevent overflow
     margin: 0 auto;
-    text-align: center;
-  }
-
-  &__title {
-    font-size: vars.$font-size-title-mobile;
-    color: vars.color(text-dark);
-    margin-bottom: vars.$spacing-xl;
-    font-weight: 700;
-
-    @include mixins.tablet-up() {
-      font-size: 3rem;
-      margin-bottom: vars.$spacing-xxl;
-    }
-
-    @include mixins.desktop-up() {
-      font-size: 3.5rem;
-    }
-  }
-
-  &__recent {
-    margin-top: vars.$spacing-xl;
-    text-align: left;
-
-    @include mixins.mobile-only() {
-      text-align: center;
-    }
-  }
-
-  &__recent-title {
-    font-size: vars.$font-size-text;
-    color: vars.color(text-muted);
-    margin-bottom: vars.$spacing-md;
-    font-weight: 600;
-
-    @include mixins.tablet-up() {
-      font-size: 1.125rem;
-    }
-  }
-
-  &__recent-list {
     display: flex;
-    flex-wrap: wrap;
-    gap: vars.$spacing-sm;
-    justify-content: center;
+    align-items: center;
+    justify-content: space-between;
+    padding: v.$spacing-xs;
+    gap: v.$spacing-xs;
 
-    @include mixins.tablet-up() {
-      justify-content: flex-start;
+    @include m.tablet-up {
+      width: 85%;
+      padding: v.$spacing-xs v.$spacing-sm;
+    }
+
+    @include m.desktop-up {
+      max-width: 1000px; // Reduced max-width
     }
   }
 
-  &__recent-item {
-    background-color: vars.color(surface);
-    border: 1px solid vars.color(gray2);
-    border-radius: vars.$borderRadius-lg;
-    padding: vars.$spacing-sm vars.$spacing-md;
-    font-size: vars.$font-size-sm;
-    color: vars.color(text-muted);
+  &__bar {
+    flex: 1;
+    min-width: 120px; // Reduced min-width
+    max-width: 400px; // Reduced max-width
+
+    @media (max-width: 482px) {
+      max-width: 280px; // Specific adjustment for smaller screens
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: v.$spacing-xs;
+    margin-left: v.$spacing-sm;
+
+    @media (max-width: 482px) {
+      gap: v.$spacing-xs;
+    }
+  }
+
+  &__action-btn {
+    background: none;
+    border: none;
+    padding: v.$spacing-xs;
     cursor: pointer;
-    transition: all vars.$transitionDuration vars.$transitionEasing;
+    transition: all v.$transitionDuration v.$transitionEasing;
+    color: v.color('primary');
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
 
     &:hover {
-      background-color: vars.color(accent);
-      color: vars.color(text-light);
-      border-color: vars.color(accent);
-      transform: translateY(-2px);
+      color: v.color('accent');
+      transform: scale(1.05);
     }
 
-    &:focus {
-      @include mixins.focused();
+    @media (max-width: 482px) {
+      min-width: 32px;
+      height: 32px;
+      padding: v.$spacing-xs/2;
     }
   }
+
+  &__action-icon {
+    font-size: 1.35rem;
+
+    @include m.tablet-up {
+      font-size: 1.5rem;
+    }
+
+    @media (max-width: 482px) {
+      font-size: 1.25rem;
+    }
+  }
+
+  // Specific adjustments for medium screens
+  @media (min-width: 768px) and (max-width: 930px) {
+    top: 116px; // More space from navbar
+
+    &__container {
+      width: 90%;
+      padding: v.$spacing-xs v.$spacing-sm;
+    }
+
+    &__bar {
+      max-width: 320px;
+    }
+
+    &__actions {
+      gap: v.$spacing-xs;
+    }
+  }
+   // Specific adjustments for large screens
+  @media (min-width: 931px) {
+    top: 93px; // More space from navbar
+  }
 }
+
+

@@ -16,9 +16,10 @@ export class Navbar {
 
   navItems = signal<NavItem[]>([
     { label: 'Inicio', route: '/' },
-    { label: 'Acerca de', route: '/about' },
+    { label: 'Tienda', route: '/products' },
     { label: 'Servicios', route: '/services' },
-    { label: 'Productos', route: '/products' },
+    { label: 'Mi historia', route: '/about' },
+    { label: 'Galería', route: '/gallery' },
     { label: 'Contacto', route: '/contact' }
   ]);
 

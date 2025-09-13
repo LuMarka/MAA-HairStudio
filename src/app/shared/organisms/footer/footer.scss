@@ -1,0 +1,208 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.footer {
+  background: linear-gradient(135deg, v.color('primary') 0%, darken(v.color('primary'), 10%) 100%);
+  color: v.color('white1');
+  padding: 0 0 v.$spacing-lg v.$spacing-xl ;
+  font-family: v.$font-family-primary;
+
+  &__container {
+    width: 95%;
+    max-width: v.$container-max-width;
+    margin: 0 auto;
+    padding: v.$spacing-lg v.$spacing-md;
+  }
+
+  &__content {
+    display: grid;
+    gap: v.$spacing-xl;
+    margin-top: v.$spacing-xl;
+    margin-bottom: v.$spacing-xl;
+
+    @include m.tablet-up {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include m.desktop-up {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  &__column {
+    text-align: center;
+
+    @include m.tablet-up {
+      text-align: left;
+    }
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    margin-bottom: v.$spacing-md;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  &__subtitle {
+    font-size: 1.25rem;
+    margin-bottom: v.$spacing-sm;
+    font-weight: 500;
+  }
+
+  &__text {
+    margin-bottom: v.$spacing-sm;
+    line-height: 1.6;
+    color: v.color('gray3');
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    &-item {
+      margin-bottom: v.$spacing-xs;
+      color: v.color('gray3');
+    }
+  }
+
+  &__social {
+    display: flex;
+    gap: v.$spacing-md;
+    justify-content: center;
+    margin: v.$spacing-md 0;
+
+    @include m.tablet-up {
+      justify-content: flex-start;
+    }
+  }
+
+  &__social-link {
+    color: v.color('white1');
+    font-size: 1.5rem;
+    transition: color v.$transitionDuration v.$transitionEasing;
+
+    &:hover {
+      color: v.color('accent');
+    }
+  }
+
+  &__contact-link {
+    display: block;
+    color: v.color('gray3');
+    margin-bottom: v.$spacing-xs;
+    text-decoration: none;
+    transition: color v.$transitionDuration v.$transitionEasing;
+
+    &:hover {
+      color: v.color('white1');
+    }
+  }
+
+  &__bottom {
+    padding-top: v.$spacing-lg;
+    border-top: 1px solid rgba(v.color('white1'), 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: v.$spacing-sm;
+
+    @include m.tablet-up {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+
+  &__copyright {
+    color: v.color('gray3');
+    font-size: 0.875rem;
+  }
+
+  &__legal {
+    display: flex;
+    gap: v.$spacing-sm;
+    align-items: center;
+    font-size: 0.875rem;
+  }
+
+  &__legal-link {
+    color: v.color('gray3');
+    text-decoration: none;
+    transition: color v.$transitionDuration v.$transitionEasing;
+
+    &:hover {
+      color: v.color('white1');
+    }
+  }
+
+  &__legal-separator {
+    color: v.color('gray3');
+  }
+
+  &__top {
+    background: rgba(v.color('white1'), 0.05);
+    padding: v.$spacing-md 0;
+    border-bottom: 1px solid rgba(v.color('white1'), 0.1);
+    margin-bottom: v.$spacing-xl;
+
+    .footer__container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: v.$spacing-md;
+
+      @include m.mobile-only {
+        flex-direction: column;
+        gap: v.$spacing-lg;
+      }
+    }
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: v.$spacing-md;
+
+    @include m.mobile-only {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+
+  &__brand-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  &__brand-subtitle {
+    font-size: 1rem;
+    margin: v.$spacing-xs 0 0;
+    opacity: 0.9;
+  }
+
+  &__cta {
+    display: inline-flex;
+    align-items: center;
+    padding: v.$spacing-sm v.$spacing-lg;
+    background: #10B981;
+    color: v.color('white1');
+    text-decoration: none;
+    border-radius: v.$borderRadius;
+    font-weight: 800;
+    font-size: 20px;
+    transition: all v.$transitionDuration v.$transitionEasing;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 14px rgba(0, 217, 126, 0.3);
+
+    &:hover {
+      background: #00f58b;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 217, 126, 0.4);
+      color: rgb(49, 49, 49);
+    }
+  }
+}
+

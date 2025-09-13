@@ -1,22 +1,37 @@
-<section class="search-template">
+<!-- <section class="search-template">
   <div class="search-template__container">
-    <h2 class="search-template__title">¿Qué estás buscando?</h2>
+    <app-search-bar
+      placeholder="Busca por producto, servicio, marca..."
+      [suggestions]="searchSuggestions()"
+      [isLoading]="isLoading()"
+      (searchPerformed)="onSearchPerformed($event)"
+      (searchValueChanged)="onSearchValueChanged($event)"
+    />
+  </div>
+</section> -->
 
-    <app-search-bar placeholder="Busca por producto, servicio, marca..." [suggestions]="searchSuggestions()"
-      [isLoading]="isLoading()" (searchPerformed)="onSearchPerformed($event)"
-      (searchValueChanged)="onSearchValueChanged($event)" />
-
-    @if (recentSearches().length > 0) {
-    <div class="search-template__recent">
-      <h3 class="search-template__recent-title">Búsquedas recientes</h3>
-      <div class="search-template__recent-list">
-        @for (search of recentSearches(); track search) {
-        <button class="search-template__recent-item" (click)="onRecentSearchClick(search)">
-          {{ search }}
-        </button>
-        }
-      </div>
+<section class="search">
+  <div class="search__container">
+    <div class="search__bar">
+      <app-search-bar
+        placeholder="Busca por producto, servicio, marca..."
+        [suggestions]="searchSuggestions()"
+        [isLoading]="isLoading()"
+        (searchPerformed)="onSearchPerformed($event)"
+        (searchValueChanged)="onSearchValueChanged($event)"
+      />
     </div>
-    }
+
+    <div class="search__actions">
+      @for (action of actions; track action.label) {
+        <button
+          class="search__action-btn"
+          [attr.aria-label]="action.label"
+          (click)="action.action()"
+        >
+          <span class="search__action-icon">{{ action.icon }}</span>
+        </button>
+      }
+    </div>
   </div>
 </section>

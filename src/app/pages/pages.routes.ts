@@ -19,6 +19,7 @@ import { Form } from './form/form';
 import { LayoutLogin } from './layout/layout-login/layout-login';
 import { Login } from './login/login';
 import { Profile } from './profile/profile';
+import { Gallery } from './gallery/gallery';
 
 export const pagesRoutes: Routes = [
   {
@@ -29,7 +30,7 @@ export const pagesRoutes: Routes = [
         path: '',
         component: Home,
         data: {
-          title: "home",
+          title:  'Inicio | MAA Hair Studio',
           description: "Bienvenidas a nuestra aplicación. Descubre nuestras servicios y productos.",
           keywords: "home, welcome, services, products",
         }
@@ -38,7 +39,7 @@ export const pagesRoutes: Routes = [
         path: 'about',
         component: About,
         data: {
-          title: "about",
+          title: ' Historia | MAA Hair Studio',
           description: "Mi historia.",
           keywords: "about, history, story, background",
         }
@@ -47,7 +48,7 @@ export const pagesRoutes: Routes = [
         path: 'services',
         component: Services,
         data: {
-          title: "services",
+          title: 'Servicios | MAA Hair Studio',
           description: "Descubre nuestros servicios y cómo podemos ayudarte a alcanzar tus objetivos.",
           keywords: "services, offerings, solutions, help",
         }
@@ -56,16 +57,25 @@ export const pagesRoutes: Routes = [
         path: 'products',
         component: Products,
         data: {
-          title: "products",
+          title: 'Tienda | MAA Hair Studio',
           description: "Explore nuestro catalogo de productos diseñados para satisfacer tus necesidades.",
           keywords: "products, results, catalog, offerings",
+        }
+      },
+            {
+        path: 'gallery',
+        component: Gallery,
+        data: {
+          title: 'Galería de Fotos | MAA Hair Studio',
+          description: "Explora nuestra galería de fotos para ver ejemplos de nuestro trabajo y estilos.",
+          keywords: "gallery, photos, images, portfolio",
         }
       },
       {
         path: 'contact',
         component: Contact,
         data: {
-          title: "contact",
+          title: 'Contacto | MAA Hair Studio',
           description: "Pongase en contacto conmigo ante cualquier inquietud.",
           keywords: "contact, inquiries, feedback, support",
         }
@@ -158,12 +168,12 @@ export const pagesRoutes: Routes = [
         }
       },
       {
-        path: 'whishlist',
+        path: 'wishlist',
         component: AdminWishlist,
         data: {
-          title: "admin whishlist",
+          title: "admin wishlist",
           description: "Panel de administración de la lista de deseos.",
-          keywords: "admin, dashboard, management, whishlist",
+          keywords: "admin, dashboard, management, wishlist",
         }
       }
     ]

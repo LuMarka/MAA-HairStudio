@@ -8,7 +8,7 @@ $colors: (
   // Fondo principal (green-500)
   secondary: #C2410C,
   // Botones, CTAs (naranja)
-  accent: #4FB9A7,
+  accent: #cedacd,
   // Detalles, iconos, hover
   background: #728F70,
   // Alias para fondo
@@ -37,7 +37,9 @@ $colors: (
   text-light: #FFFFFF,
   // Texto sobre fondo verde
   text-light-muted: #F2F2F2,
+  // Texto claro, menos contraste
   text-dark: #1F2937,
+  text-darker: #0B0E0B,
   // Texto sobre fondo blanco
   text-muted: #475569,
   // Texto secundario oscuro
@@ -146,3 +148,9 @@ $z-tooltip: 1070;
 /* $prime-mixins1: 992px;
 $prime-mixins2: 991px; */
 $scale: 14px;
+
+
+
+// Typography
+$font-family-primary: 'Poiret One', cursive;
+$font-family-secondary: system-ui, -apple-system, sans-serif;

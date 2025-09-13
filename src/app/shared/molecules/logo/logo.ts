@@ -1,11 +1,13 @@
-import { Component, input } from '@angular/core';
-
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
 @Component({
   selector: 'app-logo',
-  imports: [],
+  imports: [NgOptimizedImage],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './logo.html',
   styleUrl: './logo.scss'
 })
 export class Logo {
   isSmall = input<boolean>(false);
+  showText = input<boolean>(true);
 }

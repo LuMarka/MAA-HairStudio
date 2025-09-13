@@ -1,10 +1,11 @@
-@use '../../../../assets/styles/variables' as vars;
-@use '../../../../assets/styles/mixins' as mixins;
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+@use '../../../../assets/styles/root' as r;
+
 
 .search-bar {
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
+  margin: 0;
 
   &__container {
     position: relative;
@@ -14,29 +15,25 @@
   &__loading {
     position: absolute;
     top: 50%;
-    right: 60px; // Espacio para el botón de búsqueda
+    right: 45px; // Reducido el espacio
     transform: translateY(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1;
-
-    @include mixins.tablet-up() {
-      right: 70px;
-    }
   }
 
   &__spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid vars.color(gray2);
-    border-top: 2px solid vars.color(accent);
+    width: 16px; // Más pequeño
+    height: 16px;
+    border: 2px solid v.color('gray2');
+    border-top: 2px solid v.color('accent');
     border-radius: 50%;
     animation: spin 1s linear infinite;
 
-    @include mixins.tablet-up() {
-      width: 24px;
-      height: 24px;
+    @include m.tablet-up {
+      width: 20px; // Más pequeño que antes
+      height: 20px;
     }
   }
 }
@@ -47,20 +44,20 @@
 }
 
 // Responsive adjustments
-@include mixins.mobile-only() {
+@include m.mobile-only() {
   .search-bar {
     max-width: 100%;
-    padding: 0 vars.$spacing-sm;
+    padding: 0 v.$spacing-sm;
   }
 }
 
-@include mixins.tablet-up() {
+@include m.tablet-up() {
   .search-bar {
     max-width: 500px;
   }
 }
 
-@include mixins.desktop-up() {
+@include m.desktop-up() {
   .search-bar {
     max-width: 600px;
   }

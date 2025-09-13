@@ -1,1 +1,79 @@
-<p>footer works!</p>
+<footer class="footer">
+  <div class="footer__top">
+    <div class="footer__container">
+      <div class="footer__brand">
+        <app-logo [isSmall]="false" [showText]="false" />
+        <div class="footer__brand-text">
+          <h1 class="footer__brand-title">MAA Hair Style</h1>
+          <p class="footer__brand-subtitle">Cortes, color y estilo con personalidad</p>
+        </div>
+      </div>
+      <a
+        href="https://wa.me/5493534015655?text=Hola!%20Quisiera%20agendar%20un%20turno"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="footer__cta"
+      >
+        Reservá tu turno →
+      </a>
+    </div>
+  </div>
+
+  <div class="footer__container">
+    <div class="footer__content">
+      <div class="footer__column">
+        <h2 class="footer__title">MAA Hair Style</h2>
+        <p class="footer__text">Cortes, color y estilo con personalidad</p>
+        <p class="footer__text">Villa María, Córdoba</p>
+        <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" class="footer__link">
+          Ver en Google Maps
+        </a>
+      </div>
+
+      <div class="footer__column">
+        <h3 class="footer__subtitle">Horarios</h3>
+        <ul class="footer__list">
+          <li class="footer__list-item">Lunes a Viernes: 10:00 – 19:00</li>
+          <li class="footer__list-item">Sábado: 10:00 – 14:00</li>
+          <li class="footer__list-item">Domingo: Cerrado</li>
+        </ul>
+      </div>
+
+      <div class="footer__column">
+        <h3 class="footer__subtitle">Seguinos</h3>
+        <p class="footer__text">Novedades, estilos y promos.</p>
+        <div class="footer__social">
+          @for (link of socialLinks; track link.url) {
+            <a
+              [href]="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="footer__social-link"
+              [attr.aria-label]="link.label"
+            >
+              <i class="footer__social-icon" [class]="'bi bi-' + link.icon"></i>
+            </a>
+          }
+        </div>
+        <a href="mailto:hola@maahairstyle.com" class="footer__contact-link">
+          hola@maahairstyle.com
+        </a>
+        <a href="tel:+543534015655" class="footer__contact-link">
+          Tel: +54 353 401 5655
+        </a>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <p class="footer__copyright">
+        © {{ currentYear }} MAA Hair Style · Villa María, Córdoba
+      </p>
+      <div class="footer__legal">
+        <a routerLink="/privacidad" class="footer__legal-link">Privacidad</a>
+        <span class="footer__legal-separator">·</span>
+        <a routerLink="/terminos" class="footer__legal-link">Términos</a>
+      </div>
+    </div>
+  </div>
+</footer>
+

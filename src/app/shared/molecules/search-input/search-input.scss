@@ -13,14 +13,14 @@
 
   // Estados hover y focus
   &:hover {
-    border-color: vars.color(accent);
-    box-shadow: 0 2px 8px rgba(vars.color(accent), 0.1);
+    border-color: vars.color(green-500);
+    box-shadow: 0 2px 8px rgba(vars.color(green-600), 0.1);
   }
 
   &:focus-within,
   &--focused {
-    border-color: vars.color(accent);
-    box-shadow: 0 0 0 3px rgba(vars.color(accent), 0.1);
+    border-color: vars.color(green-600);
+    box-shadow: 0 0 0 3px rgba(vars.color(green-600), 0.1);
   }
 
   &__field {
@@ -60,7 +60,7 @@
     justify-content: center;
     padding: vars.$spacing-sm;
     border: none;
-    background-color: vars.color(accent);
+    background-color: vars.color(green-500);
     color: vars.color(text-light);
     cursor: pointer;
     transition: all vars.$transitionDuration vars.$transitionEasing;
@@ -96,7 +96,7 @@
   &__icon {
     width: 18px;
     height: 18px;
-    
+
     @include mixins.tablet-up() {
       width: 20px;
       height: 20px;
@@ -109,7 +109,7 @@
   .search-input {
     &__field {
       font-size: vars.$font-size-sm;
-      
+
       &::placeholder {
         font-size: vars.$font-size-ultra-sm;
       }
