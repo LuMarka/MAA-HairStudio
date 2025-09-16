@@ -1,0 +1,24 @@
+@use '../../../assets/styles/variables' as v;
+@use '../../../assets/styles/mixins' as m;
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(135deg, v.color('bg-light') 0%, v.color('white1') 100%);
+}
+
+// Adjust floating button for contact page
+:host ::ng-deep .floating-cta {
+  @include m.tablet-up {
+    right: v.$spacing-lg; // Standard position on tablet
+  }
+
+  @include m.desktop-up {
+    right: 15%; // More to the right on desktop for contact page
+  }
+
+  // Large screens - even more to the right
+  @media (min-width: 1330px) {
+    right: 12%;
+  }
+}

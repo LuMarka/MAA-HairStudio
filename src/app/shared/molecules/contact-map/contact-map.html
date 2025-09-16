@@ -1,0 +1,26 @@
+<div class="contact-map">
+      <div class="contact-map__info">
+        <h3 class="contact-map__title">{{ title() }}</h3>
+        <div class="contact-map__address">
+          <strong class="contact-map__label">Dirección:</strong>
+          <p class="contact-map__text">{{ address() }}</p>
+        </div>
+      </div>
+
+      @if (safeMapUrl()) {
+        <div class="contact-map__container">
+          <iframe
+            [src]="safeMapUrl()"
+            class="contact-map__iframe"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            [title]="mapTitle()"
+          ></iframe>
+        </div>
+      } @else {
+        <div class="contact-map__placeholder">
+          <p>Mapa no disponible</p>
+        </div>
+      }
+    </div>

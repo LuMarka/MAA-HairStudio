@@ -1,1 +1,26 @@
-<p>contact-template works!</p>
+<div class="contact-template">
+      <div class="contact-template__hero">
+        <h1 class="contact-template__title">{{ title() }}</h1>
+        <p class="contact-template__subtitle">{{ subtitle() }}</p>
+      </div>
+
+      <div class="contact-template__content">
+        <div class="contact-template__form-section">
+          <app-contact-form
+            [title]="formTitle()"
+            [serviceOptions]="serviceOptions()"
+            (formSubmit)="onFormSubmit($event)"
+          />
+        </div>
+
+        <div class="contact-template__map-section">
+          <app-contact-map
+            [title]="mapTitle()"
+            [address]="address()"
+            [mapUrl]="mapUrl()"
+            [mapTitle]="mapTitle()"
+          />
+        </div>
+      </div>
+    </div>
+

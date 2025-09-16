@@ -1,0 +1,263 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.contact-form {
+  width: 100%;
+  margin: 0 auto;
+  padding: v.$spacing-md;
+  background: v.color('white1');
+  border-radius: v.$borderRadius;
+  box-shadow: 0 4px 16px rgba(v.color('primary'), 0.08);
+  font-family: v.$font-family-primary;
+
+  @include m.tablet-up {
+    max-width: 600px;
+    padding: v.$spacing-lg;
+    box-shadow: 0 8px 32px rgba(v.color('primary'), 0.08);
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: v.color('primary');
+    margin-bottom: v.$spacing-md;
+    text-align: center;
+
+    @include m.tablet-up {
+      font-size: 1.75rem;
+      margin-bottom: v.$spacing-lg;
+    }
+  }
+
+  &__row {
+    display: block;
+    margin-bottom: v.$spacing-sm;
+
+    @include m.tablet-up {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: v.$spacing-md;
+      margin-bottom: v.$spacing-md;
+    }
+  }
+
+  &__field {
+    margin-bottom: v.$spacing-md;
+
+    .contact-form__row & {
+      @include m.tablet-up {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  &__label {
+    display: block;
+    font-weight: 500;
+    color: v.color('black1');
+    margin-bottom: v.$spacing-xs;
+    font-size: 0.875rem;
+
+    @include m.tablet-up {
+      font-size: 0.9rem;
+    }
+  }
+
+  &__input,
+  &__textarea {
+    width: 100%;
+    padding: v.$spacing-sm;
+    border: 1px solid v.color('gray3');
+    border-radius: v.$borderRadius-sm;
+    font-family: v.$font-family-primary;
+    font-size: 0.9rem;
+    transition: all v.$transitionDuration v.$transitionEasing;
+    background: v.color('white1');
+    box-sizing: border-box;
+
+    @include m.tablet-up {
+      padding: v.$spacing-sm v.$spacing-md;
+      font-size: 1rem;
+
+    }
+
+    &:focus {
+      outline: none;
+      border-color: v.color('accent');
+      box-shadow: 0 0 0 2px rgba(v.color('accent'), 0.1);
+
+      @include m.tablet-up {
+        box-shadow: 0 0 0 3px rgba(v.color('accent'), 0.1);
+      }
+    }
+
+    &::placeholder {
+      color: v.color('gray5');
+      font-size: 0.85rem;
+
+      @include m.tablet-up {
+        font-size: 0.9rem;
+      }
+    }
+
+    &--error {
+      border-color: v.color('error');
+      box-shadow: 0 0 0 2px rgba(v.color('error'), 0.1);
+
+      @include m.tablet-up {
+        box-shadow: 0 0 0 3px rgba(v.color('error'), 0.1);
+      }
+    }
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 80px;
+
+    @include m.tablet-up {
+      min-height: 100px;
+    }
+  }
+
+  &__dropdown {
+    position: relative;
+  }
+
+  &__dropdown-button {
+    width: 100%;
+    padding: v.$spacing-sm;
+    border: 1px solid v.color('gray3');
+    border-radius: v.$borderRadius-sm;
+    background: v.color('white1');
+    text-align: left;
+    cursor: pointer;
+    transition: all v.$transitionDuration v.$transitionEasing;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: v.$font-family-primary;
+    font-size: 0.9rem;
+
+    @include m.tablet-up {
+      padding: v.$spacing-sm v.$spacing-md;
+      font-size: 1rem;
+    }
+
+    &:hover {
+      border-color: v.color('accent');
+    }
+
+    &:focus {
+      outline: none;
+      border-color: v.color('accent');
+      box-shadow: 0 0 0 2px rgba(v.color('accent'), 0.1);
+
+      @include m.tablet-up {
+        box-shadow: 0 0 0 3px rgba(v.color('accent'), 0.1);
+      }
+    }
+
+    &--error {
+      border-color: v.color('error');
+      box-shadow: 0 0 0 2px rgba(v.color('error'), 0.1);
+
+      @include m.tablet-up {
+        box-shadow: 0 0 0 3px rgba(v.color('error'), 0.1);
+      }
+    }
+  }
+
+  &__dropdown-arrow {
+    transition: transform v.$transitionDuration v.$transitionEasing;
+    color: v.color('gray4');
+    font-size: 0.8rem;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: v.color('white1');
+    border: 1px solid v.color('gray3');
+    border-radius: v.$borderRadius-sm;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    max-height: 180px;
+    overflow-y: auto;
+
+    @include m.tablet-up {
+      max-height: 200px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  &__dropdown-item {
+    width: 100%;
+    padding: v.$spacing-sm;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color v.$transitionDuration v.$transitionEasing;
+    font-family: v.$font-family-primary;
+    font-size: 0.9rem;
+
+    @include m.tablet-up {
+      padding: v.$spacing-sm v.$spacing-md;
+      font-size: 1rem;
+    }
+
+    &:hover {
+      background: v.color('gray1');
+    }
+  }
+
+  &__error {
+    display: block;
+    color: v.color('error');
+    font-size: 0.75rem;
+    margin-top: v.$spacing-xs;
+
+    @include m.tablet-up {
+      font-size: 0.8rem;
+    }
+  }
+
+  &__submit {
+    width: 100%;
+    padding: v.$spacing-md;
+    background: v.color('accent');
+    color: v.color('white1');
+    border: none;
+    border-radius: v.$borderRadius;
+    font-family: v.$font-family-primary;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all v.$transitionDuration v.$transitionEasing;
+    margin-top: v.$spacing-sm;
+
+    @include m.tablet-up {
+      padding: v.$spacing-md v.$spacing-lg;
+      font-size: 1rem;
+      margin-top: v.$spacing-md;
+    }
+
+    &:hover:not(:disabled) {
+      background: lighten(v.color('accent'), 5%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(v.color('accent'), 0.3);
+    }
+
+    &:disabled {
+      background: v.color('gray3');
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+}

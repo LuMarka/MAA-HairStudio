@@ -1,0 +1,92 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.contact-template {
+  min-height: 100vh;
+  padding-top: 140px; // Space for navbar + search
+  padding-bottom: v.$spacing-xl;
+
+  @include m.tablet-up {
+    padding-top: 170px; // More space for larger navbar
+  }
+
+  &__hero {
+    text-align: center;
+    margin-bottom: v.$spacing-lg;
+    padding: 0 v.$spacing-sm;
+
+    @include m.tablet-up {
+      margin-bottom: v.$spacing-xl;
+      padding: 0 v.$spacing-md;
+    }
+  }
+
+  &__title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: v.color('primary');
+    margin-bottom: v.$spacing-sm;
+    line-height: 1.2;
+
+    @include m.tablet-up {
+      font-size: 2.5rem;
+      margin-bottom: v.$spacing-md;
+    }
+
+    @include m.desktop-up {
+      font-size: 3rem;
+    }
+  }
+
+  &__subtitle {
+    font-size: 1rem;
+    color: v.color('gray4');
+    line-height: 1.5;
+    margin: 0 auto;
+    max-width: 90%;
+
+    @include m.tablet-up {
+      font-size: 1.1rem;
+      max-width: 600px;
+    }
+
+    @include m.desktop-up {
+      font-size: 1.25rem;
+      line-height: 1.6;
+    }
+  }
+
+  &__content {
+    display: block;
+    padding: 0 v.$spacing-sm;
+
+    @include m.tablet-up {
+      padding: 0 v.$spacing-md;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    @include m.desktop-up {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: v.$spacing-xxl;
+      max-width: 1200px;
+      align-items: start;
+    }
+  }
+
+  &__form-section {
+    margin-bottom: v.$spacing-xl;
+
+    @include m.desktop-up {
+      margin-bottom: 0;
+    }
+  }
+
+  &__map-section {
+    @include m.desktop-up {
+      position: sticky;
+      top: 200px; // Below fixed headers
+    }
+  }
+}

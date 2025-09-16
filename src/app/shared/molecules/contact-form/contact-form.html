@@ -1,0 +1,129 @@
+<div class="contact-form">
+  <div class="contact-form__container">
+    <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
+      <h2 class="contact-form__title">{{ title() }}</h2>
+
+      <div class="contact-form__row">
+        <div class="contact-form__field">
+          <label for="firstName" class="contact-form__label">Nombre y Apellido *</label>
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            class="contact-form__input"
+            [class.contact-form__input--error]="isFieldInvalid('firstName')"
+            placeholder="Ingresa tu nombre y apellido"
+          />
+          @if (isFieldInvalid('firstName')) {
+            <span class="contact-form__error">{{ getFieldError('firstName') }}</span>
+          }
+        </div>
+
+<!--         <div class="contact-form__field">
+          <label for="lastName" class="contact-form__label">Apellidos *</label>
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            class="contact-form__input"
+            [class.contact-form__input--error]="isFieldInvalid('lastName')"
+            placeholder="Ingresa tu apellido"
+          />
+          @if (isFieldInvalid('lastName')) {
+            <span class="contact-form__error">{{ getFieldError('lastName') }}</span>
+          }
+        </div> -->
+      </div>
+
+      <div class="contact-form__row">
+   <!--      <div class="contact-form__field">
+          <label for="email" class="contact-form__label">Correo electrónico *</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            class="contact-form__input"
+            [class.contact-form__input--error]="isFieldInvalid('email')"
+            placeholder="correo@ejemplo.com"
+          />
+          @if (isFieldInvalid('email')) {
+            <span class="contact-form__error">{{ getFieldError('email') }}</span>
+          }
+        </div>-->
+
+        <div class="contact-form__field">
+          <label for="phone" class="contact-form__label">Teléfono *</label>
+          <input
+            id="phone"
+            type="tel"
+            formControlName="phone"
+            class="contact-form__input"
+            [class.contact-form__input--error]="isFieldInvalid('phone')"
+            placeholder="+54 9 261 123-4567"
+          />
+          @if (isFieldInvalid('phone')) {
+            <span class="contact-form__error">{{ getFieldError('phone') }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="contact-form__field">
+        <label class="contact-form__label">Servicio de interés *</label>
+        <div class="contact-form__dropdown">
+          <button
+            type="button"
+            class="contact-form__dropdown-button"
+            [class.contact-form__dropdown-button--error]="isFieldInvalid('service')"
+            (click)="toggleDropdown()"
+          >
+            {{ selectedServiceLabel() }}
+            <span class="contact-form__dropdown-arrow" [class.contact-form__dropdown-arrow--open]="dropdownOpen()">
+              ▼
+            </span>
+          </button>
+
+          @if (dropdownOpen()) {
+            <div class="contact-form__dropdown-menu">
+              @for (option of serviceOptions(); track option.value) {
+                <button
+                  type="button"
+                  class="contact-form__dropdown-item"
+                  (click)="selectService(option)"
+                >
+                  {{ option.label }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+        @if (isFieldInvalid('service')) {
+          <span class="contact-form__error">{{ getFieldError('service') }}</span>
+        }
+      </div>
+
+      <div class="contact-form__field">
+        <label for="message" class="contact-form__label">Mensaje *</label>
+        <textarea
+          id="message"
+          formControlName="message"
+          class="contact-form__textarea"
+          [class.contact-form__textarea--error]="isFieldInvalid('message')"
+          placeholder="Cuéntanos en qué podemos ayudarte..."
+          rows="4"
+        ></textarea>
+        @if (isFieldInvalid('message')) {
+          <span class="contact-form__error">{{ getFieldError('message') }}</span>
+        }
+      </div>
+
+      <button
+        type="submit"
+        class="contact-form__submit"
+        [disabled]="contactForm.invalid"
+      >
+        Enviar mensaje
+      </button>
+    </form>
+  </div>
+</div>
+
