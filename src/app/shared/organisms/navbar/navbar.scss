@@ -15,9 +15,13 @@
   &--scrolled {
     background-color: rgba(vars.color(primary), 0.95);
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-    
+
     .navbar__container {
       padding: vars.$spacing-sm vars.$spacing-lg;
+
+      @include mixins.mobile-only() {
+        padding: vars.$spacing-xs vars.$spacing-md;
+      }
     }
   }
 
@@ -28,16 +32,23 @@
     max-width: vars.$container-max-width;
     margin: 0 auto;
     padding: vars.$spacing-md vars.$spacing-lg;
+    min-height: 120px; // Accommodate logo size
     transition: padding vars.$transitionDuration vars.$transitionEasing;
 
     @include mixins.mobile-only() {
       padding: vars.$spacing-md vars.$spacing-md;
+      min-height: 100px; // Smaller on mobile
+    }
+
+    @include mixins.tablet-up() {
+      min-height: 130px; // Larger on desktop
     }
   }
 
   &__brand {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     z-index: 11;
   }
 
@@ -53,6 +64,7 @@
   &__mobile-toggle {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     z-index: 11;
 
     @include mixins.tablet-up() {
@@ -66,8 +78,11 @@
     left: 0;
     right: 0;
     background-color: vars.color(primary);
+    padding: vars.$spacing-md;
+    border-top: 1px solid rgba(vars.color(white1), 0.1);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     animation: slideDown 0.3s ease-out;
+    z-index: 999;
 
     @include mixins.tablet-up() {
       display: none;
@@ -90,7 +105,7 @@
 // Prevenir scroll cuando el menú móvil está abierto
 :global(body.menu-open) {
   overflow: hidden;
-  
+
   @include mixins.tablet-up() {
     overflow: auto;
   }

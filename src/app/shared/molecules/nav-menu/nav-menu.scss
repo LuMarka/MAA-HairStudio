@@ -36,7 +36,8 @@
 
     @include mixins.tablet-up() {
       font-size: vars.$font-size-text;
-      padding: vars.$spacing-sm vars.$spacing-lg;
+      padding: vars.$spacing-sm;
+      //padding: vars.$spacing-sm vars.$spacing-lg;
     }
 
     // Estados hover y focus

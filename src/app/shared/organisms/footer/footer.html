@@ -1,24 +1,4 @@
 <footer class="footer">
-  <div class="footer__top">
-    <div class="footer__container">
-      <div class="footer__brand">
-        <app-logo [isSmall]="false" [showText]="false" />
-        <div class="footer__brand-text">
-          <h1 class="footer__brand-title">MAA Hair Style</h1>
-          <p class="footer__brand-subtitle">Cortes, color y estilo con personalidad</p>
-        </div>
-      </div>
-      <a
-        href="https://wa.me/5493534015655?text=Hola!%20Quisiera%20agendar%20un%20turno"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="footer__cta"
-      >
-        Reservá tu turno →
-      </a>
-    </div>
-  </div>
-
   <div class="footer__container">
     <div class="footer__content">
       <div class="footer__column">
@@ -69,9 +49,11 @@
         © {{ currentYear }} MAA Hair Style · Villa María, Córdoba
       </p>
       <div class="footer__legal">
+        <span class="footer__devs">Hecho con amor por LBJ Desarrollo Web</span>
+       <span class="footer__legal-separator">·</span>
         <a routerLink="/privacidad" class="footer__legal-link">Privacidad</a>
         <span class="footer__legal-separator">·</span>
-        <a routerLink="/terminos" class="footer__legal-link">Términos</a>
+        <a routerLink="/terminos" class="footer__legal-link">Términos</a> 
       </div>
     </div>
   </div>

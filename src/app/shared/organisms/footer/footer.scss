@@ -4,20 +4,19 @@
 .footer {
   background: linear-gradient(135deg, v.color('primary') 0%, darken(v.color('primary'), 10%) 100%);
   color: v.color('white1');
-  padding: 0 0 v.$spacing-lg v.$spacing-xl ;
+  padding: v.$spacing-xl 0 v.$spacing-lg;
   font-family: v.$font-family-primary;
 
   &__container {
     width: 95%;
     max-width: v.$container-max-width;
     margin: 0 auto;
-    padding: v.$spacing-lg v.$spacing-md;
+    padding: 0 v.$spacing-md;
   }
 
   &__content {
     display: grid;
     gap: v.$spacing-xl;
-    margin-top: v.$spacing-xl;
     margin-bottom: v.$spacing-xl;
 
     @include m.tablet-up {
@@ -64,6 +63,16 @@
     &-item {
       margin-bottom: v.$spacing-xs;
       color: v.color('gray3');
+    }
+  }
+
+  &__link {
+    color: v.color('accent');
+    text-decoration: none;
+    transition: color v.$transitionDuration v.$transitionEasing;
+
+    &:hover {
+      color: v.color('white1');
     }
   }
 
@@ -140,69 +149,12 @@
     color: v.color('gray3');
   }
 
-  &__top {
-    background: rgba(v.color('white1'), 0.05);
-    padding: v.$spacing-md 0;
-    border-bottom: 1px solid rgba(v.color('white1'), 0.1);
-    margin-bottom: v.$spacing-xl;
-
-    .footer__container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: v.$spacing-md;
-
-      @include m.mobile-only {
-        flex-direction: column;
-        gap: v.$spacing-lg;
-      }
-    }
-  }
-
-  &__brand {
+  &__devs {
     display: flex;
+    gap: v.$spacing-sm;
     align-items: center;
-    gap: v.$spacing-md;
-
-    @include m.mobile-only {
-      flex-direction: column;
-      text-align: center;
-    }
-  }
-
-  &__brand-title {
-    font-size: 1.75rem;
-    font-weight: 600;
-    margin: 0;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  }
-
-  &__brand-subtitle {
-    font-size: 1rem;
-    margin: v.$spacing-xs 0 0;
-    opacity: 0.9;
-  }
-
-  &__cta {
-    display: inline-flex;
-    align-items: center;
-    padding: v.$spacing-sm v.$spacing-lg;
-    background: #10B981;
-    color: v.color('white1');
-    text-decoration: none;
-    border-radius: v.$borderRadius;
-    font-weight: 800;
-    font-size: 20px;
-    transition: all v.$transitionDuration v.$transitionEasing;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-    box-shadow: 0 4px 14px rgba(0, 217, 126, 0.3);
-
-    &:hover {
-      background: #00f58b;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 217, 126, 0.4);
-      color: rgb(49, 49, 49);
-    }
+    font-size: 0.875rem;
+    color: v.color('gray3');
   }
 }
 

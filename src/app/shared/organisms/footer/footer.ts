@@ -1,10 +1,12 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
+
+// Adjust the path as needed
 //import { RouterLink } from '@angular/router';
-import { Logo } from '../../molecules/logo/logo';
+
 
 @Component({
   selector: 'app-footer',
-  imports: [ Logo],
+  imports: [],
   templateUrl: './footer.html',
   styleUrl: './footer.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

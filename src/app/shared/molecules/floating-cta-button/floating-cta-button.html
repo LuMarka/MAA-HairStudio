@@ -1,0 +1,17 @@
+<!--       <a
+        href="https://wa.me/5493534015655?text=Hola!%20Quisiera%20agendar%20un%20turno"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="footer__cta"
+      >
+        Reservá tu turno →
+      </a>
+ -->
+    <button
+      class="floating-cta"
+      (click)="openWhatsApp()"
+      [attr.aria-label]="buttonLabel"
+    >
+      <span class="floating-cta__icon">→</span>
+      <span class="floating-cta__text">Reservá tu turno</span>
+    </button>
