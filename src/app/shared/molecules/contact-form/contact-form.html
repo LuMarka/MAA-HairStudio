@@ -5,17 +5,17 @@
 
       <div class="contact-form__row">
         <div class="contact-form__field">
-          <label for="firstName" class="contact-form__label">Nombre y Apellido *</label>
+          <label for="name" class="contact-form__label">Nombre y Apellido *</label>
           <input
-            id="firstName"
+            id="name"
             type="text"
-            formControlName="firstName"
+            formControlName="name"
             class="contact-form__input"
-            [class.contact-form__input--error]="isFieldInvalid('firstName')"
+            [class.contact-form__input--error]="isFieldInvalid('name')"
             placeholder="Ingresa tu nombre y apellido"
           />
-          @if (isFieldInvalid('firstName')) {
-            <span class="contact-form__error">{{ getFieldError('firstName') }}</span>
+          @if (isFieldInvalid('name')) {
+            <span class="contact-form__error">{{ getFieldError('name') }}</span>
           }
         </div>
 

@@ -13,7 +13,7 @@ export class ContactTemplate {title = input<string>('Contactanos');
   subtitle = input<string>('Estamos aquí para ayudarte con cualquier consulta');
   formTitle = input<string>('Envianos un mensaje');
   mapTitle = input<string>('Nuestra ubicación');
-  address = input<string>('Villa María, Córdoba');
+  address = input<string>('Lugones 299, Villa María, Córdoba');
   mapUrl = input<string>('');
   serviceOptions = input<ServiceOption[]>([]);
 

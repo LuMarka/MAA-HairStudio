@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 export interface ContactFormData {
-  firstName: string;
-  lastName: string;
+  name: string;
+  //lastName: string;
   email: string;
   phone: string;
   service: string;
@@ -49,21 +49,21 @@ export class ContactForm {
     const fb = new FormBuilder();
 
     this.contactForm = fb.group({
-      firstName: ['', [
+      name: ['', [
         Validators.required,
         Validators.minLength(2),
         Validators.pattern(/^[a-zA-ZÀ-ÿ\s]+$/)
       ]],
-      lastName: ['', [
+ /*      lastName: ['', [
         Validators.required,
         Validators.minLength(2),
         Validators.pattern(/^[a-zA-ZÀ-ÿ\s]+$/)
-      ]],
-      email: ['', [
+      ]], */
+/*       email: ['', [
         Validators.required,
         Validators.email,
         Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
-      ]],
+      ]], */
       phone: ['', [
         Validators.required,
         Validators.pattern(/^\+?[0-9\s-]+$/)
@@ -106,8 +106,8 @@ export class ContactForm {
     if (!field?.errors) return '';
 
     const fieldNames: Record<string, string> = {
-      'firstName': 'Nombres',
-      'lastName': 'Apellidos',
+      'name': 'Nombre y Apellido',
+      //'lastName': 'Apellidos',
       'email': 'Correo',
       'phone': 'Número de teléfono',
       'service': 'Servicio',
@@ -139,10 +139,10 @@ export class ContactForm {
 
   private getPatternError(fieldName: string, fieldDisplayName: string): string {
     const patternErrors: Record<string, string> = {
-      'firstName': `${fieldDisplayName} solo puede contener letras y espacios`,
-      'lastName': `${fieldDisplayName} solo puede contener letras y espacios`,
-      'email': 'Por favor ingresa un correo válido (ej., usuario@dominio.com)',
-      'phone': 'Por favor ingresa un número de teléfono válido (ej., +54 9 261 123-4567)',
+      'name': `${fieldDisplayName} solo puede contener letras y espacios`,
+      /* 'lastName': `${fieldDisplayName} solo puede contener letras y espacios`,
+      'email': 'Por favor ingresa un correo válido (ej., usuario@dominio.com)', */
+      'phone': 'Por favor ingresa un número de teléfono válido (ej., +54 9 353 123-4567)',
       'service': 'Por favor selecciona una opción de servicio válida',
       'message': `${fieldDisplayName} contiene caracteres inválidos`
     };
