@@ -60,8 +60,8 @@
 
   // Tablet adjustments (768px - 1023px)
   @include m.tablet-up {
-    bottom: 15vh; // Lower to be below horarios text
-    right: 39%; // Center horizontally below horarios section
+    bottom: 16vh; // Lower to be below horarios text
+    right: 20%; // Center horizontally below horarios section
     transform: translateX(50%);
     padding: v.$spacing-md v.$spacing-lg;
     font-size: 1rem;

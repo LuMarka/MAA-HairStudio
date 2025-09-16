@@ -15,8 +15,7 @@ export class Footer {
  readonly currentYear = new Date().getFullYear();
 
   readonly socialLinks = [
-    { icon: 'instagram', url: 'https://instagram.com/maahairstyle', label: 'Instagram' },
-    { icon: 'facebook', url: 'https://facebook.com/maahairstyle', label: 'Facebook' },
+    { icon: 'instagram', url: 'https://www.instagram.com/hairstudio.maa/', label: 'Instagram' },
     { icon: 'whatsapp', url: 'https://wa.me/5493534015655', label: 'WhatsApp' }
   ];
 }
