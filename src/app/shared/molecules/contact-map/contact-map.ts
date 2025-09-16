@@ -12,7 +12,7 @@ export class ContactMap {
 private readonly sanitizer = inject(DomSanitizer);
 
   title = input<string>('Nuestra ubicación');
-  address = input<string>('Villa María, Córdoba');
+  address = input<string>('Lugones 299, Villa María, Córdoba');
   mapUrl = input<string>('');
   mapTitle = input<string>('Mapa de ubicación MAA Hair Studio');
 
@@ -31,10 +31,8 @@ private readonly sanitizer = inject(DomSanitizer);
       return url;
     }
 
-    // For Villa María, Córdoba - using a working embed URL
-    if (url.includes('maps.app.goo.gl') || url.includes('Villa María')) {
-      return 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d54465.82892!2d-63.2677!3d-32.4078!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95cc4270e6c6c4ad%3A0x5c4e8e4a8b8b4b8b!2sVilla%20Mar%C3%ADa%2C%20C%C3%B3rdoba%2C%20Argentina!5e0!3m2!1ses!2sar!4v1700000000000!5m2!1ses!2sar';
-    }
+     // For Lugones 299, Villa María, Córdoba - correct embed URL
+    return 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3353.953792490634!2d-63.24353768484787!3d-32.40908198093571!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95cc4270e6c6c4ad%3A0x5c4e8e4a8b8b4b8b!2sLugones%20299%2C%20Villa%20Mar%C3%ADa%2C%20C%C3%B3rdoba%2C%20Argentina!5e0!3m2!1ses!2sar!4v1700000000000!5m2!1ses!2sar';
 
     return null;
   }
