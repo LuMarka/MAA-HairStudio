@@ -3,11 +3,12 @@
 
 .contact-template {
   min-height: 100vh;
-  padding-top: 140px; // Space for navbar + search
+  background: linear-gradient(135deg, v.color('bg-light') 0%, v.color('white1') 100%);
+  padding-top: 160px; // Space for navbar + search
   padding-bottom: v.$spacing-xl;
 
   @include m.tablet-up {
-    padding-top: 170px; // More space for larger navbar
+    //padding-top: 170px; // More space for larger navbar
   }
 
   &__hero {

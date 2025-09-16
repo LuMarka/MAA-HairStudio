@@ -1,1 +1,35 @@
-<p>about-template works!</p>
+<div class="about-template">
+  <div class="about-template__hero">
+    <h1 class="about-template__title">{{ title() }}</h1>
+  </div>
+
+  <div class="about-template__content">
+    <div class="about-template__image-section">
+      <div class="about-template__image-container">
+        <img
+          [src]="image()"
+          [alt]="imageAlt()"
+          class="about-template__image"
+          loading="lazy"
+        />
+      </div>
+    </div>
+
+    <div class="about-template__text-section">
+      <div class="about-template__text-container">
+        @if (subtitle()) {
+          <h2 class="about-template__subtitle">{{ subtitle() }}</h2>
+        }
+        @for (paragraph of textParagraphs(); track $index) {
+          <p class="about-template__paragraph">{{ paragraph }}</p>
+        }
+
+        @if (signature()) {
+          <div class="about-template__signature">
+            <p class="about-template__signature-text">{{ signature() }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

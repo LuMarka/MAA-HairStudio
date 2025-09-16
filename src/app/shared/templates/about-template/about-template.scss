@@ -1,0 +1,151 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.about-template {
+  min-height: 100vh;
+  background: linear-gradient(135deg, v.color('bg-light') 0%, v.color('white1') 100%);
+  padding-top: 160px; // 80px navbar + 60px search + 20px margen
+  padding-bottom: v.$spacing-xl;
+
+  @include m.tablet-up {
+    padding-top: 170px; // 90px navbar + 60px search + 20px margen
+  }
+  &__hero {
+    text-align: center;
+    margin-bottom: v.$spacing-lg;
+    padding: 0 v.$spacing-md;
+
+    @include m.tablet-up {
+      margin-bottom: v.$spacing-xl;
+      padding: 0 v.$spacing-lg;
+    }
+  }
+
+  &__title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: v.color('primary');
+    margin: 0;
+    line-height: 1.2;
+
+    @include m.tablet-up {
+      font-size: 2.75rem;
+    }
+
+    @include m.desktop-up {
+      font-size: 3.25rem;
+    }
+  }
+
+  &__content {
+    display: block;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 v.$spacing-md;
+
+    @include m.desktop-up {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: v.$spacing-xxl;
+      align-items: stretch; // Changed from start to stretch
+    }
+  }
+
+  &__image-section {
+    margin-bottom: v.$spacing-xl;
+    display: flex; // Added flex container
+
+    @include m.desktop-up {
+      margin-bottom: 0;
+    }
+  }
+
+  &__image-container {
+    background: v.color('white1');
+    padding: v.$spacing-md;
+    border-radius: v.$borderRadius;
+    box-shadow: 0 8px 32px rgba(v.color('primary'), 0.1);
+    border: 1px solid v.color('primary');
+    display: flex; // Added flex container
+    flex-direction: column; // Stack content vertically
+    width: 100%; // Take full width
+
+    @include m.tablet-up {
+      padding: v.$spacing-lg;
+    }
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; // Maintain aspect ratio while filling container
+    border-radius: v.$borderRadius-sm;
+    display: block;
+    flex: 1; // Take remaining space
+  }
+
+  &__text-section {
+    display: flex;
+  }
+
+  &__text-container {
+    background: v.color('white1');
+    padding: v.$spacing-lg;
+    border-radius: v.$borderRadius;
+    box-shadow: 0 8px 32px rgba(v.color('primary'), 0.1);
+    border: 1px solid v.color('primary');
+    display: flex; // Added flex container
+    flex-direction: column; // Stack content vertically
+    width: 100%; // Take full width
+
+    @include m.tablet-up {
+      padding: v.$spacing-xl;
+    }
+  }
+
+  &__subtitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: v.color('primary');
+    margin-bottom: v.$spacing-lg;
+
+    @include m.tablet-up {
+      font-size: 1.75rem;
+    }
+  }
+
+  &__paragraph {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: v.color('gray4');
+    margin-bottom: v.$spacing-md;
+
+    @include m.tablet-up {
+      font-size: 1.1rem;
+      line-height: 1.8;
+    }
+
+    &:last-of-type {
+      margin-bottom: 0;
+    }
+  }
+
+  &__signature {
+    margin-top: auto; // Push signature to bottom
+    padding-top: v.$spacing-md;
+    border-top: 1px solid v.color('gray2');
+  }
+
+  &__signature-text {
+    font-style: italic;
+    font-weight: 500;
+    color: v.color('primary');
+    text-align: right;
+    margin: 0;
+    font-size: 0.95rem;
+
+    @include m.tablet-up {
+      font-size: 1rem;
+    }
+  }
+}
