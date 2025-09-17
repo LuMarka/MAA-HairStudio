@@ -1,10 +1,11 @@
-    <app-contact-template
-      [title]="pageTitle"
-      [subtitle]="pageSubtitle"
-      [formTitle]="formTitle"
-      [mapTitle]="mapTitle"
-      [address]="address"
-      [mapUrl]="mapUrl"
-      [serviceOptions]="serviceOptions()"
-      (formSubmit)="handleFormSubmit($event)"
-    />
+<app-contact-template
+  [pageTitle]="pageTitle"
+  [pageSubtitle]="pageSubtitle"
+  [formTitle]="formTitle"
+  [serviceOptions]="serviceOptions()"
+  [whatsappNumber]="whatsappNumber"
+  [mapTitle]="mapTitle"
+  [address]="address"
+  [mapUrl]="mapUrl"
+  (formSubmitted)="handleFormSubmit($event)"
+/>

@@ -1,10 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 export interface ContactFormData {
   name: string;
-  //lastName: string;
-  email: string;
   phone: string;
   service: string;
   message: string;
@@ -23,130 +21,135 @@ export interface ServiceOption {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ContactForm {
-  // Inputs using new signal-based API
-  title = input<string>('Envianos un mensaje');
+  private readonly formBuilder = inject(FormBuilder);
+
+  // Inputs
+  title = input<string>('Contáctanos');
   serviceOptions = input<ServiceOption[]>([]);
+  whatsappNumber = input<string>('+5493534015655'); // MAA Hair Studio number
 
-  // Output for form submission
-  formSubmit = output<ContactFormData>();
+  // Outputs
+  formSubmitted = output<ContactFormData>();
 
-  // Local state using signals
-  private readonly isDropdownOpen = signal(false);
+  // State
+  private readonly dropdownOpenState = signal(false);
+  private readonly submittingState = signal(false);
+  private readonly selectedService = signal<ServiceOption | null>(null);
 
-  // Form instance
-  readonly contactForm: FormGroup;
+  // Computed
+  readonly dropdownOpen = this.dropdownOpenState.asReadonly();
+  readonly isSubmitting = this.submittingState.asReadonly();
+  readonly selectedServiceLabel = computed(() =>
+    this.selectedService()?.label ?? 'Selecciona un servicio'
+  );
 
-  // Computed values
-  readonly selectedServiceLabel = computed(() => {
-    const serviceValue = this.contactForm.get('service')?.value;
-    const selected = this.serviceOptions().find(option => option.value === serviceValue);
-    return selected ? selected.label : 'Selecciona un servicio';
+  // Form
+  readonly contactForm: FormGroup = this.formBuilder.group({
+    name: new FormControl('', [
+      Validators.required,
+      Validators.minLength(2),
+      Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+    ]),
+    phone: new FormControl('', [
+      Validators.required,
+      Validators.pattern(/^(\+54\s?9?\s?)?[\d\s\-()]{8,15}$/)
+    ]),
+    service: new FormControl('', [Validators.required]),
+    message: new FormControl('', [
+      Validators.required,
+      Validators.minLength(10)
+    ])
   });
 
-  readonly dropdownOpen = computed(() => this.isDropdownOpen());
-
-  constructor() {
-    const fb = new FormBuilder();
-
-    this.contactForm = fb.group({
-      name: ['', [
-        Validators.required,
-        Validators.minLength(2),
-        Validators.pattern(/^[a-zA-ZÀ-ÿ\s]+$/)
-      ]],
- /*      lastName: ['', [
-        Validators.required,
-        Validators.minLength(2),
-        Validators.pattern(/^[a-zA-ZÀ-ÿ\s]+$/)
-      ]], */
-/*       email: ['', [
-        Validators.required,
-        Validators.email,
-        Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
-      ]], */
-      phone: ['', [
-        Validators.required,
-        Validators.pattern(/^\+?[0-9\s-]+$/)
-      ]],
-      service: ['', [Validators.required]],
-      message: ['', [
-        Validators.required,
-        Validators.minLength(10)
-      ]]
-    });
-  }
-
-  onSubmit(): void {
-    if (this.contactForm.valid) {
-      const formData: ContactFormData = this.contactForm.value;
-      this.formSubmit.emit(formData);
-      this.contactForm.reset();
-    } else {
-      this.contactForm.markAllAsTouched();
-    }
-  }
-
-  selectService(service: ServiceOption): void {
-    this.contactForm.patchValue({ service: service.value });
-    this.isDropdownOpen.set(false);
-  }
-
   toggleDropdown(): void {
-    this.isDropdownOpen.update(value => !value);
+    this.dropdownOpenState.update(open => !open);
   }
 
-  // Utility methods for template
+  selectService(option: ServiceOption): void {
+    this.selectedService.set(option);
+    this.contactForm.patchValue({ service: option.value });
+    this.dropdownOpenState.set(false);
+  }
+
   isFieldInvalid(fieldName: string): boolean {
     const field = this.contactForm.get(fieldName);
-    return field ? field.invalid && (field.dirty || field.touched) : false;
+    return !!(field?.invalid && (field?.dirty || field?.touched));
   }
 
   getFieldError(fieldName: string): string {
     const field = this.contactForm.get(fieldName);
     if (!field?.errors) return '';
 
-    const fieldNames: Record<string, string> = {
-      'name': 'Nombre y Apellido',
-      //'lastName': 'Apellidos',
-      'email': 'Correo',
-      'phone': 'Número de teléfono',
-      'service': 'Servicio',
-      'message': 'Mensaje'
-    };
+    const errors = field.errors;
 
-    const fieldDisplayName = fieldNames[fieldName] || fieldName;
-
-    if (field.errors['required']) {
-      return `${fieldDisplayName} es requerido`;
+    switch (fieldName) {
+      case 'name':
+        if (errors['required']) return 'El nombre es obligatorio';
+        if (errors['minlength']) return 'El nombre debe tener al menos 2 caracteres';
+        if (errors['pattern']) return 'El nombre solo puede contener letras';
+        break;
+      case 'phone':
+        if (errors['required']) return 'El teléfono es obligatorio';
+        if (errors['pattern']) return 'Formato de teléfono inválido';
+        break;
+      case 'service':
+        if (errors['required']) return 'Debes seleccionar un servicio';
+        break;
+      case 'message':
+        if (errors['required']) return 'El mensaje es obligatorio';
+        if (errors['minlength']) return 'El mensaje debe tener al menos 10 caracteres';
+        break;
     }
 
-    if (field.errors['pattern']) {
-      return this.getPatternError(fieldName, fieldDisplayName);
-    }
-
-    if (field.errors['minlength']) {
-      const requiredLength = field.errors['minlength'].requiredLength;
-      const actualLength = field.errors['minlength'].actualLength;
-      return `${fieldDisplayName} debe tener al menos ${requiredLength} caracteres (actual: ${actualLength})`;
-    }
-
-    if (field.errors['email']) {
-      return 'Por favor ingresa un correo válido';
-    }
-
-    return '';
+    return 'Campo inválido';
   }
 
-  private getPatternError(fieldName: string, fieldDisplayName: string): string {
-    const patternErrors: Record<string, string> = {
-      'name': `${fieldDisplayName} solo puede contener letras y espacios`,
-      /* 'lastName': `${fieldDisplayName} solo puede contener letras y espacios`,
-      'email': 'Por favor ingresa un correo válido (ej., usuario@dominio.com)', */
-      'phone': 'Por favor ingresa un número de teléfono válido (ej., +54 9 353 123-4567)',
-      'service': 'Por favor selecciona una opción de servicio válida',
-      'message': `${fieldDisplayName} contiene caracteres inválidos`
-    };
+  onSubmit(): void {
+    if (this.contactForm.valid && !this.isSubmitting()) {
+      this.submittingState.set(true);
 
-    return patternErrors[fieldName] || `${fieldDisplayName} formato es inválido`;
+      const formData = this.contactForm.value as ContactFormData;
+
+      // Generate WhatsApp message
+      const whatsappMessage = this.generateWhatsAppMessage(formData);
+
+      // Send to WhatsApp
+      this.sendToWhatsApp(whatsappMessage);
+
+      // Emit form data
+      this.formSubmitted.emit(formData);
+
+      // Reset form after short delay
+      setTimeout(() => {
+        this.contactForm.reset();
+        this.selectedService.set(null);
+        this.submittingState.set(false);
+      }, 1000);
+    } else {
+      // Mark all fields as touched to show errors
+      Object.keys(this.contactForm.controls).forEach(key => {
+        this.contactForm.get(key)?.markAsTouched();
+      });
+    }
+  }
+
+  private generateWhatsAppMessage(formData: ContactFormData): string {
+    const serviceLabel = this.serviceOptions()
+      .find(option => option.value === formData.service)?.label || formData.service;
+
+    return `*Nueva consulta desde MAA Hair Studio*\n\n` +
+           `👤 *Nombre:* ${formData.name}\n` +
+           `📞 *Teléfono:* ${formData.phone}\n` +
+           `💇 *Servicio:* ${serviceLabel}\n` +
+           `💬 *Mensaje:* ${formData.message}\n\n` +
+           `_Enviado desde el sitio web_`;
+  }
+
+  private sendToWhatsApp(message: string): void {
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${this.whatsappNumber().replace(/[^0-9]/g, '')}?text=${encodedMessage}`;
+
+    // Open WhatsApp in new tab
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }
 }

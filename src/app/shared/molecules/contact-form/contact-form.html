@@ -116,13 +116,17 @@
         }
       </div>
 
-      <button
-        type="submit"
-        class="contact-form__submit"
-        [disabled]="contactForm.invalid"
-      >
-        Enviar mensaje
-      </button>
+<button
+  type="submit"
+  class="contact-form__submit"
+  [disabled]="contactForm.invalid || isSubmitting()"
+>
+  @if (isSubmitting()) {
+    Enviando...
+  } @else {
+    Enviar Mensaje
+  }
+</button>
     </form>
   </div>
 </div>

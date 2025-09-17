@@ -4,24 +4,28 @@ import { ContactMap } from '../../molecules/contact-map/contact-map';
 
 @Component({
   selector: 'app-contact-template',
-  imports: [ContactForm, ContactMap ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ContactForm, ContactMap],
   templateUrl: './contact-template.html',
-  styleUrls: ['./contact-template.scss']
+  styleUrl: './contact-template.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ContactTemplate {title = input<string>('Contactanos');
-  subtitle = input<string>('Estamos aquí para ayudarte con cualquier consulta');
+export class ContactTemplate {
+  // Page inputs
+  pageTitle = input<string>('Contactanos');
+  pageSubtitle = input<string>('Estamos aquí para ayudarte');
+
+  // Form inputs
   formTitle = input<string>('Envianos un mensaje');
-  mapTitle = input<string>('Nuestra ubicación');
-  address = input<string>('Lugones 299, Villa María, Córdoba');
-  mapUrl = input<string>('');
   serviceOptions = input<ServiceOption[]>([]);
+  whatsappNumber = input<string>('+5493534015655');
 
-  formSubmit = output<ContactFormData>();
+  // Map inputs
+  mapTitle = input<string>('Nuestra ubicación');
+  address = input<string>('');
+  mapUrl = input<string>('');
 
-  onFormSubmit(formData: ContactFormData): void {
-    this.formSubmit.emit(formData);
-  }
+  // Outputs
+  formSubmitted = output<ContactFormData>();
 }
 
 
