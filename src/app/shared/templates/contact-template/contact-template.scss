@@ -8,7 +8,7 @@
   padding-bottom: v.$spacing-xl;
 
   @include m.tablet-up {
-    //padding-top: 170px; // More space for larger navbar
+    padding-top: 170px; // More space for larger navbar
   }
 
   &__hero {
@@ -26,29 +26,30 @@
     font-size: 2rem;
     font-weight: 700;
     color: v.color('primary');
-    margin-bottom: v.$spacing-sm;
+    /* margin-bottom: v.$spacing-sm; */
+    margin:0 0 v.$spacing-sm 0;
     line-height: 1.2;
 
     @include m.tablet-up {
-      font-size: 2.5rem;
+      font-size: 2.75rem;
       margin-bottom: v.$spacing-md;
     }
 
     @include m.desktop-up {
-      font-size: 3rem;
+      font-size: 3.25rem;
     }
   }
 
   &__subtitle {
-    font-size: 1rem;
+    font-size: 1.05rem;
     color: v.color('gray4');
     line-height: 1.5;
     margin: 0 auto;
     max-width: 90%;
 
     @include m.tablet-up {
-      font-size: 1.1rem;
-      max-width: 600px;
+      font-size: 1.15rem;
+      max-width: 700px;
     }
 
     @include m.desktop-up {
