@@ -1,0 +1,53 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.gallery-template {
+  min-height: 100vh;
+  // Centra todo el contenido del template
+  text-align: center;
+  // Ajustado para coincidir con la página de contacto y subir el título
+  padding-top: 160px;
+  padding-bottom: v.$spacing-xl;
+  padding-left: v.$spacing-md;
+  padding-right: v.$spacing-md;
+  background: linear-gradient(135deg, v.color('bg-light') 0%, v.color('white1') 100%);
+
+
+&__title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: v.color('primary');
+    /* margin-bottom: v.$spacing-sm; */
+    margin:0 0 v.$spacing-sm 0;
+    line-height: 1.2;
+
+    @include m.tablet-up {
+      font-size: 2.75rem;
+      //rgin-bottom: v.$spacing-md;
+    }
+
+    @include m.desktop-up {
+      font-size: 3.25rem;
+    }
+  }
+
+  &__subtitle {
+    font-size: 1.05rem;
+    color: v.color('gray4');
+    line-height: 1.5;
+    margin: 0 auto;
+    max-width: 90%;
+
+    @include m.tablet-up {
+      font-size: 1.15rem;
+      max-width: 700px;
+    }
+
+    @include m.desktop-up {
+      font-size: 1.25rem;
+      line-height: 1.6;
+      padding-bottom: 30px;
+    }
+  }
+}
+

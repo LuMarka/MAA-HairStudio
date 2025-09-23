@@ -1,20 +1,24 @@
-/* @use "tailwindcss"; */
-/* @use "bootstrap-icons/font/bootstrap-icons.css";
-@use "primeicons/primeicons.css"; */
-//use "./assets/styles/root.scss";
-
-
 @use 'assets/styles/root';
 @use 'assets/styles/mixins';
+@use 'assets/styles/variables';
+
+
+
 
 * {
   box-sizing: border-box;
-
 }
 
-html, body {
- height: 100%;
+html,
+body {
+  height: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
 }
+
+
+
+/* @use "tailwindcss"; */
+/* @use "bootstrap-icons/font/bootstrap-icons.css";
+@use "primeicons/primeicons.css"; */

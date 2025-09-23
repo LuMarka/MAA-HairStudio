@@ -23,7 +23,7 @@
   }
 
   &__title {
-    font-size: 2rem;
+    font-size: 2.25rem;
     font-weight: 700;
     color: v.color('primary');
     /* margin-bottom: v.$spacing-sm; */
@@ -32,7 +32,7 @@
 
     @include m.tablet-up {
       font-size: 2.75rem;
-      margin-bottom: v.$spacing-md;
+      //rgin-bottom: v.$spacing-md;
     }
 
     @include m.desktop-up {
