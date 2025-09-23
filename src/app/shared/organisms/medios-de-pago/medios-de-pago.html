@@ -1,11 +1,14 @@
-
 <section class="promotions">
   <header class="promotions__header">
     <h2 class="promotions__title">PROMOCIONES DESTACADAS</h2>
     <a href="#" class="promotions__see-all">Ver todas</a>
   </header>
 
-  <div class="promotions__carousel-wrapper">
+  <div
+    class="promotions__carousel-wrapper"
+    (mouseenter)="onMouseEnter()"
+    (mouseleave)="onMouseLeave()"
+  >
     <div
       #promotionsCarousel
       class="promotions__carousel"
