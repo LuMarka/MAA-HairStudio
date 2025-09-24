@@ -20,15 +20,16 @@ interface FooterSchedule {
 export class Footer {
   // Datos configurables
   title = input<string>('MAA Hair Studio');
-  description = input<string>('Tu belleza es nuestra pasión. Especialistas en cuidado capilar y estética.');
+  description = input<string>('El espacio pensado para lograr tu mejor versión ✨');
   address = input<string>('Lugones 299, Villa María, Córdoba');
   phone = input<string>('+54 9 353 401-5655');
   contactTitle = input<string>('Contacto');
   scheduleTitle = input<string>('Horarios');
   schedules = input<FooterSchedule[]>([
-    { days: 'Lunes a Viernes', hours: '10:00 - 19:00' },
-    { days: 'Sábados', hours: '10:00 - 14:00' },
-    { days: 'Domingos', hours: 'Cerrado' }
+    { days: 'Lunes', hours: '14:00 - 19:30'},
+    { days: 'Martes a Viernes', hours: '8:00 - 19:30' },
+    { days: 'Sábados', hours: '8:00 - 16:00' },
+
   ]);
   followTitle = input<string>('Seguinos');
   socialLinks = input<FooterSocialLink[]>([
@@ -38,8 +39,8 @@ export class Footer {
   ]);
   copyright = input<string>('© MAA Hair Studio. Todos los derechos reservados.');
   designer = input<string>('Designed by LBJ Devs.');
-  locationIcon = input<string>('📌'); // <-- Ahora configurable 📍
-  phoneIcon = input<string>('📞'); // <-- Ahora configurable
+  locationIcon = input<string>('📌'); // 📍
+  phoneIcon = input<string>('📞'); //
   // Año actual
   readonly currentYear = computed(() => new Date().getFullYear());
 }

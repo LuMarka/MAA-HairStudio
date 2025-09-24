@@ -34,14 +34,14 @@ export class Header implements OnDestroy {
       src: '/images/pelu-interior.jpg',
       alt: 'Servicios de peluquería profesional',
       title: 'Bienvenidos a MAA Hair Studio',
-      subtitle: 'Tu belleza es nuestra pasión'
+      subtitle: 'Somos expertas en vos'
     },
     {
       type: 'image',
       src: '/images/ale-pelu.jpg',
       alt: 'Cortes modernos y estilismo',
-      title: 'Cortes y Estilismo',
-      subtitle: 'Especialistas en cuidado capilar'
+      title: 'Beauty Scan',
+      subtitle: 'Encontramos cosas extraordinarias en lo cotidiano'
     },
     {
       type: 'video',
@@ -55,8 +55,8 @@ export class Header implements OnDestroy {
       type: 'image',
       src: '/images/alejandra.jpg',
       alt: 'Tratamientos capilares premium',
-      title: 'Tratamientos Premium',
-      subtitle: 'Cuida tu cabello con los mejores productos'
+      title: 'Rituales Premium',
+      subtitle: 'Cuidado de tu cuero cabelludo y cabello'
     },
     {
       type: 'video',

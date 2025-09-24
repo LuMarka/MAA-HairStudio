@@ -23,6 +23,7 @@ export class Contact {
     { value: 'coloracion', label: 'Coloración' },
     { value: 'tratamiento', label: 'Tratamientos capilares' },
     { value: 'peinado', label: 'Peinados y styling' },
+    { value: 'BeautyScan', label: 'Beauty Scan' },
     { value: 'diagnostico', label: 'Diagnóstico de cabello' },
     { value: 'productos', label: 'Consulta sobre productos' },
     { value: 'otro', label: 'Otro servicio' }
