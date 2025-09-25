@@ -1,5 +1,4 @@
 import { Component, signal, computed, ChangeDetectionStrategy, effect, OnDestroy, afterNextRender, inject } from '@angular/core';
-import { NgOptimizedImage } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -14,7 +13,7 @@ interface CarouselMedia {
 
 @Component({
   selector: 'app-header',
-  imports: [NgOptimizedImage],
+  //imports: [NgOptimizedImage],
   templateUrl: './header.html',
   styleUrls: ['./header.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

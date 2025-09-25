@@ -5,11 +5,9 @@
         <div class="carousel-slide" [class.active]="$index === activeIndex()">
           @if (media.type === 'image') {
             <img
-              [ngSrc]="media.src"
+              [src]="media.src"
               [alt]="media.alt"
               class="carousel-image"
-              width="1200"
-              height="600"
               priority
             />
           } @else {

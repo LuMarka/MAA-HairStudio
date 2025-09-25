@@ -35,21 +35,17 @@
               <!-- Primera página: imágenes con prioridad -->
               @if (currentPage() === 0) {
                 <img
-                  [ngSrc]="product.image"
+                  [src]="product.image"
                   [alt]="product.name"
                   class="product-card__image"
-                  width="300"
-                  height="300"
                   priority
                   (load)="onImageLoad(product.id)"
                 />
               } @else {
                 <img
-                  [ngSrc]="product.image"
+                  [src]="product.image"
                   [alt]="product.name"
                   class="product-card__image"
-                  width="300"
-                  height="300"
                   loading="lazy"
                   (load)="onImageLoad(product.id)"
                 />

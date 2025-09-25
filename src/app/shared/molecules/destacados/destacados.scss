@@ -1,9 +1,9 @@
 @use '../../../../assets/styles/variables' as v;
 @use '../../../../assets/styles/mixins' as m;
 
-// =============================================================================
+// ================================================================
 // Keyframes para Animaciones
-// =============================================================================
+// =================================================================
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
@@ -28,13 +28,13 @@
   }
 }
 
-// =============================================================================
+// ================================================================
 // Sección de Productos Destacados (Mobile First)
-// =============================================================================
+// ================================================================
 
 .featured {
   background-color: v.color('green-900');
-  min-height: 100vh;
+ // min-height: 100vh;
   padding: v.$spacing-md v.$spacing-sm v.$spacing-lg;
   font-family: system-ui, -apple-system, sans-serif;
   color: v.color('white1');
@@ -145,6 +145,8 @@
     display: flex;
     align-items: center;
     margin-bottom: v.$spacing-md;
+    /* padding so arrow buttons sit inside the viewport and don't overlap content */
+    padding: 0 40px; /* default for small screens; overridden in larger breakpoints below */
   }
 
   &__arrow {
@@ -169,7 +171,9 @@
       transform: scale(1.1);
     }
     &--prev { left: 0; transform: translateX(-50%); }
-    &--next { right: 0; transform: translateX(50%); }
+  /* keep arrows inset from the viewport edge so they don't overlap content */
+  &--prev { left: 12px; transform: translateX(0); }
+  &--next { right: 12px; transform: translateX(0); }
     &--disabled { opacity: 0.5; cursor: not-allowed; }
     &-icon { font-size: 1.2rem; line-height: 1; font-weight: bold; }
   }
@@ -180,6 +184,84 @@
     gap: v.$spacing-md;
     width: 100%;
     transition: transform 0.5s ease;
+  }
+
+  // Responsive sizing per requested ranges (single row appearance)
+  // Base: small phones (<= 669px) — 1 centered card slightly inset
+  @media screen and (max-width: 669px) {
+    &__grid {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: v.$spacing-md;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    .product-card {
+      /* reduced from 92% -> leave some room for arrows at narrow widths */
+      flex: 0 0 88%;
+      max-width: 88%;
+      box-sizing: border-box;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  // Small tablets / big phones: 2 cards per row (670 - 969)
+  @media screen and (min-width: 670px) and (max-width: 969px) {
+    &__grid {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: v.$spacing-md;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    /* leave more space for arrows at these intermediate widths */
+    &__carousel { padding: 0 50px; }
+
+    .product-card {
+      flex: 0 0 46%;
+      max-width: 46%;
+      box-sizing: border-box;
+    }
+  }
+
+  // Medium screens: 3 cards per row (970 - 1279)
+  @media screen and (min-width: 970px) and (max-width: 1279px) {
+    &__grid {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: v.$spacing-md;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    /* extra safety padding for arrows on larger medium screens */
+    &__carousel { padding: 0 60px; }
+
+    .product-card {
+      /* reduce slightly so three cards plus arrows fit without overflow */
+      flex: 0 0 30%;
+      max-width: 30%;
+      box-sizing: border-box;
+    }
+  }
+
+  // Large screens: 4-column grid (>=1280)
+  @media screen and (min-width: 1280px) {
+    &__grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: v.$spacing-lg;
+      width: 100%;
+    }
+
+    .product-card {
+      flex: none;
+      max-width: none;
+      width: auto;
+    }
   }
 
   // --- Paginación ---
@@ -401,15 +483,16 @@
     }
 
     &__grid {
-      grid-template-columns: repeat(2, 1fr); // 2 columnas para el carrusel en tablet
+      grid-template-columns: repeat(3, 1fr); // 3 columnas para tablet
       gap: v.$spacing-md;
     }
 
     &__arrow {
       width: 50px;
       height: 50px;
-      &--prev { left: -5px; transform: translateX(0); }
-      &--next { right: -5px; transform: translateX(0); }
+      /* slightly more inset on tablet */
+      &--prev { left: 16px; transform: translateX(0); }
+      &--next { right: 16px; transform: translateX(0); }
     }
   }
 
@@ -452,8 +535,9 @@
       width: 60px;
       height: 60px;
       font-size: 1.25rem;
-      &--prev { left: -25px; }
-      &--next { right: -25px; }
+  /* desktop: nudge arrows slightly outward so they don't overlap cards */
+  &--prev { left: -16px; }
+  &--next { right: -16px; }
     }
   }
 

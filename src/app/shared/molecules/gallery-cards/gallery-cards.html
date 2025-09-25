@@ -5,7 +5,7 @@
       <div class="gallery__main-container">
         @if (currentImageData(); as image) {
           <img
-            [ngSrc]="image.src"
+            [src]="image.src"
             [alt]="image.alt"
             class="gallery__main-image"
             width="800"
@@ -49,7 +49,7 @@
             [attr.aria-label]="'Ver imagen ' + ((i % images().length) + 1)"
           >
             <img
-              [ngSrc]="image.src"
+              [src]="image.src"
               [alt]="image.alt"
               class="gallery__thumbnail-image"
               width="80"

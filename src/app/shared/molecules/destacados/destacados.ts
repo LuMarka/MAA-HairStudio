@@ -13,7 +13,7 @@ import {
   PLATFORM_ID,
   ChangeDetectionStrategy
 } from '@angular/core';
-import { NgOptimizedImage, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -31,7 +31,6 @@ interface ProductosDestacados {
 @Component({
   selector: 'app-destacados',
   standalone: true,
-  imports: [NgOptimizedImage],
   templateUrl: './destacados.html',
   styleUrls: ['./destacados.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

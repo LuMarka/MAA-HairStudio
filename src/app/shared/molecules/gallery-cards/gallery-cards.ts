@@ -5,7 +5,6 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { NgOptimizedImage } from '@angular/common';
 
 export interface GalleryImage {
   id: string;
@@ -17,7 +16,6 @@ export interface GalleryImage {
 @Component({
   selector: 'app-gallery-cards',
   standalone: true,
-  imports: [NgOptimizedImage],
   templateUrl: './gallery-cards.html',
   styleUrls: ['./gallery-cards.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

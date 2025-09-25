@@ -1,11 +1,10 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { NgOptimizedImage } from '@angular/common';
 @Component({
   selector: 'app-logo',
-  imports: [NgOptimizedImage],
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './logo.html',
-  styleUrl: './logo.scss'
+  styleUrls: ['./logo.scss']
 })
 export class Logo {
   isSmall = input<boolean>(false);
