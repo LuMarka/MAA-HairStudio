@@ -1,0 +1,66 @@
+@use '../../../../assets/styles/_variables' as v;
+@use '../../../../assets/styles/_mixins' as m;
+
+.brand-cards {
+  background: v.color('white1');
+  padding: v.$spacing-xxl 0;
+
+  &__container {
+    width: 100%;
+    max-width: v.$container-max-width;
+    margin: 0 auto;
+    padding: 0 v.$spacing-sm;
+    box-sizing: border-box;
+    @include m.tablet-up { padding: 0 v.$spacing-md; }
+  }
+
+  &__row {
+    display: flex;
+    flex-direction: column;
+    gap: v.$spacing-md;
+    align-items: stretch;
+  }
+
+  /* Card: mobile-first full width stack */
+  &__card {
+    display: block;
+    width: 100%;
+    border-radius: v.$borderRadius-lg;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    text-decoration: none;
+    background: v.color('surface');
+    transition: transform 0.2s #{v.$transitionEasing};
+
+
+    &:hover { transform: translateY(-4px); }
+
+    @include m.tablet-up {
+      /* side-by-side on tablet+ — two equally wide columns matching container width */
+      flex: 1 1 50%;
+    }
+  }
+
+  &__media {
+    width: 100%;
+    display: block;
+    aspect-ratio: 16 / 9; /* wide hero-like images */
+    background: v.color('white1');
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+
+  }
+
+  @include m.tablet-up {
+    &__row {
+      flex-direction: row;
+      /* un poco más de separación en tablet+ */
+      gap: v.$spacing-lg;
+    }
+  }
+}

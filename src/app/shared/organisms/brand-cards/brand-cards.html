@@ -1,0 +1,11 @@
+<section class="brand-cards">
+	<div class="brand-cards__container">
+		<div class="brand-cards__row">
+			<a *ngFor="let c of cards" [routerLink]="c.route" class="brand-cards__card" aria-label="{{ c.alt }}">
+				<div class="brand-cards__media">
+					<img class="brand-cards__img" [src]="c.img" [alt]="c.alt" loading="lazy" />
+				</div>
+			</a>
+		</div>
+	</div>
+</section>

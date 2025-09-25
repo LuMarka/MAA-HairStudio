@@ -1,0 +1,14 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.home-template {
+  background-color: v.color('surface');
+  // keep layout simple; components will manage their own widths/padding
+  &__content {
+    display: block;
+  }
+}
+
+/* .carousel-image {
+  // Add any necessary styles for the carousel image here
+} */
