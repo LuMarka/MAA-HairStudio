@@ -41,16 +41,16 @@ export const pagesRoutes: Routes = [
         data: {
           title: ' Historia | MAA Hair Studio',
           description: "Mi historia.",
-          keywords: "about, history, story, background",
+          keywords: "about, history, story, background, mi historia, sobre mí",
         }
       },
       {
         path: 'services',
         component: Services,
         data: {
-          title: 'Servicios | MAA Hair Studio',
-          description: "Descubre nuestros servicios y cómo podemos ayudarte a alcanzar tus objetivos.",
-          keywords: "services, offerings, solutions, help",
+          title: 'Beauty Scan | MAA Hair Studio',
+          description: "Diagnóstico personalizado.",
+          keywords: "services, offerings, solutions, help, diagnóstico personalizado, beauty scan, scan, online, consulta, te escuchamos",
         }
       },
       {
