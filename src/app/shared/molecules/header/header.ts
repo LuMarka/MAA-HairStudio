@@ -33,14 +33,14 @@ export class Header implements OnDestroy {
       src: '/images/pelu-interior.jpg',
       alt: 'Servicios de peluquería profesional',
       title: 'Bienvenidos a MAA Hair Studio',
-      subtitle: 'Somos expertas en vos'
+      subtitle: 'SOMOS EXPERTAS EN VOS'
     },
     {
       type: 'image',
       src: '/images/ale-pelu.jpg',
       alt: 'Cortes modernos y estilismo',
       title: 'Beauty Scan',
-      subtitle: 'Encontramos cosas extraordinarias en lo cotidiano'
+      subtitle: 'Diagnósticos personalizados para tu cabello online'
     },
     {
       type: 'video',
@@ -59,11 +59,19 @@ export class Header implements OnDestroy {
     },
     {
       type: 'video',
-      src: '/videos/absolutRepairMolecular.mp4',
+      src: '/videos/kerastaseGloss.mp4',
       poster: '/images/pelu-productos.jpg', // Usando imagen existente como poster
-      alt: 'Tratamientos capilares Absolut Repair Molecular',
-      title: 'Tratamientos Absolut Repair Molecular',
-      subtitle: 'Cuida tu cabello con los mejores productos'
+      alt: 'Kerastace Gloss',
+      title: 'Kerastase Gloss',
+      subtitle: 'Linea completa para el cuidado del cabello'
+    },
+    {
+      type: 'video',
+      src: '/videos/ubicacion.mp4',
+      poster: '/images/pelu-productos.jpg', // Usando imagen existente como poster
+      alt: 'video ubicacion',
+      title: 'AQUI ESTAMOS',
+      subtitle: 'Vení a conocernos'
     }
   ]);
 
