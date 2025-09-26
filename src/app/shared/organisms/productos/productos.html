@@ -1,0 +1,96 @@
+<section class="featured">
+  <div class="featured__container">
+    <!-- Sección de título y subtítulo con mayor prominencia -->
+    <div class="featured__header">
+      <div class="featured__badge">Destacados</div>
+      <h2 class="featured__title">Productos Premium</h2>
+      <p class="featured__subtitle">Lo mejor de Kérastase & L'Oréal</p>
+      <div class="featured__decoration"></div>
+    </div>
+
+    <!-- Contenedor del carrusel con flechas laterales -->
+    <div class="featured__carousel">
+      <!-- Flecha izquierda -->
+      <button
+        class="featured__arrow featured__arrow--prev"
+        [class]="{'featured__arrow--disabled': isFirstPage()}"
+        (click)="previousPage()"
+        aria-label="Ver productos anteriores">
+        <span class="featured__arrow-icon">❮</span>
+      </button>
+
+      <!-- Grid de productos con animación al scroll -->
+      <div class="featured__grid" #productGrid>
+        @for (product of visibleProducts(); track product.id) {
+          <article
+            class="product-card"
+            [class]="{'product-card--visible': isProductVisible(product.id)}"
+            [attr.data-product-id]="product.id"
+            #productCard>
+
+            <!-- Imagen con efecto de carga -->
+            <div class="product-card__image-container">
+              <div class="product-card__image-skeleton"></div>
+
+              <!-- Primera página: imágenes con prioridad -->
+              @if (currentPage() === 0) {
+                <img
+                  [src]="product.image"
+                  [alt]="product.name"
+                  class="product-card__image"
+                  priority
+                  (load)="onImageLoad(product.id)"
+                />
+              } @else {
+                <img
+                  [src]="product.image"
+                  [alt]="product.name"
+                  class="product-card__image"
+                  loading="lazy"
+                  (load)="onImageLoad(product.id)"
+                />
+              }
+
+              <div class="product-card__badge">Top</div>
+            </div>
+
+            <div class="product-card__content">
+              <p class="product-card__brand">{{ product.brand }}</p>
+              <h3 class="product-card__name">{{ product.name }}</h3>
+              <p class="product-card__description">{{ product.description }}</p>
+
+              <div class="product-card__footer">
+                <span class="product-card__price">{{ product.price }}</span>
+                <button class="product-card__button">
+                  <span class="product-card__button-text">Comprar</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+
+      <!-- Flecha derecha -->
+      <button
+        class="featured__arrow featured__arrow--next"
+        [class]="{'featured__arrow--disabled': isLastPage()}"
+        (click)="nextPage()"
+        aria-label="Ver más productos">
+        <span class="featured__arrow-icon">❯</span>
+      </button>
+    </div>
+
+    <!-- Indicadores de página -->
+    <div class="featured__pagination">
+      @for (page of pageIndicators(); track page) {
+        <button
+          class="featured__page-dot"
+          [class]="{'featured__page-dot--active': currentPage() === page}"
+          (click)="goToPage(page)"
+          aria-label="Ir a página {{page + 1}}">
+        </button>
+      }
+    </div>
+  </div>
+</section>
+
