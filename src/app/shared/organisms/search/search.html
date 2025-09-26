@@ -22,16 +22,25 @@
       />
     </div>
 
-    <div class="search__actions">
-      @for (action of actions; track action.label) {
-        <button
-          class="search__action-btn"
-          [attr.aria-label]="action.label"
-          (click)="action.action()"
-        >
-          <span class="search__action-icon">{{ action.icon }}</span>
-        </button>
-      }
+      <!-- <div class="search___actions">
+      @for (action of actions; track action.label){
+      <button>
+      class="search_action-btn"
+      [attr.aria-label]="action.label"
+      (click)="action.action()"
+
+      <span class="search_action-icon">{{ action.icon }}</span> </button>
+      } -->
+
+
+
+
+    <div class="search__actions" style="display: flex; align-items: center; gap: 0.5rem;">
+      <span class="search__comunicate-label">{{ comunicateLabel }}</span>
+      <span class="search__comunicate-arrow">{{ comunicateArrow }}</span>
+      <button class="search__action-btn" aria-label="WhatsApp" (click)="openWhatsApp()">
+        <i [ngClass]="whatsappIcon"></i>
+      </button>
     </div>
   </div>
 </section>

@@ -1,6 +1,51 @@
 @use '../../../../assets/styles/variables' as v;
 @use '../../../../assets/styles/mixins' as m;
 
+.search__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search__comunicate-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-dark, #222);
+  @media (min-width: 1024px) {
+    font-size: 1.35rem;
+    @media (min-width: 1440px) {
+      font-size: 1.6rem;
+    }
+  }
+}
+
+.search__comunicate-arrow {
+  font-size: 1.2rem;
+  color: var(--text-dark, #222);
+}
+
+.search__action-btn {
+  background: none;
+  border: none;
+  padding: 0.2em 0.4em;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--brand-green, #25d366);
+  font-size: 1.5rem;
+  transition: filter 0.15s;
+  &:hover,
+  &:focus {
+    filter: brightness(0.85);
+  }
+  i.bi-whatsapp {
+    font-size: 1.5rem;
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+
 .search {
   position: fixed;
   top: 120px; // Below navbar
