@@ -1,0 +1,143 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.slogan {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: v.$spacing-xl 0;
+  background: none;
+  overflow: hidden;
+
+  &__bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.18;
+    z-index: 0;
+    filter: blur(2.5px) brightness(1.3);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, v.color('bg-light') 0%, v.color('green-50') 100%);
+    opacity: 0.5;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  &__content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: v.$spacing-lg v.$spacing-md;
+    background: none;
+    border-radius: v.$borderRadius;
+    box-shadow: none;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    filter: blur(18px) brightness(0.95);
+    transform: translateX(80px) scale(0.97);
+    transition: box-shadow 0.25s, transform 0.25s, opacity 0.5s, filter 0.5s;
+    will-change: box-shadow, transform, opacity, filter;
+
+    &:hover {
+      box-shadow: 0 8px 32px 0 rgba(v.color('primary'), 0.18), 0 2px 16px rgba(0,0,0,0.08);
+      transform: translateY(-6px) scale(1.03);
+    }
+  }
+
+  &.slogan--visible .slogan__content {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    animation: slogan-slide-in 1.2s cubic-bezier(0.33,0.7,0.4,1) 0.1s both;
+  }
+
+  &__title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: v.color('primary');
+    margin-bottom: v.$spacing-md;
+    line-height: 1.2;
+
+    @include m.tablet-up {
+      font-size: 2.5rem;
+    }
+    @include m.desktop-up {
+      font-size: 3rem;
+    }
+  }
+  @keyframes slogan-slide-in {
+    0% {
+      opacity: 0;
+      filter: blur(18px) brightness(0.95);
+      transform: translateX(80px) scale(0.97);
+    }
+    60% {
+      opacity: 1;
+      filter: blur(2px) brightness(1.03);
+      transform: translateX(-10px) scale(1.01);
+    }
+    100% {
+      opacity: 1;
+      filter: none;
+      transform: none;
+    }
+  }
+
+  @keyframes slogan-title-glow {
+    0% {
+      text-shadow: 0 2px 32px rgba(v.color('primary'), 0.25), 0 1px 2px rgba(0,0,0,0.04);
+      opacity: 0;
+      letter-spacing: 0.04em;
+    }
+    60% {
+      text-shadow: 0 2px 16px rgba(v.color('primary'), 0.13), 0 1px 2px rgba(0,0,0,0.04);
+      opacity: 1;
+      letter-spacing: 0.01em;
+    }
+    100% {
+      text-shadow: 0 2px 16px rgba(v.color('primary'), 0.13), 0 1px 2px rgba(0,0,0,0.04);
+      opacity: 1;
+      letter-spacing: 0;
+    }
+  }
+
+  &__text {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: v.color('gray4');
+    line-height: 1.7;
+    margin: 0;
+
+    @include m.tablet-up {
+      font-size: 1.25rem;
+    }
+    @include m.desktop-up {
+      font-size: 1.35rem;
+    }
+  }
+  @keyframes slogan-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+}
