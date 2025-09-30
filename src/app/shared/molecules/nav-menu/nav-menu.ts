@@ -1,4 +1,6 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NavItem } from '../../../core/models/interfaces/NavItem.interface';
 
@@ -16,6 +18,14 @@ export class NavMenu {
 
   onLinkClick(item: NavItem): void {
     this.linkClicked.emit(item);
+  }
+
+  showMegaMenu = signal(false);
+
+  // Solo mostrar el mega menú si la ruta es '/products'
+  private router = inject(Router);
+  get isProductsRoute(): boolean {
+    return this.router.url.startsWith('/products');
   }
 }
 

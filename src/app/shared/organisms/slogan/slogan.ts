@@ -10,7 +10,7 @@ import { Component, ChangeDetectionStrategy, ElementRef, AfterViewInit, Writable
 })
 export class Slogan {
 
-  readonly title = '✨ Más que expertos en belleza, somos expertos en vos.';
+  readonly title = '✨ Más que expertas en belleza,somos expertas en vos.';
   readonly text = `Los espejos reflejan, pero no revelan toda la verdad. En MAA Hair Studio creemos que tu historia es el verdadero punto de partida. Aquí hablás, aquí te escuchamos. Juntas trazaremos el camino hacia tu mejor versión, con un cuidado auténtico, sin atajos ni artificios: solo recomendaciones pensadas exclusivamente para vos, porque tu belleza es tan única como vos misma.`;
   readonly bgImage = './images/pelu-int.1.jpg';
 

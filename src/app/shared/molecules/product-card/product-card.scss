@@ -1,0 +1,195 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+
+.product-card {
+		&__wishlist-btn {
+			position: absolute;
+			top: 14px;
+			right: 14px;
+			z-index: 10;
+			background: transparent;
+			border: none;
+			padding: 4px;
+			cursor: pointer;
+			border-radius: 50%;
+			transition: background 0.2s;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			outline: none;
+		}
+
+		&__wishlist-icon {
+			width: 30px;
+			height: 30px;
+			stroke: v.color('gray4');
+			fill: none;
+			transition: fill 0.2s, stroke 0.2s;
+		}
+
+		&__wishlist-btn:hover .product-card__wishlist-icon,
+		&__wishlist-btn:focus .product-card__wishlist-icon {
+			stroke: v.color('accent');
+			fill: #f10c6f;
+		}
+		background-color: v.color('white1');
+		border-radius: v.$borderRadius;
+		overflow: hidden;
+		box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+		transition: all 0.5s ease;
+		opacity: 1;
+		transform: translateY(0);
+		position: relative;
+		min-width: 220px;
+		max-width: 350px;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+
+	&__image-container {
+		position: relative;
+		width: 100%;
+		overflow: hidden;
+		aspect-ratio: 1/1;
+	}
+
+	&__image-skeleton {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(to right, #f6f6f6 8%, #f0f0f0 18%, #f6f6f6 33%);
+		background-size: 800px 100%;
+		animation: shimmer 1.5s infinite linear;
+	}
+
+	&__image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.8s ease;
+		z-index: 2;
+		position: relative;
+	}
+
+	&__badge {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		background-color: v.color('green-900');
+		color: v.color('white1');
+		font-size: 0.75rem;
+		font-weight: 700;
+		padding: 4px 8px;
+		border-radius: v.$borderRadius-sm;
+		z-index: 3;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		transform: rotate(5deg);
+	}
+
+	&__content {
+		padding: v.$spacing-md;
+		color: v.color('gray5');
+	}
+
+	&__brand {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: v.color('secondary');
+		margin-bottom: v.$spacing-xs;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+	}
+
+	&__name {
+		font-size: 1.25rem;
+		font-weight: 700;
+		color: v.color('gray6');
+		margin-bottom: v.$spacing-xs;
+		transition: color 0.3s ease;
+	}
+
+	&__description {
+		font-size: 0.875rem;
+		font-weight: 300;
+		color: v.color('gray4');
+		margin-bottom: v.$spacing-sm;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		line-height: 1.5;
+	}
+
+	&__footer {
+		margin-top: v.$spacing-md;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	&__price {
+		font-size: 1.25rem;
+		font-weight: 700;
+		color: v.color('gray6');
+		display: flex;
+		align-items: center;
+		&::before {
+			content: '$';
+			font-size: 0.875rem;
+			margin-right: 2px;
+			font-weight: 400;
+			opacity: 0.8;
+		}
+	}
+
+	&__button {
+		background-color: v.color('green-900');
+		color: v.color('white1');
+		font-weight: 600;
+		padding: v.$spacing-xs v.$spacing-md;
+		border-radius: v.$borderRadius-lg;
+		border: none;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+		position: relative;
+		overflow: hidden;
+		&::before {
+			content: '';
+			position: absolute;
+			top: -50%;
+			left: -50%;
+			width: 200%;
+			height: 200%;
+			background: rgba(255, 255, 255, 0.1);
+			transform: rotate(45deg);
+			transition: all 0.6s ease;
+			opacity: 0;
+		}
+		&:hover::before {
+			opacity: 1;
+			transform: rotate(45deg) translate(10%, 10%);
+		}
+		&:focus {
+			outline: none;
+			box-shadow: 0 0 0 3px rgba(v.color('accent'), 0.5);
+		}
+	}
+
+	&:hover {
+		transform: translateY(-10px) scale(1.02);
+		box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+		z-index: 5;
+		.product-card__image { transform: scale(1.08); }
+		.product-card__button {
+			background-color: v.color('accent-dark');
+			transform: translateY(-3px);
+		}
+		.product-card__name { color: v.color('accent'); }
+	}
+}

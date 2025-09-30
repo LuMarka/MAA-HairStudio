@@ -33,7 +33,7 @@ export class Header implements OnDestroy {
       src: '/images/pelu-interior.jpg',
       alt: 'Servicios de peluquería profesional',
       title: 'Bienvenidos a MAA Hair Studio',
-      subtitle: 'SOMOS EXPERTAS EN VOS'
+      subtitle: 'Somos expertas en vos'
     },
     {
       type: 'image',
@@ -70,7 +70,7 @@ export class Header implements OnDestroy {
       src: '/videos/ubicacion.mp4',
       poster: '/images/pelu-productos.jpg', // Usando imagen existente como poster
       alt: 'video ubicacion',
-      title: 'AQUI ESTAMOS',
+      title: 'Aquí estamos',
       subtitle: 'Vení a conocernos'
     }
   ]);

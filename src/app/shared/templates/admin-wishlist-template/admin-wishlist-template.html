@@ -1,1 +1,12 @@
-<p>admin-wishlist-template works!</p>
+<section class="admin-wishlist-template">
+	<h2>Mi Wishlist</h2>
+	@if (products().length > 0) {
+		<div class="admin-wishlist-template__grid">
+			@for (product of products(); track product.id) {
+				<app-product-card [product]="product"></app-product-card>
+			}
+		</div>
+	} @else {
+		<p class="admin-wishlist-template__empty">No tienes productos en tu wishlist.</p>
+	}
+</section>

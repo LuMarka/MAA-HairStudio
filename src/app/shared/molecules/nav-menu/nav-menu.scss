@@ -1,5 +1,66 @@
-@use '../../../../assets/styles/variables' as vars;
-@use '../../../../assets/styles/mixins' as mixins;
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.nav-menu__item--has-mega-menu {
+  position: relative;
+}
+
+.nav-menu__mega-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 520px;
+  background: #f5f5f5de;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+  border-radius: v.$borderRadius-lg;
+  display: flex;
+  gap: 3rem;
+  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  z-index: 100;
+  margin-top: 0.5rem;
+  animation: fadeInMegaMenu 0.18s ease;
+}
+
+.nav-menu__mega-menu-col {
+  min-width: 180px;
+}
+
+.nav-menu__mega-menu-title {
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin-bottom: 1.1rem;
+  color: v.color('primary');
+  text-transform: uppercase;
+}
+
+.nav-menu__mega-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.nav-menu__mega-menu-list li a {
+  color: v.color('gray6');
+  font-size: 1rem;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.18s;
+  cursor: pointer;
+}
+.nav-menu__mega-menu-list li a:hover {
+  color: v.color('accent');
+  text-decoration: underline;
+}
+
+@keyframes fadeInMegaMenu {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 
 .nav-menu {
   &__list {
@@ -7,11 +68,11 @@
     list-style: none;
     margin: 0;
     padding: 0;
-    gap: vars.$spacing-md;
+    gap: v.$spacing-md;
 
-    @include mixins.mobile-only() {
+    @include m.mobile-only() {
       flex-direction: column;
-      gap: vars.$spacing-md;
+      gap: v.$spacing-md;
       width: 100%;
     }
   }
@@ -25,19 +86,19 @@
 
   &__link {
     display: block;
-    padding: vars.$spacing-sm vars.$spacing-md;
+    padding: v.$spacing-sm v.$spacing-md;
     text-decoration: none;
-    color: vars.color(text-light);
+    color: v.color(text-light);
     font-weight: 900;
-    font-size: vars.$font-size-text-mobile;
-    border-radius: vars.$borderRadius-sm;
-    transition: all vars.$transitionDuration vars.$transitionEasing;
+    font-size: v.$font-size-text-mobile;
+    border-radius: v.$borderRadius-sm;
+    transition: all v.$transitionDuration v.$transitionEasing;
     position: relative;
 
-    @include mixins.tablet-up() {
-      font-size: vars.$font-size-text;
-      padding: vars.$spacing-sm;
-      //padding: vars.$spacing-sm vars.$spacing-lg;
+    @include m.tablet-up() {
+      font-size: v.$font-size-text;
+      padding: v.$spacing-sm;
+
     }
 
     // Estados hover y focus
@@ -46,13 +107,13 @@
       background-color: rgba(255, 255, 255, 0.1);
       transform: translateY(-2px);
 
-      @include mixins.focused();
+      @include m.focused();
     }
 
     // Estado activo
     &--active {
-      background-color: vars.color(accent);
-      color: vars.color(text-darker);
+      background-color: v.color(accent);
+      color: v.color(text-darker);
       font-weight: 900;
 
       &::after {
@@ -66,7 +127,7 @@
         //background-color: vars.color(text-light);
         border-radius: 1px;
 
-        @include mixins.mobile-only() {
+  @include m.mobile-only() {
           display: none;
         }
       }
@@ -76,15 +137,15 @@
   // Modificador para móvil
   &--mobile {
     .nav-menu__list {
-      padding: vars.$spacing-lg;
-      background-color: rgba(vars.color(primary), 0.95);
+      padding: v.$spacing-lg;
+      background-color: rgba(v.color(primary), 0.95);
       backdrop-filter: blur(10px);
-      border-radius: vars.$borderRadius;
-      margin-top: vars.$spacing-md;
+      border-radius: v.$borderRadius;
+      margin-top: v.$spacing-md;
     }
 
     .nav-menu__link {
-      padding: vars.$spacing-md;
+      padding: v.$spacing-md;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
       &:last-child {

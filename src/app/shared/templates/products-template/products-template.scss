@@ -1,0 +1,13 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.products-template {
+	min-height: 100vh;
+	background: linear-gradient(135deg, v.color('bg-light') 0%, v.color('white1') 100%);
+	padding-top: 160px; 
+	padding-bottom: v.$spacing-xl;
+
+	@include m.tablet-up {
+		padding-top: 170px;
+	}
+}
