@@ -1,4 +1,3 @@
-
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -156,8 +155,19 @@ export class ProductsService {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Products {
+  selectedCollection: string = '';
+  get collectionOptions(): { label: string, value: string }[] {
+    if (!this.selectedBrand) return [];
+    const collections = Array.from(new Set(
+      this.products.filter((p: Product) => p.brand === this.selectedBrand).map((p: Product) => p.collection)
+    ));
+    return [
+      { label: 'Todas las colecciones', value: '' },
+      ...collections.map(c => ({ label: c, value: c }))
+    ];
+  }
   public readonly brands = [
-    { key: 'Kerastase', label: 'Kerastase' },
+    { key: 'Kerastase', label: 'Kérastase' },
     { key: 'Loreal', label: `L'Oréal Proffesionnel` }
   ];
   private readonly productsService = inject(ProductsService);
@@ -211,12 +221,19 @@ onSortChange(sort: string) {
 // Handler para el cambio de marca (sidebar)
 onBrandChange(brand: string) {
   this.selectedBrand = brand;
+  this.selectedCollection = '';
+}
+
+// Handler para el cambio de colección (sidebar)
+onCollectionChange(collection: string) {
+  this.selectedCollection = collection;
 }
 
 get filteredProductsByBrand(): Record<string, Product[]> {
   const filterType = this.selectedType;
   const sort = this.selectedSort;
   const selectedBrand = this.selectedBrand;
+  const selectedCollection = this.selectedCollection;
   const sortFn = (a: Product, b: Product) => {
     switch (sort) {
       case 'price-desc': return b.price - a.price;
@@ -233,7 +250,11 @@ get filteredProductsByBrand(): Record<string, Product[]> {
   const result: Record<string, Product[]> = {};
   for (const brand of brandsToShow) {
     result[brand] = this.products
-      .filter(p => p.brand === brand && (filterType === '' || p.type === filterType))
+      .filter(p =>
+        p.brand === brand &&
+        (filterType === '' || p.type === filterType) &&
+        (!selectedCollection || p.collection === selectedCollection)
+      )
       .slice()
       .sort(sortFn);
   }

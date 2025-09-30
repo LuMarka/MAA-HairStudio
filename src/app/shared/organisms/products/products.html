@@ -8,6 +8,14 @@
         <option *ngFor="let opt of brandOptions" [value]="opt.value">{{ opt.label }}</option>
       </select>
     </div>
+    @if (selectedBrand) {
+      <div class="products-filter__group">
+        <label for="collection">Colección</label>
+        <select #collectionSelect id="collection" name="collection" [(ngModel)]="selectedCollection" (change)="onCollectionChange(collectionSelect.value)">
+          <option *ngFor="let opt of collectionOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+    }
     <div class="products-filter__group">
       <label for="sort">Ordenar por</label>
       <select #sortSelect id="sort" name="sort" [(ngModel)]="selectedSort" (change)="onSortChange(sortSelect.value)">
