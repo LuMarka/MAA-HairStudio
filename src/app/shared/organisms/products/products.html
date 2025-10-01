@@ -1,6 +1,25 @@
+<div class="products-container">
+  <!-- Filtro horizontal por tipo que se muestra primero en mobile/tablet -->
+  <nav class="products-type-filter" aria-label="Filtrar por tipo">
+    @for (t of productTypes; track t.value) {
+      <button
+        class="products-type-filter__btn"
+        [class.products-type-filter__btn--active]="selectedType === t.value"
+        (click)="selectType(t.value)"
+        type="button"
+        [attr.aria-pressed]="selectedType === t.value"
+      >
+        @if (t.image) {
+          <span class="products-type-filter__icon">
+            <img [src]="t.image" [alt]="t.label" />
+          </span>
+        }
+        <span class="products-type-filter__label">{{ t.label }}</span>
+      </button>
+    }
+  </nav>
 
-
-<div class="products-layout">
+  <!-- Filtro lateral que se muestra segundo en mobile/tablet -->
   <aside class="products-filter">
     <div class="products-filter__group">
       <label for="brand">Marca</label>
@@ -23,42 +42,67 @@
       </select>
     </div>
   </aside>
-  <div class="products-main">
-    <!-- Filtro horizontal por tipo -->
-    <nav class="products-type-filter" aria-label="Filtrar por tipo">
-      @for (t of productTypes; track t.value) {
-        <button
-          class="products-type-filter__btn"
-          [class.products-type-filter__btn--active]="selectedType === t.value"
-          (click)="selectType(t.value)"
-          type="button"
-          [attr.aria-pressed]="selectedType === t.value"
-        >
-          @if (t.image) {
-            <span class="products-type-filter__icon">
-              <img [src]="t.image" [alt]="t.label" style="width: 28px; height: 28px; object-fit: cover; border-radius: 50%; background: #fff;" />
-            </span>
-          }
-          <span class="products-type-filter__label">{{ t.label }}</span>
-        </button>
-      }
-    </nav>
 
-    <div class="products-brand-sections">
-      @for (brand of brands; track brand.key) {
-        @if (!selectedBrand || selectedBrand === brand.key) {
-          <section class="products__brand-group">
-            <h2 class="products__brand-title">{{ brand.label }}</h2>
-            <div class="products">
-              @for (product of filteredProductsByBrand[brand.key]; track product.id) {
-                <app-product-card [product]="product"></app-product-card>
-              }
-            </div>
-          </section>
-        }
+  <div class="products-layout">
+    <!-- Filtro lateral para desktop -->
+    <aside class="products-filter products-filter--desktop">
+      <div class="products-filter__group">
+        <label for="brand-desktop">Marca</label>
+        <select #brandSelectDesktop id="brand-desktop" name="brand" [(ngModel)]="selectedBrand" (change)="onBrandChange(brandSelectDesktop.value)">
+          <option *ngFor="let opt of brandOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+      @if (selectedBrand) {
+        <div class="products-filter__group">
+          <label for="collection-desktop">Colección</label>
+          <select #collectionSelectDesktop id="collection-desktop" name="collection" [(ngModel)]="selectedCollection" (change)="onCollectionChange(collectionSelectDesktop.value)">
+            <option *ngFor="let opt of collectionOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
       }
+      <div class="products-filter__group">
+        <label for="sort-desktop">Ordenar por</label>
+        <select #sortSelectDesktop id="sort-desktop" name="sort" [(ngModel)]="selectedSort" (change)="onSortChange(sortSelectDesktop.value)">
+          <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+    </aside>
+
+    <div class="products-main">
+      <!-- Filtro horizontal por tipo (mostrado solo en desktop) -->
+      <nav class="products-type-filter products-type-filter--desktop" aria-label="Filtrar por tipo">
+        @for (t of productTypes; track t.value) {
+          <button
+            class="products-type-filter__btn"
+            [class.products-type-filter__btn--active]="selectedType === t.value"
+            (click)="selectType(t.value)"
+            type="button"
+            [attr.aria-pressed]="selectedType === t.value"
+          >
+            @if (t.image) {
+              <span class="products-type-filter__icon">
+                <img [src]="t.image" [alt]="t.label" />
+              </span>
+            }
+            <span class="products-type-filter__label">{{ t.label }}</span>
+          </button>
+        }
+      </nav>
+
+      <div class="products-brand-sections">
+        @for (brand of brands; track brand.key) {
+          @if (!selectedBrand || selectedBrand === brand.key) {
+            <section class="products__brand-group">
+              <h2 class="products__brand-title">{{ brand.label }}</h2>
+              <div class="products">
+                @for (product of filteredProductsByBrand[brand.key]; track product.id) {
+                  <app-product-card [product]="product"></app-product-card>
+                }
+              </div>
+            </section>
+          }
+        }
+      </div>
     </div>
   </div>
-
 </div>
-
