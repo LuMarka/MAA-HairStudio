@@ -5,12 +5,28 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+
+  /* Reducir espacio entre elementos en móviles */
+  @media (max-width: 480px) {
+    gap: 0.25rem;
+  }
 }
 
 .search__comunicate-label {
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-dark, #222);
+
+  /* Reducir tamaño en dispositivos móviles */
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
+
+  /* Reducir aún más en dispositivos muy pequeños */
+  @media (max-width: 360px) {
+    font-size: 0.75rem;
+  }
+
   @media (min-width: 1024px) {
     font-size: 1.35rem;
     @media (min-width: 1440px) {
@@ -89,6 +105,11 @@
 
     @include m.mobile-only {
       max-width: calc(100% - 180px);
+    }
+
+    /* Ajuste adicional para dispositivos muy pequeños */
+    @media (max-width: 360px) {
+      max-width: calc(100% - 160px);
     }
   }
 
