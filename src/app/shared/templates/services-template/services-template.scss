@@ -155,7 +155,7 @@
     }
 
     &--highlight {
-      font-weight:bolder;
+      font-weight: bolder;
       color: v.color('primary');
       text-align: center;
       background: linear-gradient(135deg, rgba(v.color('accent'), 0.1) 0%, rgba(v.color('primary'), 0.05) 100%);
