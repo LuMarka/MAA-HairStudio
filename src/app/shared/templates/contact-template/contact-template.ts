@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, inject, AfterViewInit, OnDestroy } from '@angular/core';
 import { ContactForm, type ContactFormData, type ServiceOption } from '../../molecules/contact-form/contact-form';
 import { ContactMap } from '../../molecules/contact-map/contact-map';
+import { ScrollAnimationService } from '../../../core/services/scroll-animation.service';
 
 @Component({
   selector: 'app-contact-template',
@@ -9,7 +10,8 @@ import { ContactMap } from '../../molecules/contact-map/contact-map';
   styleUrl: './contact-template.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ContactTemplate {
+export class ContactTemplate implements AfterViewInit, OnDestroy {
+  private scrollAnimationService = inject(ScrollAnimationService);
   // Page inputs
   pageTitle = input<string>('Contactanos');
   pageSubtitle = input<string>('Estamos aquí para ayudarte');
@@ -26,6 +28,17 @@ export class ContactTemplate {
 
   // Outputs
   formSubmitted = output<ContactFormData>();
+
+  ngAfterViewInit(): void {
+    // Inicializar animaciones de scroll para elementos principales
+    this.scrollAnimationService.observeElements('.contact-template__hero');
+    this.scrollAnimationService.observeElements('.contact-template__form-section');
+    this.scrollAnimationService.observeElements('.contact-template__map-section');
+  }
+
+  ngOnDestroy(): void {
+    // El servicio se encarga de limpiar sus propios recursos
+  }
 }
 
 

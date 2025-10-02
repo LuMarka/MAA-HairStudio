@@ -154,4 +154,81 @@
       font-size: 1rem;
     }
   }
+
+  // ==========================
+  // ANIMACIONES DE SCROLL
+  // ==========================
+
+  // Estados iniciales para elementos animados
+  &__hero,
+  &__image-section,
+  &__text-section {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
+
+    &.animate-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  // Animación específica para el hero
+  &__hero {
+    transition-duration: 0.7s;
+    transform: translateY(50px);
+
+    &.animate-in {
+      transform: translateY(0);
+      animation: heroFadeIn 0.7s ease-out forwards;
+    }
+  }
+
+  // Animación para las secciones con delays
+  &__image-section {
+    &.animate-in {
+      transition-delay: 0.2s;
+    }
+  }
+
+  &__text-section {
+    &.animate-in {
+      transition-delay: 0.4s;
+    }
+  }
+}
+
+// ==========================
+// KEYFRAMES PARA ANIMACIONES
+// ==========================
+
+@keyframes heroFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.98);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(20px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Reduce motion para usuarios que prefieren menos animaciones
+@media (prefers-reduced-motion: reduce) {
+  .about-template {
+    &__hero,
+    &__image-section,
+    &__text-section {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+      animation: none !important;
+    }
+  }
 }

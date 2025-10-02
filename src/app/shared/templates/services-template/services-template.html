@@ -1,1 +1,95 @@
-<p>services-template works!</p>
+<div class="services-template">
+  <div class="services-template__hero">
+    <h1 class="services-template__title">{{ title() }}</h1>
+    @if (subtitle()) {
+      <h2 class="services-template__subtitle">{{ subtitle() }}</h2>
+    }
+  </div>
+
+  <div class="services-template__content">
+    <div class="services-template__intro">
+      <div class="services-template__image-section">
+        <div class="services-template__image-container">
+          @if (image()) {
+            <img
+              [src]="image()"
+              [alt]="imageAlt()"
+              class="services-template__image"
+              loading="lazy"
+            />
+          }
+        </div>
+      </div>
+
+      <div class="services-template__description-section">
+        <div class="services-template__description-container">
+          @if (description()) {
+            <p class="services-template__description">{{ description() }}</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (howItWorksTitle() && steps().length > 0) {
+      <section class="services-template__section">
+        <h3 class="services-template__section-title">{{ howItWorksTitle() }}</h3>
+        <ol class="services-template__steps-list">
+          @for (step of steps(); track $index) {
+            <li class="services-template__step-item">
+              <div class="services-template__step-content">
+                <h4 class="services-template__step-title">{{ step.title }}</h4>
+                <p class="services-template__step-description">{{ step.description }}</p>
+              </div>
+            </li>
+          }
+        </ol>
+      </section>
+    }
+
+    @if (benefitsTitle() && benefits().length > 0) {
+      <section class="services-template__section">
+        <h3 class="services-template__section-title">{{ benefitsTitle() }}</h3>
+        <ul class="services-template__benefits-list">
+          @for (benefit of benefits(); track $index) {
+            <li class="services-template__benefit-item">
+              <div class="services-template__benefit-content">
+                <div class="services-template__benefit-check">
+                  <svg class="services-template__check-icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12"></polyline>
+                  </svg>
+                </div>
+                <div class="services-template__benefit-text">
+                  <h4 class="services-template__benefit-title">{{ benefit.title }}</h4>
+                  <p class="services-template__benefit-description">{{ benefit.description }}</p>
+                </div>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (additionalBenefitsTitle() && additionalBenefits().length > 0) {
+      <section class="services-template__section">
+        <h3 class="services-template__section-title">{{ additionalBenefitsTitle() }}</h3>
+        <ul class="services-template__benefits-list">
+          @for (benefit of additionalBenefits(); track $index) {
+            <li class="services-template__benefit-item">
+              <div class="services-template__benefit-content">
+                <div class="services-template__benefit-check">
+                  <svg class="services-template__check-icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12"></polyline>
+                  </svg>
+                </div>
+                <div class="services-template__benefit-text">
+                  <h4 class="services-template__benefit-title">{{ benefit.title }}</h4>
+                  <p class="services-template__benefit-description">{{ benefit.description }}</p>
+                </div>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+</div>

@@ -1,3 +1,4 @@
+
 @use '../../../../assets/styles/variables' as v;
 @use '../../../../assets/styles/mixins' as m;
 
@@ -48,6 +49,91 @@
       line-height: 1.6;
       padding-bottom: 30px;
     }
+  }
+
+  // ==========================
+  // ANIMACIONES DE SCROLL
+  // ==========================
+
+  // Estados iniciales para elementos animados
+  &__title,
+  &__subtitle {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
+
+    &.animate-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  // Animación específica para el título
+  &__title {
+    &.animate-in {
+      animation: titleFadeIn 0.8s ease-out forwards;
+    }
+  }
+
+  // Animación para el subtítulo con delay
+  &__subtitle {
+    &.animate-in {
+      transition-delay: 0.2s;
+    }
+  }
+}
+
+// Estilos para las animaciones de las gallery cards
+:global(.gallery-cards__item) {
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+  transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: opacity, transform;
+
+  &.animate-in {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// ==========================
+// KEYFRAMES PARA ANIMACIONES
+// ==========================
+
+@keyframes titleFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.98);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(20px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Reduce motion para usuarios que prefieren menos animaciones
+@media (prefers-reduced-motion: reduce) {
+  .gallery-template {
+    &__title,
+    &__subtitle {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+
+  :global(.gallery-cards__item) {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
 

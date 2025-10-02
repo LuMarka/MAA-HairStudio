@@ -1,0 +1,505 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.services-template {
+  min-height: 100vh;
+  background: linear-gradient(135deg, v.color('bg-light') 0%, v.color('white1') 100%);
+  padding-top: 160px; // 80px navbar + 60px search + 20px margen
+  padding-bottom: v.$spacing-xl;
+
+  @include m.tablet-up {
+    padding-top: 170px; // 90px navbar + 60px search + 20px margen
+  }
+
+  &__hero {
+    text-align: center;
+    margin-bottom: v.$spacing-xl;
+    padding: 0 v.$spacing-md;
+
+    @include m.tablet-up {
+      margin-bottom: v.$spacing-xxl;
+      padding: 0 v.$spacing-lg;
+    }
+  }
+
+  &__title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: v.color('primary');
+    margin: 0 0 v.$spacing-sm 0;
+    line-height: 1.2;
+
+    @include m.tablet-up {
+      font-size: 2.75rem;
+    }
+
+    @include m.desktop-up {
+      font-size: 3.25rem;
+    }
+  }
+
+  &__subtitle {
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: v.color('gray4');
+    margin: 0;
+    line-height: 1.5;
+
+    @include m.tablet-up {
+      font-size: 1.15rem;
+    }
+
+    @include m.desktop-up {
+      font-size: 1.25rem;
+      line-height: 1.6;
+    }
+  }
+
+  &__content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 v.$spacing-md;
+
+    @include m.tablet-up {
+      padding: 0 v.$spacing-lg;
+    }
+  }
+
+  &__intro {
+    display: block;
+    margin-bottom: v.$spacing-xxl;
+
+    @include m.desktop-up {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: v.$spacing-xxl;
+      align-items: stretch;
+    }
+  }
+
+  &__image-section {
+    margin-bottom: v.$spacing-xl;
+    display: flex;
+
+    @include m.desktop-up {
+      margin-bottom: 0;
+    }
+  }
+
+  &__image-container {
+    background: v.color('white1');
+    padding: v.$spacing-md;
+    border-radius: v.$borderRadius;
+    box-shadow: 0 8px 32px rgba(v.color('primary'), 0.1);
+    border: 1px solid v.color('primary');
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    @include m.tablet-up {
+      padding: v.$spacing-lg;
+    }
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: v.$borderRadius-sm;
+    display: block;
+    flex: 1;
+    min-height: 300px;
+
+    @include m.tablet-up {
+      min-height: 400px;
+    }
+  }
+
+  &__description-section {
+    display: flex;
+  }
+
+  &__description-container {
+    background: v.color('white1');
+    padding: v.$spacing-lg;
+    border-radius: v.$borderRadius;
+    box-shadow: 0 8px 32px rgba(v.color('primary'), 0.1);
+    border: 1px solid v.color('primary');
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    @include m.tablet-up {
+      padding: v.$spacing-xl;
+    }
+  }
+
+  &__description {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: v.color('gray4');
+    margin: 0;
+
+    @include m.tablet-up {
+      font-size: 1.15rem;
+      line-height: 1.8;
+    }
+
+    @include m.desktop-up {
+      font-size: 1.25rem;
+      line-height: 1.8;
+    }
+  }
+
+  &__section {
+    margin-bottom: v.$spacing-xxl;
+    background: v.color('white1');
+    padding: v.$spacing-lg;
+    border-radius: v.$borderRadius;
+    box-shadow: 0 8px 32px rgba(v.color('primary'), 0.1);
+    border: 1px solid v.color('primary');
+
+    @include m.tablet-up {
+      padding: v.$spacing-xl;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: v.color('primary');
+    margin: 0 0 v.$spacing-lg 0;
+    line-height: 1.3;
+
+    @include m.tablet-up {
+      font-size: 1.75rem;
+    }
+
+    @include m.desktop-up {
+      font-size: 1.75rem;
+    }
+  }
+
+  // Estilos para lista de pasos (ordenada)
+  &__steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: step-counter;
+  }
+
+  &__step-item {
+    counter-increment: step-counter;
+    margin-bottom: v.$spacing-lg;
+    position: relative;
+    padding-left: 60px;
+
+    @include m.tablet-up {
+      padding-left: 80px;
+    }
+
+    &::before {
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 40px;
+      height: 40px;
+      background: v.color('primary');
+      color: v.color('white1');
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+
+      @include m.tablet-up {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+      }
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__step-content {
+    background: v.color('bg-light');
+    padding: v.$spacing-md;
+    border-radius: v.$borderRadius-sm;
+    border-left: 4px solid v.color('accent');
+
+    @include m.tablet-up {
+      padding: v.$spacing-lg;
+    }
+  }
+
+  &__step-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: v.color('primary');
+    margin: 0 0 v.$spacing-sm 0;
+    line-height: 1.3;
+
+    @include m.tablet-up {
+      font-size: 1.25rem;
+    }
+  }
+
+  &__step-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: v.color('gray4');
+    margin: 0;
+
+    @include m.tablet-up {
+      font-size: 1.1rem;
+      line-height: 1.7;
+    }
+  }
+
+  // Estilos para lista de beneficios (con checks)
+  &__benefits-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__benefit-item {
+    margin-bottom: v.$spacing-lg;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__benefit-content {
+    display: flex;
+    gap: v.$spacing-md;
+    align-items: flex-start;
+    background: v.color('bg-light');
+    padding: v.$spacing-md;
+    border-radius: v.$borderRadius-sm;
+    border-left: 4px solid v.color('primary');
+
+    @include m.tablet-up {
+      padding: v.$spacing-lg;
+      gap: v.$spacing-lg;
+    }
+  }
+
+  &__benefit-check {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    background: v.color('primary');
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+
+    @include m.tablet-up {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  &__check-icon {
+    width: 14px;
+    height: 14px;
+    color: v.color('white1');
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+
+    @include m.tablet-up {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &__benefit-text {
+    flex: 1;
+  }
+
+  &__benefit-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: v.color('primary');
+    margin: 0 0 v.$spacing-xs 0;
+    line-height: 1.3;
+
+    @include m.tablet-up {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__benefit-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: v.color('gray4');
+    margin: 0;
+
+    @include m.tablet-up {
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+  }
+
+  // ==========================
+  // ANIMACIONES DE SCROLL
+  // ==========================
+
+  // Estados iniciales para elementos animados
+  &__hero,
+  &__intro,
+  &__section {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
+
+    &.animate-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  // Animación específica para el hero
+  &__hero {
+    transition-duration: 0.7s;
+    transform: translateY(50px);
+
+    &.animate-in {
+      transform: translateY(0);
+      animation: heroFadeIn 0.7s ease-out forwards;
+    }
+  }
+
+  // Animación para la sección intro
+  &__intro {
+    &.animate-in {
+      transition-delay: 0.2s;
+    }
+  }
+
+  // Animaciones progresivas para las secciones
+  &__section {
+    &:first-child.animate-in {
+      transition-delay: 0.4s;
+    }
+
+    &:nth-child(2).animate-in {
+      transition-delay: 0.6s;
+    }
+
+    &:nth-child(3).animate-in {
+      transition-delay: 0.8s;
+    }
+  }
+
+  // Animación para elementos individuales dentro de listas
+  &__step-item,
+  &__benefit-item {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
+
+    &.animate-in {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    // Animaciones con delay progresivo se manejan via JavaScript
+  }
+
+  // Optimización para reducir repaints
+  &__image,
+  &__step-item::before,
+  &__benefit-check {
+    will-change: auto; // Reset will-change después de la animación
+  }
+}
+
+// ==========================
+// KEYFRAMES PARA ANIMACIONES
+// ==========================
+
+@keyframes heroFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.98);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(20px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInScale {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Reduce motion para usuarios que prefieren menos animaciones
+@media (prefers-reduced-motion: reduce) {
+  .services-template {
+    &__hero,
+    &__intro,
+    &__section,
+    &__step-item,
+    &__benefit-item {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
