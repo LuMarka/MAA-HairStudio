@@ -138,7 +138,11 @@
     font-size: 1.05rem;
     line-height: 1.7;
     color: v.color('gray4');
-    margin: 0;
+    margin: 0 0 v.$spacing-md 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
 
     @include m.tablet-up {
       font-size: 1.15rem;
@@ -148,6 +152,17 @@
     @include m.desktop-up {
       font-size: 1.25rem;
       line-height: 1.8;
+    }
+
+    &--highlight {
+      font-weight:bolder;
+      color: v.color('primary');
+      text-align: center;
+      background: linear-gradient(135deg, rgba(v.color('accent'), 0.1) 0%, rgba(v.color('primary'), 0.05) 100%);
+      padding: v.$spacing-lg;
+      border-radius: v.$borderRadius-sm;
+      border-left: 4px solid v.color('accent');
+      margin-top: v.$spacing-md;
     }
   }
 
@@ -355,6 +370,50 @@
   }
 
   // ==========================
+  // MENSAJE FINAL
+  // ==========================
+
+  &__final-message {
+    margin-top: v.$spacing-xl;
+    text-align: center;
+
+    @include m.tablet-up {
+      margin-top: v.$spacing-xxl;
+    }
+  }
+
+  &__final-title {
+    // Hereda todos los estilos de __section-title
+    // Solo agregamos estilos específicos si es necesario
+    font-style: italic;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                font-size 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: pointer;
+
+    &:hover {
+      transform: scale(1.05);
+
+      @include m.tablet-up {
+        transform: scale(1.08);
+      }
+
+      @include m.desktop-up {
+        transform: scale(1.1);
+      }
+    }
+
+    strong {
+      font-weight: 900;
+      color: v.color('green-900');
+      transition: color 0.3s ease;
+    }
+
+    &:hover strong {
+      color: v.color('green-900');
+    }
+  }
+
+  // ==========================
   // ANIMACIONES DE SCROLL
   // ==========================
 
@@ -495,7 +554,8 @@
     &__intro,
     &__section,
     &__step-item,
-    &__benefit-item {
+    &__benefit-item,
+    &__final-message {
       opacity: 1 !important;
       transform: none !important;
       transition: none !important;

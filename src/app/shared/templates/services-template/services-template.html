@@ -23,8 +23,14 @@
 
       <div class="services-template__description-section">
         <div class="services-template__description-container">
-          @if (description()) {
-            <p class="services-template__description">{{ description() }}</p>
+          @if (descriptionParagraph1()) {
+            <p class="services-template__description">{{ descriptionParagraph1() }}</p>
+          }
+          @if (descriptionParagraph2()) {
+            <p class="services-template__description">{{ descriptionParagraph2() }}</p>
+          }
+          @if (descriptionParagraph3()) {
+            <p class="services-template__description services-template__description--highlight">{{ descriptionParagraph3() }}</p>
           }
         </div>
       </div>
@@ -89,6 +95,14 @@
             </li>
           }
         </ul>
+      </section>
+    }
+
+    @if (finalMessage()) {
+      <section class="services-template__final-message">
+        <h3 class="services-template__section-title services-template__final-title">
+          "Con <strong>Beauty Scan</strong>, tu cambio empieza antes de entrar al salón."
+        </h3>
       </section>
     }
   </div>

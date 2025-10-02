@@ -22,7 +22,9 @@ export class ServicesTemplate implements AfterViewInit, OnDestroy {
 
   title = input<string>('');
   subtitle = input<string>('');
-  description = input<string>('');
+  descriptionParagraph1 = input<string>('');
+  descriptionParagraph2 = input<string>('');
+  descriptionParagraph3 = input<string>('');
   image = input<string>('');
   imageAlt = input<string>('');
 
@@ -38,11 +40,15 @@ export class ServicesTemplate implements AfterViewInit, OnDestroy {
   additionalBenefitsTitle = input<string>('');
   additionalBenefits = input<ServiceBenefit[]>([]);
 
+  // Mensaje final
+  finalMessage = input<string>('');
+
   ngAfterViewInit(): void {
     // Inicializar animaciones de scroll para elementos principales
     this.scrollAnimationService.observeElements('.services-template__hero');
     this.scrollAnimationService.observeElements('.services-template__intro');
     this.scrollAnimationService.observeElements('.services-template__section');
+    this.scrollAnimationService.observeElements('.services-template__final-message');
 
     // Inicializar animaciones para elementos de listas con delay
     this.scrollAnimationService.observeListItems('.services-template__steps-list');

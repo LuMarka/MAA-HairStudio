@@ -12,7 +12,13 @@ export class Services {
   // Datos principales del servicio
   readonly title = signal('Beauty Scan');
   readonly subtitle = signal('Diagnóstico capilar online y propuesta de servicios personalizados');
-  readonly description = signal('¿Te gustaría un diagnóstico profesional para tu cabello sin salir de casa? Con Beauty Scan, obtené una evaluación precisa y una propuesta de servicios de peluquería diseñada exclusivamente para ti, todo desde la comodidad de tu hogar.');
+  readonly descriptionParagraph1 = signal('¿Querés un diagnóstico profesional para tu cabello sin salir de casa?');
+  readonly descriptionParagraph2 = signal('Con Beauty Scan obtenés una evaluación precisa y un plan de servicios de peluquería diseñado exclusivamente para vos, todo desde la comodidad de tu hogar.');
+  readonly descriptionParagraph3 = signal('✨BEAUTY SCAN, tu diagnóstico capilar online, rápido y personalizado.✨');
+
+
+
+
   readonly image = signal('images/ale-pelu.jpg');
   readonly imageAlt = signal('Beauty Scan - Diagnóstico capilar online con María Alejandra Alaníz');
 
@@ -21,53 +27,55 @@ export class Services {
   readonly steps = signal<ServiceStep[]>([
     {
       title: 'Sesión online con una experta',
-      description: 'Conéctate por videollamada con nuestra especialista, María Alejandra Alaníz, para una consulta personalizada.'
+      description: 'Conectate por videollamada con nuestra especialista, María Alejandra Alaníz, para una consulta personalizada.'
     },
     {
       title: 'Análisis completo',
-      description: 'Durante la sesión, compartirás tus productos actuales, tu rutina de cuidado y tus objetivos o preocupaciones sobre tu cabello.'
+      description: 'Compartí tus productos actuales, tu rutina de cuidado y tus objetivos o preocupaciones sobre tu cabello.'
     },
     {
       title: 'Diagnóstico preciso',
-      description: 'Nuestra experta realizará un diagnóstico detallado, identificando áreas de mejora para optimizar la salud y apariencia de tu pelo.'
+      description: 'Recibí una evaluación detallada que identifica áreas de mejora para optimizar la salud y apariencia de tu pelo.'
     },
     {
       title: 'Propuesta personalizada',
-      description: 'A partir de este análisis, recibirás una propuesta a medida que puede incluir servicios de color y corte, y tratamientos capilares para mejorar la salud y el aspecto de tu cabello.'
+      description: `Te entregamos un plan a medida que puede incluir:
+        * Servicios de color y corte.
+        * Tratamientos capilares para potenciar la salud y el aspecto de tu cabello.`
     },
     {
-      title: 'Presupuesto y plan a tu medida',
-      description: 'Recibirás un presupuesto detallado y un plan de acción para que sepas exactamente qué esperar. Además, podrás agendar una cita en nuestro salón para realizar los servicios recomendados.'
+      title: 'Plan y presupuesto claros',
+      description: 'Vas a recibir un presupuesto detallado y un plan de acción. Además, podés agendar tu cita en nuestro salón para llevar a cabo los servicios recomendados.'
     }
   ]);
 
   // Sección: Beneficios para ti
-  readonly benefitsTitle = signal('Beneficios para ti');
+  readonly benefitsTitle = signal('Beneficios para vos');
   readonly benefits = signal<ServiceBenefit[]>([
     {
-      title: 'Conveniencia',
-      description: 'Recibe un diagnóstico profesional y una propuesta de servicios desde la comodidad de tu hogar, ahorrando tiempo de desplazamiento.'
+      title: 'Comodidad total',
+      description: 'Consultá desde tu casa, sin traslados ni pérdidas de tiempo.'
     },
     {
-      title: 'Personalización',
-      description: 'Nuestra experta se dedica a tus necesidades específicas, creando un plan de belleza único y ajustado a tus objetivos.'
+      title: 'Atención personalizada',
+      description: 'Nuestra experta crea un plan único, adaptado a tus necesidades y objetivos.'
     },
     {
-      title: 'Resultados garantizados',
-      description: 'Nuestros servicios están diseñados para mejorar significativamente la salud y apariencia de tu cabello, ofreciendo resultados que verás y sentirás.'
+      title: 'Resultados visibles',
+      description: 'Tratamientos diseñados para mejorar la salud y belleza de tu cabello.'
     },
     {
-      title: 'Transparencia total',
-      description: 'Conoce de antemano el plan y el presupuesto de tu servicio, sin sorpresas.'
+      title: 'Transparencia',
+      description: 'Conocé de antemano el plan y el presupuesto, sin sorpresas.'
     }
   ]);
 
   // Sección: Beneficios para nuestro salón
-  readonly additionalBenefitsTitle = signal('Beneficios para nuestro salón');
+  readonly additionalBenefitsTitle = signal('Beneficios para tu experiencia en el salón');
   readonly additionalBenefits = signal<ServiceBenefit[]>([
     {
-      title: 'Optimización del tiempo',
-      description: 'Al llegar al salón, ya tendremos un claro entendimiento de tus necesidades, lo que nos permite ser más eficientes y dedicar más tiempo a la ejecución de los servicios.'
+      title: 'Eficiencia',
+      description: 'Llegás con un diagnóstico previo, lo que optimiza el tiempo en tu visita.'
     },
     {
       title: 'Atención enfocada',
@@ -78,4 +86,7 @@ export class Services {
       description: 'Al llegar con un plan ya establecido, la experiencia es más fluida, personalizada y se enfoca en brindarte los resultados que buscas.'
     }
   ]);
+
+  // Frase final
+  readonly finalMessage = signal('Con Beauty Scan, tu cambio empieza antes de entrar al salón.');
 }
