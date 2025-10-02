@@ -36,14 +36,17 @@ export class GalleryTemplate implements AfterViewInit, OnDestroy {
     this.scrollAnimationService.observeElements('.gallery-template__subtitle');
 
     // Observar las cards de la galería individualmente para efecto escalonado
-    setTimeout(() => {
-      const galleryItems = document.querySelectorAll('.gallery-cards__item');
-      galleryItems.forEach((item, index) => {
-        // Agregar delay escalonado
-        (item as HTMLElement).style.transitionDelay = `${index * 0.1}s`;
-        this.scrollAnimationService.observeElements('.gallery-cards__item');
-      });
-    }, 200);
+    // Solo ejecutar en el browser, no en SSR
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      setTimeout(() => {
+        const galleryItems = document.querySelectorAll('.gallery-cards__item');
+        galleryItems.forEach((item, index) => {
+          // Agregar delay escalonado
+          (item as HTMLElement).style.transitionDelay = `${index * 0.1}s`;
+          this.scrollAnimationService.observeElements('.gallery-cards__item');
+        });
+      }, 200);
+    }
   }
 
   ngOnDestroy(): void {
