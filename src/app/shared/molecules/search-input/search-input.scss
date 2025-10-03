@@ -65,12 +65,13 @@
     cursor: pointer;
     transition: all vars.$transitionDuration vars.$transitionEasing;
     min-width: 44px; // Mínimo para accesibilidad táctil
-    height: 44px;
+    height: 40px;
+    border-radius: 0 10px 10px 0;
 
     @include mixins.tablet-up() {
       padding: vars.$spacing-md;
       min-width: 48px;
-      height: 48px;
+      height: 54px;
     }
 
     &:hover:not(:disabled) {
