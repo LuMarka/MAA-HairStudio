@@ -4,11 +4,14 @@
       class="location-video__media"
       [attr.src]="src()"
       autoplay
+      [autoplay]="true"
       muted
+      [muted]="true"
       loop
       playsinline
       preload="metadata"
       [attr.title]="alt()"
+      #videoRef
     >
       Tu navegador no soporta videos HTML5.
     </video>
