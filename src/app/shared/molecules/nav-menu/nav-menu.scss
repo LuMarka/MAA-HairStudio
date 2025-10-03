@@ -9,29 +9,85 @@
   position: absolute;
   top: 100%;
   left: 0;
-  min-width: 520px;
   background: #f5f5f5de;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.13);
   border-radius: v.$borderRadius-lg;
   display: flex;
-  gap: 3rem;
-  padding: 2.5rem 2.5rem 2rem 2.5rem;
   z-index: 100;
   margin-top: 0.5rem;
   animation: fadeInMegaMenu 0.18s ease;
+  backdrop-filter: blur(8px);
+
+  // Mobile-first: pantallas pequeñas
+  width: calc(100vw - 2rem);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: v.$spacing-lg;
+  flex-direction: column;
+  gap: v.$spacing-lg;
+  max-width: 90vw;
+
+  @include m.tablet-up() {
+    width: auto;
+    min-width: 420px;
+    max-width: 520px;
+    left: 0;
+    transform: none;
+    padding: 2rem;
+    flex-direction: row;
+    gap: 2.5rem;
+  }
+
+  @include m.desktop-up() {
+    min-width: 520px;
+    padding: 2.5rem 2.5rem 2rem 2.5rem;
+    gap: 3rem;
+  }
+
+  // Prevenir que se salga del viewport en desktop
+  @include m.desktop-up() {
+    &[data-align="right"] {
+      right: 0;
+      left: auto;
+    }
+  }
 }
 
 .nav-menu__mega-menu-col {
-  min-width: 180px;
+  flex: 1;
+  min-width: 0;
+
+  @include m.tablet-up() {
+    min-width: 140px;
+  }
+
+  @include m.desktop-up() {
+    min-width: 180px;
+  }
 }
 
 .nav-menu__mega-menu-title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 900;
-  letter-spacing: 1px;
-  margin-bottom: 1.1rem;
+  letter-spacing: 0.8px;
+  margin-bottom: v.$spacing-md;
   color: v.color('primary');
   text-transform: uppercase;
+  padding-bottom: v.$spacing-xs;
+  border-bottom: 1px solid rgba(v.color('primary'), 0.2);
+
+  @include m.tablet-up() {
+    font-size: 1.05rem;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  @include m.desktop-up() {
+    font-size: 1.1rem;
+    margin-bottom: 1.1rem;
+  }
 }
 
 .nav-menu__mega-menu-list {
@@ -40,28 +96,110 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
-}
+  gap: v.$spacing-sm;
 
-.nav-menu__mega-menu-list li a {
-  color: v.color('gray6');
-  font-size: 1rem;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.18s;
-  cursor: pointer;
-}
-.nav-menu__mega-menu-list li a:hover {
-  color: v.color('accent');
-  text-decoration: underline;
+  @include m.tablet-up() {
+    gap: 0.6rem;
+  }
+
+  @include m.desktop-up() {
+    gap: 0.7rem;
+  }
+
+  li a {
+    color: v.color('gray6');
+    font-size: 0.9rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.18s;
+    cursor: pointer;
+    display: block;
+    padding: v.$spacing-xs 0;
+    border-radius: v.$borderRadius-sm;
+
+    @include m.tablet-up() {
+      font-size: 0.95rem;
+      padding: v.$spacing-xs v.$spacing-sm;
+    }
+
+    @include m.desktop-up() {
+      font-size: 1rem;
+      padding: v.$spacing-xs 0;
+    }
+
+    &:hover {
+      color: v.color('accent');
+      text-decoration: underline;
+
+      @include m.mobile-only() {
+        background-color: rgba(v.color('accent'), 0.08);
+        text-decoration: none;
+        transform: translateX(4px);
+      }
+    }
+  }
 }
 
 @keyframes fadeInMegaMenu {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+    transform: translateX(-50%) translateY(10px);
+
+    @include m.tablet-up() {
+      transform: translateY(10px);
+    }
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(-50%) translateY(0);
+
+    @include m.tablet-up() {
+      transform: translateY(0);
+    }
+  }
 }
 
+// Overlay para móvil (opcional)
+.nav-menu__mega-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 99;
+  backdrop-filter: blur(2px);
 
+  @include m.tablet-up() {
+    display: none;
+  }
+}
+
+// Estados del mega-menú
+.nav-menu__item--has-mega-menu {
+  &.nav-menu__item--mega-menu-open {
+    .nav-menu__mega-menu {
+      display: flex;
+    }
+
+    .nav-menu__mega-menu-overlay {
+      display: block;
+
+      @include m.tablet-up() {
+        display: none;
+      }
+    }
+  }
+}
+
+// Mejoras de accesibilidad
+@media (prefers-reduced-motion: reduce) {
+  .nav-menu__mega-menu {
+    animation: none;
+  }
+}
+
+// Resto del código existente se mantiene igual...
 .nav-menu {
   &__list {
     display: flex;
@@ -98,7 +236,6 @@
     @include m.tablet-up() {
       font-size: v.$font-size-text;
       padding: v.$spacing-sm;
-
     }
 
     // Estados hover y focus
