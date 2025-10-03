@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ContactTemplate } from './contact-template';
+import { LocationVideo } from '../../molecules/location-video/location-video';
 
 describe('ContactTemplate', () => {
   let component: ContactTemplate;
@@ -8,7 +9,7 @@ describe('ContactTemplate', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ContactTemplate]
+      imports: [ContactTemplate, LocationVideo]
     })
     .compileComponents();
 

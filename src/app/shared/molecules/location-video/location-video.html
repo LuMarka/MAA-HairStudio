@@ -1,0 +1,29 @@
+<section class="location-video" [attr.aria-label]="alt()">
+  <div class="location-video__container">
+    <video
+      class="location-video__media"
+      [attr.src]="src()"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      [attr.title]="alt()"
+    >
+      Tu navegador no soporta videos HTML5.
+    </video>
+
+    @if (title() || subtitle()) {
+      <div class="location-video__overlay" aria-hidden="true">
+        <div class="location-video__content">
+          @if (title()) {
+            <h2 class="location-video__title">{{ title() }}</h2>
+          }
+          @if (subtitle()) {
+            <p class="location-video__subtitle">{{ subtitle() }}</p>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</section>

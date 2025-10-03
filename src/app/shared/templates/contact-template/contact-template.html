@@ -1,8 +1,17 @@
 <div class="contact-template page-with-navigation">
-  <div class="contact-template__hero">
+    <div class="contact-template__hero">
     <h1 class="contact-template__title">{{ pageTitle() }}</h1>
     <p class="contact-template__subtitle">{{ pageSubtitle() }}</p>
   </div>
+  <div class="contact-template__video-section">
+    <app-location-video
+      [src]="videoSrc()"
+      [alt]="videoAlt()"
+      [title]="videoTitle()"
+      [subtitle]="videoSubtitle()"
+    />
+  </div>
+
 
   <div class="contact-template__content">
     <div class="contact-template__form-section">
@@ -23,4 +32,5 @@
     </div>
   </div>
 </div>
+
 

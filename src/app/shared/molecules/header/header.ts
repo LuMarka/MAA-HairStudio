@@ -65,14 +65,14 @@ export class Header implements OnDestroy {
       title: 'Kerastase Gloss',
       subtitle: 'Linea completa para el cuidado del cabello'
     },
-    {
+  /*   {
       type: 'video',
       src: '/videos/ubicacion.mp4',
       poster: '/images/pelu-productos.jpg', // Usando imagen existente como poster
       alt: 'video ubicacion',
       title: 'Aquí estamos',
       subtitle: 'Vení a conocernos'
-    }
+    } */
   ]);
 
   readonly trackTransform = computed(() => -this.activeIndex() * 100);

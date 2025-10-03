@@ -2,10 +2,11 @@ import { ChangeDetectionStrategy, Component, input, output, inject, AfterViewIni
 import { ContactForm, type ContactFormData, type ServiceOption } from '../../molecules/contact-form/contact-form';
 import { ContactMap } from '../../molecules/contact-map/contact-map';
 import { ScrollAnimationService } from '../../../core/services/scroll-animation.service';
+import { LocationVideo } from "../../molecules/location-video/location-video";
 
 @Component({
   selector: 'app-contact-template',
-  imports: [ContactForm, ContactMap],
+  imports: [ContactForm, ContactMap, LocationVideo],
   templateUrl: './contact-template.html',
   styleUrl: './contact-template.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -25,6 +26,12 @@ export class ContactTemplate implements AfterViewInit, OnDestroy {
   mapTitle = input<string>('Nuestra ubicación');
   address = input<string>('');
   mapUrl = input<string>('');
+
+  // Video section inputs (can be overridden by page that uses this template)
+  videoSrc = input<string>('/videos/ubicacion.mp4');
+  videoAlt = input<string>('Video ubicación');
+  videoTitle = input<string>('Aquí estamos');
+  videoSubtitle = input<string>('Vení a conocernos');
 
   // Outputs
   formSubmitted = output<ContactFormData>();

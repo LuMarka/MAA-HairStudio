@@ -1,0 +1,48 @@
+.location-video__content {
+	position: relative;
+	max-width: 90%;
+	padding: 1rem;
+	border-radius: 8px;
+	background: rgba(0, 0, 0, 0.35);
+	backdrop-filter: blur(2px);
+}
+/* Full-width responsive video with centered overlay text */
+.location-video {
+	width: 100%;
+}
+
+.location-video__container {
+	position: relative;
+}
+
+.location-video__media {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 16 / 9;
+	object-fit: cover;
+}
+
+.location-video__overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 1rem;
+	color: #fff;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.location-video__title {
+	font-size: clamp(1.25rem, 2vw + 1rem, 2.5rem);
+	font-weight: 600;
+	margin: 0 0 0.5rem 0;
+}
+
+.location-video__subtitle {
+	font-size: clamp(0.9rem, 1.2vw + 0.75rem, 1.25rem);
+	margin: 0;
+}

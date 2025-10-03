@@ -92,6 +92,16 @@
     }
   }
 
+  &__video-section {
+    margin: v.$spacing-xl auto;
+    padding: 0 v.$spacing-sm;
+
+    @include m.tablet-up {
+      padding: 0 v.$spacing-md;
+      max-width: 1200px;
+    }
+  }
+
   // ==========================
   // ANIMACIONES DE SCROLL
   // ==========================
