@@ -1,6 +1,90 @@
 <section class="gallery-template">
   <h2 class="gallery-template__title">Nuestros Trabajos</h2>
   <p class="gallery-template__subtitle">Momentos y estilos capturados en nuestro estudio</p>
-  <app-gallery-cards [images]="imagenesParaLaGaleria()" />
+
+  <div class="gallery-template__content">
+    @if (hasImages()) {
+      <!-- Contenedor con flechas laterales -->
+      <div class="gallery-template__gallery-container">
+        <!-- Flecha izquierda -->
+        <button
+          type="button"
+          class="gallery-template__nav-button gallery-template__nav-button--left"
+          (click)="previousPage()"
+          [disabled]="currentPage() === 0"
+          aria-label="Página anterior"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          </svg>
+        </button>
+
+        <!-- Grid de 4 imágenes -->
+        <div class="gallery-template__grid">
+          @for (image of currentPageImages(); track $index; let i = $index) {
+            <div class="gallery-template__grid-item">
+              <app-gallery-image
+                [currentImage]="image"
+                [currentIndex]="i"
+                [totalImages]="currentPageImages().length"
+                (click)="openModal(image)"
+              />
+            </div>
+          }
+        </div>
+
+        <!-- Flecha derecha -->
+        <button
+          type="button"
+          class="gallery-template__nav-button gallery-template__nav-button--right"
+          (click)="nextPage()"
+          [disabled]="currentPage() >= totalPages() - 1"
+          aria-label="Página siguiente"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Indicador de página debajo -->
+      <div class="gallery-template__page-indicator">
+        <span class="gallery-template__page-info">
+          {{ currentPage() + 1 }} / {{ totalPages() }}
+        </span>
+      </div>
+
+    } @else {
+      <div class="gallery-template__empty">No hay imágenes para mostrar</div>
+    }
+  </div>
+
+  <!-- Modal para imagen ampliada -->
+  @if (modalImage()) {
+    <div class="gallery-template__modal" (click)="closeModal()">
+      <div class="gallery-template__modal-content" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="gallery-template__modal-close"
+          (click)="closeModal()"
+          aria-label="Cerrar modal"
+        >
+          ✕
+        </button>
+
+        <img
+          [src]="modalImage()!.src"
+          [alt]="modalImage()!.alt"
+          class="gallery-template__modal-image"
+        />
+
+        <div class="gallery-template__modal-info">
+          <h3 class="gallery-template__modal-title">
+            {{ modalImage()!.caption || modalImage()!.alt }}
+          </h3>
+        </div>
+      </div>
+    </div>
+  }
 </section>
 

@@ -3,15 +3,27 @@
 @use '../../../../assets/styles/mixins' as m;
 
 .gallery-template {
-  min-height: 100vh;
-  // Centra todo el contenido del template
+  min-height: auto; // evitar espacio vacío forzado en mobile/tablet
+  display: flex;
+  flex-direction: column;
   text-align: center;
-  // Ajustado para coincidir con la página de contacto y subir el título
-  padding-top: 160px;
-  padding-bottom: v.$spacing-xl;
-  padding-left: v.$spacing-md;
-  padding-right: v.$spacing-md;
+  // Asegurar separación con la navbar fija
+  padding: 0 v.$spacing-md; // controlar top/bottom explícitamente
+  padding-top: 120px; // espacio bajo la nav en móviles
+  padding-bottom: 24px; // poco espacio bajo el grid en móviles
   background: linear-gradient(135deg, v.color('bg-light') 0%, v.color('white1') 100%);
+
+  @include m.tablet-up {
+    padding: 0 v.$spacing-lg; // controlar top/bottom explícitamente
+    padding-top: 140px; // más espacio bajo nav en tablet
+    padding-bottom: 56px; // reducir espacio en tablet
+  }
+
+  @include m.desktop-up {
+    padding: 100px v.$spacing-xl;
+    padding-bottom: 100px; // mantener margen en desktop
+    min-height: 100vh;
+  }
 
 
 &__title {
@@ -38,16 +50,260 @@
     line-height: 1.5;
     margin: 0 auto;
     max-width: 90%;
+    margin-bottom: v.$spacing-md; // espacio entre subtítulo y grilla en móviles
 
     @include m.tablet-up {
       font-size: 1.15rem;
       max-width: 700px;
+      margin-bottom: v.$spacing-lg; // un poco más de espacio en tablet
     }
 
     @include m.desktop-up {
       font-size: 1.25rem;
       line-height: 1.6;
       padding-bottom: 30px;
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 90%;
+    margin: 0 auto;
+
+    @include m.tablet-up {
+      max-width: 800px;
+    }
+
+    @include m.desktop-up {
+      max-width: 1200px;
+    }
+  }
+
+  &__gallery-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: v.$spacing-md;
+    margin-bottom: v.$spacing-md; // menos margen bajo el grid en mobile
+
+    @include m.desktop-up {
+      gap: v.$spacing-xl;
+      margin-bottom: v.$spacing-lg;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr; // móvil: 1 columna
+    gap: v.$spacing-xs; // menos separación en mobile
+    flex: 1;
+
+    @include m.tablet-up {
+      grid-template-columns: repeat(2, 1fr); // tablet y arriba: 2 columnas
+      gap: v.$spacing-sm;
+    }
+
+    @include m.desktop-up {
+      gap: v.$spacing-sm; // compacto en desktop para ganar ancho visual
+    }
+  }
+
+  &__grid-item {
+    position: relative;
+    aspect-ratio: 16/9; // Aún más ancho que alto (panorámico)
+    // sin altura fija: el alto lo determina el ancho por el aspect-ratio
+    overflow: hidden;
+    border-radius: 16px; // Border radius en el contenedor
+
+    @include m.tablet-up {
+      border-radius: 20px;
+    }
+
+    @include m.desktop-up {
+      border-radius: 24px;
+    }
+
+    // Hacer que el componente gallery-image ocupe todo el espacio
+    :global(app-gallery-image) {
+      height: 100%;
+      width: 100%;
+      display: block;
+    }
+  }
+
+  &__page-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: v.$spacing-sm; // menos espacio entre grid e indicador
+
+    @include m.desktop-up {
+      margin-top: v.$spacing-md;
+    }
+  }
+
+  &__nav-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border: 2px solid v.color('primary');
+    background: v.color('white1');
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: v.color('primary');
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+
+    @include m.tablet-up {
+      width: 56px;
+      height: 56px;
+    }
+
+    @include m.desktop-up {
+      width: 64px;
+      height: 64px;
+    }
+
+    &--left {
+      @include m.desktop-up {
+        margin-right: v.$spacing-lg;
+      }
+    }
+
+    &--right {
+      @include m.desktop-up {
+        margin-left: v.$spacing-lg;
+      }
+    }
+
+    &:hover:not(:disabled) {
+      background: v.color('primary');
+      color: v.color('white1');
+      transform: scale(1.1);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+
+      &:hover {
+        transform: translateY(-50%);
+
+        @media (max-width: 1023px) {
+          transform: none;
+        }
+      }
+    }
+
+    svg {
+      width: 24px;
+      height: 24px;
+
+      @include m.desktop-up {
+        width: 28px;
+        height: 28px;
+      }
+    }
+  }
+
+  &__page-info {
+    font-size: 0.95rem;
+    color: v.color('gray4');
+    font-weight: 600;
+    text-align: center;
+
+    @include m.tablet-up {
+      font-size: 1.1rem;
+    }
+
+    @include m.desktop-up {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__empty {
+    text-align: center;
+    padding: v.$spacing-lg;
+    color: v.color('gray5');
+    font-style: italic;
+  }
+
+  // ==========================
+  // MODAL STYLES
+  // ==========================
+
+  &__modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: v.$spacing-md;
+  }
+
+  &__modal-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    background: v.color('white1');
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  &__modal-image {
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
+    display: block;
+  }
+
+  &__modal-title {
+    padding: v.$spacing-md;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: v.color('primary');
+    text-align: center;
+    border-top: 1px solid v.color('gray2');
+  }
+
+  &__modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: v.color('primary');
+
+    &:hover {
+      background: v.color('white1');
+      transform: scale(1.1);
+    }
+
+    svg {
+      width: 20px;
+      height: 20px;
     }
   }
 
@@ -83,21 +339,40 @@
       transition-delay: 0.2s;
     }
   }
-}
 
-// Estilos para las animaciones de las gallery cards
-:global(.gallery-cards__item) {
-  opacity: 0;
-  transform: translateY(30px) scale(0.95);
-  transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: opacity, transform;
+  // Animaciones para la grilla
+  &__grid {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
 
-  &.animate-in {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    &.animate-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-}
+
+  &__grid-item {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
+
+    &.animate-in {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    // Delays escalonados para cada item
+    &:nth-child(1) { transition-delay: 0.1s; }
+    &:nth-child(2) { transition-delay: 0.2s; }
+    &:nth-child(3) { transition-delay: 0.3s; }
+    &:nth-child(4) { transition-delay: 0.4s; }
+  }
+
 
 // ==========================
 // KEYFRAMES PARA ANIMACIONES
@@ -122,18 +397,28 @@
 @media (prefers-reduced-motion: reduce) {
   .gallery-template {
     &__title,
-    &__subtitle {
+    &__subtitle,
+    &__grid,
+    &__grid-item {
       opacity: 1 !important;
       transform: none !important;
       transition: none !important;
       animation: none !important;
     }
-  }
 
-  :global(.gallery-cards__item) {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
+    &__grid-item {
+      &:hover {
+        transform: none !important;
+      }
+    }
+
+    &__grid-image {
+      transition: none !important;
+
+      .gallery-template__grid-item:hover & {
+        transform: none !important;
+      }
+    }
   }
 }
-
+}
