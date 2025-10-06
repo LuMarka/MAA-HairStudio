@@ -6,6 +6,8 @@
 	background: linear-gradient(135deg, v.color('bg-light') 0%, v.color('white1') 100%);
 	padding-top: 100px;
 	padding-bottom: v.$spacing-xl;
+  padding: v.$padding-box;
+
 
 	@include m.tablet-up {
 		padding-top: 110px;
