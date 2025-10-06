@@ -93,8 +93,10 @@
       padding: v.$spacing-sm v.$spacing-lg;
     }
 
-    @include m.mobile-only {
-      min-height: 50px;
+    @include m.mobile {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
     }
   }
 

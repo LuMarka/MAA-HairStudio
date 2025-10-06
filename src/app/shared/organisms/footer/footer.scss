@@ -1,8 +1,10 @@
 @use '../../../../assets/styles/variables' as v;
 @use '../../../../assets/styles/mixins' as m;
+@use 'sass:color';
 
 .footer {
-  background: linear-gradient(135deg, v.color('primary') 0%, darken(v.color('primary'), 10%) 100%);
+  // Propiedades principales primero
+  background: linear-gradient(135deg, v.color('primary') 0%, color.adjust(v.color('primary'), $lightness: -10%) 100%);
   color: v.color('white1');
   padding: v.$spacing-xl 0 v.$spacing-md;
   margin-top: auto;

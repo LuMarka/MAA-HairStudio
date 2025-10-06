@@ -5,7 +5,7 @@
 .layout {
   &__main {
     margin-top: 130px; // Space for navbar + search
-    padding: v.$spacing-md;
+   /*  padding: v.$spacing-md; */
 
     @include m.mobile-only {
       margin-top: 110px; // 60px + 50px for mobile
