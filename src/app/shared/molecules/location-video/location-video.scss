@@ -1,3 +1,6 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
 .location-video__content {
 	position: relative;
 	max-width: 90%;
@@ -21,6 +24,7 @@
 	height: auto;
 	aspect-ratio: 16 / 9;
 	object-fit: cover;
+  border-radius: v.$borderRadius;
 }
 
 .location-video__overlay {
