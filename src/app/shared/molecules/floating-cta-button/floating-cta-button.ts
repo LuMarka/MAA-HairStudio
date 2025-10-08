@@ -2,11 +2,11 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 
 @Component({
   selector: 'app-floating-cta-button',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
   templateUrl: './floating-cta-button.html',
-  styleUrl: './floating-cta-button.scss',
-
+  styleUrl: './floating-cta-button.scss'
 })
 export class FloatingCtaButton {
   readonly buttonLabel = 'Reservar turno por WhatsApp';

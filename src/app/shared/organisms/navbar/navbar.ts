@@ -6,6 +6,7 @@ import { MenuToggle } from "../../molecules/menu-toggle/menu-toggle";
 
 @Component({
   selector: 'app-navbar',
+  standalone: true,
   imports: [Logo, NavMenu, MenuToggle],
   templateUrl: './navbar.html',
   styleUrl: './navbar.scss'

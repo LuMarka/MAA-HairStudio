@@ -1,0 +1,90 @@
+<section class="auth auth--login">
+  <div class="auth__card">
+    <h1 class="auth__title">Iniciar sesión</h1>
+    
+    <form [formGroup]="form" (ngSubmit)="submit()" class="auth__form">
+      <!-- Email field -->
+      <div class="auth__form-group">
+        <label class="auth__label" for="email">Correo electrónico</label>
+        <input 
+          id="email" 
+          type="email" 
+          formControlName="email" 
+          class="auth__input" 
+          [class.auth__input--error]="f.email?.touched && f.email?.invalid"
+          placeholder="ejemplo@correo.com"
+        />
+        @if (f.email?.touched && f.email?.invalid) {
+          <p class="auth__error">
+            @if (f.email?.errors?.['required']) {
+              El correo es requerido.
+            } @else if (f.email?.errors?.['email']) {
+              Ingresa un correo válido.
+            }
+          </p>
+        }
+      </div>
+      
+      <!-- Password field -->
+      <div class="auth__form-group">
+        <label class="auth__label" for="password">Contraseña</label>
+        <div class="auth__password-wrapper">
+          <input 
+            id="password" 
+            [type]="passwordVisible() ? 'text' : 'password'" 
+            formControlName="password" 
+            class="auth__input" 
+            [class.auth__input--error]="f.password?.touched && f.password?.invalid"
+            placeholder="Contraseña"
+          />
+          <button 
+            type="button" 
+            class="auth__toggle" 
+            (click)="togglePasswordVisibility()" 
+            aria-label="Mostrar contraseña"
+          >
+            👁️
+          </button>
+        </div>
+        @if (f.password?.touched && f.password?.invalid) {
+          <p class="auth__error">
+            @if (f.password?.errors?.['required']) {
+              La contraseña es requerida.
+            } @else if (f.password?.errors?.['minlength']) {
+              Mínimo 6 caracteres.
+            }
+          </p>
+        }
+      </div>
+      
+      <!-- Remember me checkbox -->
+      <div class="auth__form-group auth__checkbox-wrapper">
+        <label class="auth__checkbox">
+          <input type="checkbox" formControlName="remember" />
+          <span class="auth__checkbox-label">Recordarme</span>
+        </label>
+      </div>
+      
+      <!-- Error message -->
+      @if (error) {
+        <div class="auth__server-error">
+          {{ error }}
+        </div>
+      }
+      
+      <!-- Submit button -->
+      <button 
+        class="auth__btn auth__btn--primary" 
+        type="submit" 
+        [disabled]="loading"
+      >
+        {{ loading ? 'Cargando...' : 'Entrar' }}
+      </button>
+      
+      <!-- Registration link -->
+      <p class="auth__footer">
+        ¿No tienes cuenta? <a (click)="onRegisterClick()" class="auth__link">Regístrate</a>
+      </p>
+    </form>
+  </div>
+</section>

@@ -3,6 +3,7 @@ import { LoginTemplate } from "../../shared/templates/login-template/login-templ
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [LoginTemplate],
   templateUrl: './login.html',
   styleUrl: './login.scss'

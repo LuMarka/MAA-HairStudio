@@ -1,0 +1,36 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.login-template {
+  display: flex;
+  align-items: flex-start; // Align to top instead of center
+  justify-content: center;
+  min-height: 50vh;
+  padding: v.$spacing-lg;
+  padding-top: 1.5rem; // Remove top padding as we've increased margin in layout
+
+  @media screen and (max-width: v.$tablet) {
+    padding: v.$spacing-md; // Less padding on smaller screens
+  }
+   @include m.mobile-only {
+    padding-top: 1rem; // Less padding on mobile
+  }
+
+  &__container {
+    width: 80%;
+    max-width: 480px;
+    margin: 0 auto;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    background-color: v.color('surface');
+
+    @media screen and (max-width: v.$mobile) {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); // Lighter shadow on mobile
+    }
+  }
+}
+
+
+
+
+

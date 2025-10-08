@@ -1,6 +1,13 @@
-<div>
-  <main>
-    <router-outlet />
+<div class="layout-login">
+  <header class="layout-login__header">
+    <app-navbar/>
+    <app-search/>
+  </header>
+  <main class="layout-login__main">
+    <router-outlet></router-outlet>
   </main>
-  <app-footer />
+  <app-footer class="layout-login__footer"/>
+  <app-floating-cta-button />
 </div>
+
+

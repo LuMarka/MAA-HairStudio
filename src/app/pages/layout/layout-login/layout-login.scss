@@ -1,5 +1,37 @@
-div {
-  display: grid;
-  min-height: 100dvh;
-  grid-template-rows: 1fr auto;
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.layout-login {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(135deg, v.color('bg-light') 0%, v.color('white1') 100%);
+
+  &__header {
+    position: fixed; // Fixed position to ensure it stays at top
+    top: 0;
+    left: 0;
+    z-index: 100;
+    width: 100%;
+  }
+
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 250px; // Increased space for navbar + search on desktop
+    padding-bottom: 2rem;
+
+    @media screen and (max-width: v.$tablet) {
+      margin-top: 210px; // More space for smaller screens
+    }
+
+    @media screen and (max-width: v.$mobile) {
+      margin-top: 180px; // Adjusted for smallest screens
+    }
+  }
+
+  &__footer {
+    margin-top: auto;
+  }
 }

@@ -8,6 +8,7 @@ import { SearchSuggestion } from '../../../core/models/interfaces/SearchSuggesti
 
 @Component({
   selector: 'app-search',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [SearchBar, CommonModule],
   templateUrl: './search.html',
