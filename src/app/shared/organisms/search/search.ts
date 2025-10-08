@@ -1,10 +1,10 @@
-
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SearchBar } from '../search-bar/search-bar';
 import { SearchResult } from '../../../core/models/interfaces/SearchResult.interface';
 import { SearchSuggestion } from '../../../core/models/interfaces/SearchSuggestion.interface';
+
 
 @Component({
   selector: 'app-search',
@@ -14,24 +14,46 @@ import { SearchSuggestion } from '../../../core/models/interfaces/SearchSuggesti
   templateUrl: './search.html',
   styleUrl: './search.scss'
 })
+
 export class Search {
-  readonly whatsappIcon = 'bi bi-whatsapp';
-  // Para el template: texto + flecha + ícono WhatsApp
-  readonly comunicateLabel = 'Comuniquémonos';
-  readonly comunicateArrow = '→';
   private readonly router = inject(Router);
-  private readonly whatsappNumber = '5493534015655'; // Replace with your actual number
-  private readonly whatsappMessage = 'Hola! Quisiera agendar un turno'; // Customize message
+  //private readonly whatsappNumber = '5493534015655';
+  private readonly whatsappNumber = '5492616984285';
+  private readonly whatsappMessage = 'Hola! Quisiera agendar un turno';
 
   searchSuggestions = signal<SearchSuggestion[]>([]);
   isLoading = signal<boolean>(false);
 
-  readonly icons = {
+   readonly icons = {
     favorites: '❤️',
     user: '👤',
     cart: '🛍️',
-    calendar: '📅'
+    whatsapp: '📞'
   };
+
+  // acciones visibles en la barra (derecha)
+  readonly actions: { icon: string; label: string; action: () => void }[] = [
+    {
+      icon: this.icons.favorites,
+      label: 'Favoritos',
+      action: () => this.router.navigate(['/wishlist'])
+    },
+    {
+      icon: this.icons.user,
+      label: 'Mi Cuenta',
+      action: () => this.router.navigate(['/login'])
+    },
+    {
+      icon: this.icons.cart,
+      label: 'Carrito',
+      action: () => this.router.navigate(['/cart'])
+    },
+    {
+      icon: this.icons.whatsapp,
+      label: 'Agendar (WhatsApp)',
+      action: () => this.openWhatsApp()
+    }
+  ];
 
   // readonly actions = [
   //   {
@@ -55,7 +77,6 @@ export class Search {
   //     action: () => this.openWhatsApp()
   //   }
   // ];
-
 
 
 

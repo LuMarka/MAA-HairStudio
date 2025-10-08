@@ -10,6 +10,7 @@
   border-radius: vars.$borderRadius;
   transition: all vars.$transitionDuration vars.$transitionEasing;
   overflow: hidden;
+   max-height:40px;
 
   // Estados hover y focus
   &:hover {
@@ -44,6 +45,7 @@
 
       @include mixins.tablet-up() {
         font-size: vars.$font-size-text-mobile;
+
       }
     }
 
