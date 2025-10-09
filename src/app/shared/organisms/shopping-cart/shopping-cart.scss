@@ -40,6 +40,11 @@
     margin-bottom: v.$spacing-lg;
     padding-bottom: v.$spacing-md;
     border-bottom: 1px solid v.color('gray2');
+    
+    @include m.mobile{
+       padding-top:v.$spacing-xxl;
+
+    }
   }
 
   &__title {
