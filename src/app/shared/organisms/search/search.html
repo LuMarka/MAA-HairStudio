@@ -15,11 +15,15 @@
     <button
       type="button"
       class="search__action"
+      [class.search__action--cart]="action.label === 'Carrito'"
       (click)="action.action()"
       [attr.aria-label]="action.label"
       [title]="action.label"
     >
       <span class="search__action-icon">{{ action.icon }}</span>
+      @if (action.label === 'Carrito' && cartItemCount() > 0) {
+        <span class="search__action-badge">{{ cartItemCount() }}</span>
+      }
     </button>
   }
 </div>

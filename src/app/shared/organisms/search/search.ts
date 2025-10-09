@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { SearchBar } from '../search-bar/search-bar';
 import { SearchResult } from '../../../core/models/interfaces/SearchResult.interface';
 import { SearchSuggestion } from '../../../core/models/interfaces/SearchSuggestion.interface';
+import { CartService } from '../../../core/services/cart.service';
 
 
 @Component({
@@ -17,9 +18,13 @@ import { SearchSuggestion } from '../../../core/models/interfaces/SearchSuggesti
 
 export class Search {
   private readonly router = inject(Router);
+  private readonly cartService = inject(CartService);
   //private readonly whatsappNumber = '5493534015655';
   private readonly whatsappNumber = '5492616984285';
   private readonly whatsappMessage = 'Hola! Quisiera agendar un turno';
+
+  // Contador del carrito
+  cartItemCount = this.cartService.itemCount;
 
   searchSuggestions = signal<SearchSuggestion[]>([]);
   isLoading = signal<boolean>(false);

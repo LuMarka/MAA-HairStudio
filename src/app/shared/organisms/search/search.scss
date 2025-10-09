@@ -81,6 +81,7 @@
     border-radius: v.$borderRadius-sm;
     color: v.color('primary');
     transition: all v.$transitionDuration v.$transitionEasing;
+    position: relative;
 
     &:hover {
       color: v.color('accent');
@@ -92,6 +93,10 @@
     &:focus-visible {
       outline: 2px solid v.color('accent');
       outline-offset: 2px;
+    }
+
+    &--cart {
+      position: relative;
     }
 
     @include m.tablet-up {
@@ -108,6 +113,45 @@
     }
   }
 
+  &__action-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: v.color('secondary');
+    color: v.color('text-light');
+    font-size: 0.625rem;
+    font-weight: 700;
+    min-width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid v.color('white1');
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    animation: pulse-badge 0.3s ease-out;
+
+    @include m.tablet-up {
+      top: -3px;
+      right: -3px;
+      font-size: 0.75rem;
+      min-width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+}
+
+// Animación para el badge del carrito
+@keyframes pulse-badge {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 

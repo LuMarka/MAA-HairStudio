@@ -1,0 +1,186 @@
+<!-- Carrito de Compras -->
+<section class="cart" [class.cart--empty]="isEmpty()">
+  <!-- Header del carrito -->
+  <header class="cart__header">
+    <h1 class="cart__title">Mi Carrito</h1>
+    @if (!isEmpty()) {
+      <span class="cart__count">{{ itemCount() }} {{ itemCount() === 1 ? 'producto' : 'productos' }}</span>
+    }
+  </header>
+
+  <!-- Estado vacío -->
+  @if (isEmpty()) {
+    <div class="cart__empty">
+      <div class="cart__empty-icon">🛒</div>
+      <h2 class="cart__empty-title">Tu carrito está vacío</h2>
+      <p class="cart__empty-text">Agrega productos para comenzar tu compra</p>
+      <button
+        class="cart__btn cart__btn--primary"
+        (click)="continueShopping()"
+        type="button"
+      >
+        Explorar productos
+      </button>
+    </div>
+  } @else {
+    <!-- Lista de productos -->
+    <div class="cart__content">
+      <div class="cart__items">
+        @for (item of cartItems(); track item.id) {
+          <article class="cart-item" [class.cart-item--out-of-stock]="!item.inStock">
+            <!-- Imagen del producto -->
+            <div class="cart-item__image-container">
+              <img
+                class="cart-item__image"
+                [src]="item.image"
+                [alt]="item.name"
+                loading="lazy"
+              />
+              @if (!item.inStock) {
+                <div class="cart-item__stock-badge">Sin stock</div>
+              }
+            </div>
+
+            <!-- Información del producto -->
+            <div class="cart-item__info">
+              <div class="cart-item__details">
+                <h3 class="cart-item__name">{{ item.name }}</h3>
+                <p class="cart-item__brand">{{ item.brand }}</p>
+                @if (item.description) {
+                  <p class="cart-item__description">{{ item.description }}</p>
+                }
+              </div>
+
+              <!-- Controles de cantidad y precio -->
+              <div class="cart-item__controls">
+                <!-- Precio unitario (pantallas grandes) -->
+                <div class="cart-item__pricing">
+                  @if (item.originalPrice && item.originalPrice > item.price) {
+                    <span class="cart-item__original-price">{{ formatPrice(item.originalPrice) }}</span>
+                  }
+                  <span class="cart-item__price">{{ formatPrice(item.price) }}</span>
+                </div>
+
+                <!-- Fila móvil: Precio izq, contador centro, total derecha -->
+                <div class="cart-item__bottom-row">
+                  <!-- Precio unitario para móvil (izquierda) -->
+                  <div class="cart-item__price-mobile">
+                    @if (item.originalPrice && item.originalPrice > item.price) {
+                      <span class="cart-item__original-price">{{ formatPrice(item.originalPrice) }}</span>
+                    }
+                    <span class="cart-item__price">{{ formatPrice(item.price) }}</span>
+                  </div>
+
+                  <!-- Contador (centro) -->
+                  <div class="cart-item__quantity">
+                    <button
+                      class="cart-item__qty-btn cart-item__qty-btn--minus"
+                      (click)="updateQuantity(item.id, item.quantity - 1)"
+                      [disabled]="item.quantity <= 1 || isLoading()"
+                      type="button"
+                      aria-label="Disminuir cantidad"
+                    >
+                      −
+                    </button>
+                    <span class="cart-item__qty-display">{{ item.quantity }}</span>
+                    <button
+                      class="cart-item__qty-btn cart-item__qty-btn--plus"
+                      (click)="updateQuantity(item.id, item.quantity + 1)"
+                      [disabled]="item.quantity >= item.maxQuantity || !item.inStock || isLoading()"
+                      type="button"
+                      aria-label="Aumentar cantidad"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <!-- Total (derecha) -->
+                  <div class="cart-item__subtotal-wrapper">
+                    <span class="cart-item__subtotal-label">Total</span>
+                    <span class="cart-item__subtotal">{{ formatPrice(item.price * item.quantity) }}</span>
+                  </div>
+                </div>
+
+                <button
+                  class="cart-item__remove"
+                  (click)="removeItem(item.id)"
+                  [disabled]="isLoading()"
+                  type="button"
+                  aria-label="Eliminar producto"
+                  title="Eliminar producto"
+                >
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+
+      <!-- Resumen del pedido -->
+      <aside class="cart__summary">
+        <div class="cart-summary">
+          <h2 class="cart-summary__title">Resumen del pedido</h2>
+
+          <div class="cart-summary__line">
+            <span class="cart-summary__label">Subtotal ({{ itemCount() }} productos)</span>
+            <span class="cart-summary__value">{{ formatPrice(subtotal()) }}</span>
+          </div>
+
+          <div class="cart-summary__line">
+            <span class="cart-summary__label">Envío</span>
+            <span class="cart-summary__value" [class.cart-summary__value--free]="shipping() === 0">
+              {{ shipping() === 0 ? 'Gratis' : formatPrice(shipping()) }}
+            </span>
+          </div>
+
+          @if (shipping() > 0) {
+            <div class="cart-summary__shipping-info">
+              <small class="cart-summary__shipping-text">
+                Envío gratis en compras mayores a {{ formatPrice(50000) }}
+              </small>
+            </div>
+          }
+
+          <hr class="cart-summary__divider" />
+
+          <div class="cart-summary__line cart-summary__line--total">
+            <span class="cart-summary__label">Total</span>
+            <span class="cart-summary__value cart-summary__value--total">{{ formatPrice(total()) }}</span>
+          </div>
+
+          <div class="cart-summary__actions">
+            <button
+              class="cart__btn cart__btn--primary cart__btn--full-width"
+              (click)="proceedToCheckout()"
+              [disabled]="isLoading()"
+              type="button"
+            >
+              {{ isLoading() ? 'Procesando...' : 'Finalizar compra' }}
+            </button>
+
+            <button
+              class="cart__btn cart__btn--secondary cart__btn--full-width"
+              (click)="continueShopping()"
+              type="button"
+            >
+              Seguir comprando
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Acciones del carrito -->
+    <div class="cart__footer">
+      <button
+        class="cart__clear-btn"
+        (click)="clearCart()"
+        [disabled]="isLoading()"
+        type="button"
+      >
+        Vaciar carrito
+      </button>
+    </div>
+  }
+</section>
