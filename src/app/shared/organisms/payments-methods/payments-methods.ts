@@ -17,7 +17,7 @@ export class PaymentsMethods {
     { id: 2, title: 'EFECTIVO', icon: 'bi bi-cash' },
     { id: 3, title: 'TARJETAS DE CREDITO', icon: 'bi bi-credit-card' },
     { id: 4, title: 'TARJETAS DE DÉBITO', icon: 'bi bi-credit-card-2-back' },
-    { id: 5, title: 'MODO', img: '/images/modo.png' },
+    /* { id: 5, title: 'MODO', img: '/images/modo.png' }, */
     { id: 6, title: 'MERCADO PAGO', img: '/images/mercadoPago.jpg' },
   ]);
 

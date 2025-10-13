@@ -19,8 +19,7 @@ import { CartService } from '../../../core/services/cart.service';
 export class Search {
   private readonly router = inject(Router);
   private readonly cartService = inject(CartService);
-  //private readonly whatsappNumber = '5493534015655';
-  private readonly whatsappNumber = '5492616984285';
+  private readonly whatsappNumber = '5493534015655';
   private readonly whatsappMessage = 'Hola! Quisiera agendar un turno';
 
   // Contador del carrito
