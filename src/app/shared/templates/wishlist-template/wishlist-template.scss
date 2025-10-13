@@ -1,0 +1,348 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.wishlist-template {
+  // Mobile first - Contenedor principal
+  width: 100%;
+  min-height: calc(100vh - 200px);
+  padding-top: 120px; // Espacio para evitar que se tape con la navegación
+
+  // Tablet
+  @include m.tablet {
+    padding-top: 140px;
+  }
+
+  // Desktop
+  @include m.desktop {
+    padding-top: 160px;
+  }
+
+  &__container {
+    // Mobile first
+    padding: v.$spacing-lg v.$spacing-md;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+
+    // Tablet
+    @include m.tablet {
+      padding: v.$spacing-xl v.$spacing-lg;
+    }
+
+    // Desktop
+    @include m.desktop {
+      padding: v.$spacing-xl v.$spacing-xxl;
+    }
+  }
+
+  &__header {
+    // Mobile first
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: v.$spacing-md;
+    margin-bottom: v.$spacing-xl;
+    text-align: center;
+
+    // Tablet
+    @include m.tablet {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+    }
+  }
+
+  &__title {
+    // Mobile first
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: v.color('green-500');
+    margin: 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    // Tablet
+    @include m.tablet {
+      font-size: 1.75rem;
+      text-align: left;
+      justify-content: flex-start;
+    }
+
+    // Desktop
+    @include m.desktop {
+      font-size: 2.2rem;
+    }
+  }
+
+  &__title-icon {
+    font-size: 1.2em;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  &__actions {
+    // Mobile first
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: v.$spacing-sm;
+    width: 100%;
+
+    // Tablet
+    @include m.tablet {
+      flex-direction: row;
+      align-items: center;
+      gap: v.$spacing-md;
+      width: auto;
+    }
+  }
+
+  &__count {
+    font-size: 1.1rem;
+    color: v.color('text-muted');
+    background: v.color('bg-light');
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+  }
+
+  &__clear-btn {
+    background: transparent;
+    border: 1px solid #d02e6e;
+    color: #d02e6e;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #d02e6e;
+      color: v.color('white1');
+    }
+  }
+
+  &__grid {
+    // Mobile first - Cards más pequeñas centradas
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: v.$spacing-md;
+    width: 100%;
+    justify-items: center; // Centra las cards
+
+    // Cards ocupan máximo 280px en móvil
+    & > * {
+      width: 100%;
+      max-width: 280px;
+    }
+
+    // Móvil grande - permite 2 columnas pequeñas
+    @media (min-width: 480px) {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: v.$spacing-md;
+
+      & > * {
+        max-width: none;
+      }
+    }
+
+    // Tablet - 2-3 columnas
+    @include m.tablet {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: v.$spacing-lg;
+    }
+
+    // Desktop pequeño - 3-4 columnas
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: v.$spacing-xl;
+    }
+
+    // Desktop grande - 4-5 columnas
+    @media (min-width: 1200px) {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: v.$spacing-xl;
+    }
+
+    // Extra large - máximo 5 columnas
+    @media (min-width: 1400px) {
+      grid-template-columns: repeat(5, 1fr);
+      gap: v.$spacing-xl;
+    }
+  }
+
+  &__explore-more {
+    // Mobile first
+    text-align: center;
+    margin-top: v.$spacing-xxl;
+    padding: v.$spacing-xl v.$spacing-md;
+    background: linear-gradient(135deg, rgba(v.color('primary'), 0.03), rgba(v.color('accent'), 0.02));
+    border-radius: 16px;
+    border: 1px solid rgba(v.color('primary'), 0.1);
+  }
+
+  &__explore-text {
+    // Mobile first
+    color: v.color('text-muted');
+    font-size: 1rem;
+    margin-bottom: v.$spacing-md;
+    font-style: italic;
+
+    // Tablet
+    @include m.tablet {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__explore-btn {
+    // Mobile first
+    background: linear-gradient(135deg, v.color('primary'), darken(v.color('primary'), 10%));
+    color: v.color('white1');
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 15px rgba(v.color('primary'), 0.2);
+    position: relative;
+    overflow: hidden;
+
+    // Tablet
+    @include m.tablet {
+      padding: 1.125rem 2.5rem;
+      font-size: 1rem;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(v.color('primary'), 0.3);
+
+      &::before {
+        left: 100%;
+      }
+    }
+
+    &:focus {
+      outline: 3px solid rgba(v.color('primary'), 0.3);
+      outline-offset: 2px;
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &__explore-icon {
+    font-size: 1.1em;
+    animation: sparkle 1.5s ease-in-out infinite;
+  }
+
+  &__explore-arrow {
+    font-size: 1.1em;
+    transition: transform 0.3s ease;
+  }
+
+  &__explore-btn:hover &__explore-arrow {
+    transform: translateX(4px);
+  }
+
+  @keyframes sparkle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+  }
+
+  &__empty {
+    // Mobile first
+    text-align: center;
+    padding: v.$spacing-xl v.$spacing-md;
+    max-width: 100%;
+    margin: 0 auto;
+
+    // Tablet
+    @include m.tablet {
+      padding: v.$spacing-xxl 0;
+      max-width: 500px;
+    }
+  }
+
+  &__empty-icon {
+    font-size: 4rem;
+    margin-bottom: v.$spacing-lg;
+    opacity: 0.5;
+  }
+
+  &__empty-title {
+    // Mobile first
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: v.color('text-dark');
+    margin-bottom: v.$spacing-md;
+
+    // Tablet
+    @include m.tablet {
+      font-size: 1.5rem;
+    }
+  }
+
+  &__empty-description {
+    color: v.color('text-muted');
+    line-height: 1.6;
+    margin-bottom: v.$spacing-xl;
+  }
+
+  &__shop-btn {
+    // Mobile first
+    background: v.color('primary');
+    color: v.color('white1');
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    max-width: 280px;
+
+    // Tablet
+    @include m.tablet {
+      padding: 0.875rem 2rem;
+      font-size: 1rem;
+      width: auto;
+    }
+
+    &:hover {
+      background: darken(v.color('primary'), 16%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(v.color('primary'), 0.3);
+    }
+
+    &:focus {
+      outline: 2px solid v.color('primary');
+      outline-offset: 2px;
+    }
+  }
+}

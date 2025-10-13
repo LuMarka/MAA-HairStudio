@@ -3,7 +3,7 @@
   <!-- Wishlist heart button (toggle) -->
     <button class="product-card__wishlist-btn"
       type="button"
-      aria-label="Agregar a favoritos"
+      [attr.aria-label]="texts.wishlistButtonAriaLabel"
       [attr.aria-pressed]="isWishlisted()"
       (click)="toggleWishlist()">
       <svg class="product-card__wishlist-icon" width="26" height="26" viewBox="0 0 24 24" [attr.fill]="isWishlisted() ? '#e53935' : 'none'" [attr.stroke]="isWishlisted() ? '#e53935' : 'currentColor'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -23,7 +23,7 @@
     <div class="product-card__footer">
       <span class="product-card__price">{{ product.price }}</span>
       <button class="product-card__button">
-        <span class="product-card__button-text">Comprar</span>
+        <span class="product-card__button-text">{{ texts.buyButtonText }}</span>
       </button>
     </div>
   </div>

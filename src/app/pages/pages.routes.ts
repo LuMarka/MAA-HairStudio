@@ -20,6 +20,7 @@ import { LayoutLogin } from './layout/layout-login/layout-login';
 import { Login } from './login/login';
 import { Profile } from './profile/profile';
 import { Gallery } from './gallery/gallery';
+import { Wishlist } from './wishlist/wishlist';
 
 export const pagesRoutes: Routes = [
   {
@@ -32,7 +33,7 @@ export const pagesRoutes: Routes = [
         data: {
           title:  'Inicio | MAA Hair Studio',
           description: "Bienvenidas a nuestra aplicación. Descubre nuestras servicios y productos.",
-          keywords: "home, welcome, services, products",
+          keywords: "home, welcome, services, products, inicio, bienvenida, servicios, productos",
         }
       },
       {
@@ -59,7 +60,7 @@ export const pagesRoutes: Routes = [
         data: {
           title: 'Tienda | MAA Hair Studio',
           description: "Explore nuestro catalogo de productos diseñados para satisfacer tus necesidades.",
-          keywords: "products, results, catalog, offerings",
+          keywords: "products, results, catalog, offerings, productos, tienda, catálogo",
         }
       },
             {
@@ -68,7 +69,7 @@ export const pagesRoutes: Routes = [
         data: {
           title: 'Galería de Fotos | MAA Hair Studio',
           description: "Explora nuestra galería de fotos para ver ejemplos de nuestro trabajo y estilos.",
-          keywords: "gallery, photos, images, portfolio",
+          keywords: "gallery, photos, images, portfolio, galería, fotos, imágenes, portafolio",
         }
       },
       {
@@ -77,7 +78,7 @@ export const pagesRoutes: Routes = [
         data: {
           title: 'Contacto | MAA Hair Studio',
           description: "Pongase en contacto conmigo ante cualquier inquietud.",
-          keywords: "contact, inquiries, feedback, support",
+          keywords: "contact, inquiries, feedback, support, contacto, consultas, soporte",
         }
       },
       {
@@ -86,7 +87,7 @@ export const pagesRoutes: Routes = [
         data: {
           title: "cart",
           description: "Tu carrito de compras.",
-          keywords: "cart, shopping, checkout",
+          keywords: "cart, shopping, checkout, carrito, compras",
         }
       },
       {
@@ -95,7 +96,7 @@ export const pagesRoutes: Routes = [
         data: {
           title: "checkout",
           description: "Proceso de pago.",
-          keywords: "checkout, payment, purchase",
+          keywords: "checkout, payment, purchase, pago, orden de compra",
         }
       },
       {
@@ -104,7 +105,7 @@ export const pagesRoutes: Routes = [
         data: {
           title: "details",
           description: "Detalles del producto.",
-          keywords: "details, product, information",
+          keywords: "details, product, information, detalles, producto, información",
         }
       },
       {
@@ -113,7 +114,16 @@ export const pagesRoutes: Routes = [
         data: {
           title: "form",
           description: "Formulario de contacto.",
-          keywords: "form, contact, inquiries",
+          keywords: "form, contact, inquiries, formulario, contacto, consultas",
+        }
+      },
+      {
+        path: 'wishlist',
+        component: Wishlist,
+        data: {
+          title: "Mis Favoritos | MAA Hair Studio",
+          description: "Tu lista de productos favoritos.",
+          keywords: "wishlist, favorites, productos favoritos",
         }
       }
     ]

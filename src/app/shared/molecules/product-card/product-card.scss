@@ -11,12 +11,23 @@
   opacity: 1;
   transform: translateY(0);
   position: relative;
-  min-width: 220px;
-  max-width: 350px;
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
+
+  // Mobile first - responsive sizing
+  min-height: 400px;
+
+  // Tablet
+  @include m.tablet {
+    min-height: 420px;
+  }
+
+  // Desktop
+  @include m.desktop {
+    min-height: 440px;
+  }
 
   // Estados hover
   &:hover {
@@ -44,32 +55,69 @@
     top: 14px;
     right: 14px;
     z-index: 10;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.9);
     border: none;
-    padding: 4px;
+    padding: 6px;
     cursor: pointer;
     border-radius: 50%;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     outline: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
-    &:hover,
-    &:focus {
+    &:hover {
+      background: rgba(255, 255, 255, 1);
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
       .product-card__wishlist-icon {
-        stroke: v.color('accent');
-        fill: #f10c6f;
+        stroke: #d02e6e;
+        fill: #d02e6e;
+      }
+    }
+
+    &:focus {
+      outline: 2px solid v.color('accent');
+      outline-offset: 2px;
+    }
+
+    // Estado activo (cuando está en favoritos)
+    &[aria-pressed="true"] {
+      .product-card__wishlist-icon {
+        stroke: #d02e6e;
+        fill: #d02e6e;
+        animation: heartBeat 0.3s ease-in-out;
       }
     }
   }
 
   &__wishlist-icon {
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
     stroke: v.color('gray4');
     fill: none;
-    transition: fill 0.2s, stroke 0.2s;
+    transition: all 0.3s ease;
+    stroke-width: 2;
+
+    // Estados específicos del ícono
+    &[fill="#e53935"] {
+      stroke: #e53935;
+      fill: #e53935;
+    }
+
+    &[stroke="#e53935"] {
+      stroke: #e53935;
+      fill: #e53935;
+    }
+  }
+
+  // Animación del corazón
+  @keyframes heartBeat {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
   }
 
   &__image-container {

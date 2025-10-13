@@ -1,0 +1,60 @@
+<section class="wishlist-template">
+  <div class="wishlist-template__container">
+    <div class="wishlist-template__header">
+    <h1 class="wishlist-template__title">
+      <span class="wishlist-template__title-icon">{{ texts.titleIcon }}</span>
+      {{ texts.title }}
+    </h1>
+    @if (itemCount() > 0) {
+      <div class="wishlist-template__actions">
+        <span class="wishlist-template__count">{{ itemCount() }} {{ itemCount() === 1 ? texts.countSingular : texts.countPlural }}</span>
+        <button
+          type="button"
+          class="wishlist-template__clear-btn"
+          (click)="clearWishlist()"
+          [attr.aria-label]="texts.clearButtonAriaLabel"
+        >
+          {{ texts.clearButtonText }}
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (products().length > 0) {
+    <div class="wishlist-template__grid">
+      @for (product of products(); track product.id) {
+        <app-product-card [product]="product"></app-product-card>
+      }
+    </div>
+
+    <!-- Botón para explorar más productos -->
+    <div class="wishlist-template__explore-more">
+      <p class="wishlist-template__explore-text">{{ texts.exploreText }}</p>
+      <button
+        type="button"
+        class="wishlist-template__explore-btn"
+        (click)="navigateToProducts()"
+      >
+        <span class="wishlist-template__explore-icon">{{ texts.exploreIcon }}</span>
+        {{ texts.exploreButtonText }}
+        <span class="wishlist-template__explore-arrow">{{ texts.exploreArrow }}</span>
+      </button>
+    </div>
+  } @else {
+    <div class="wishlist-template__empty">
+      <div class="wishlist-template__empty-icon">{{ texts.emptyIcon }}</div>
+      <h2 class="wishlist-template__empty-title">{{ texts.emptyTitle }}</h2>
+      <p class="wishlist-template__empty-description">
+        {{ texts.emptyDescription }}
+      </p>
+      <button
+        type="button"
+        class="wishlist-template__shop-btn"
+        (click)="navigateToProducts()"
+      >
+        {{ texts.emptyButtonText }}
+      </button>
+    </div>
+  }
+  </div>
+</section>
