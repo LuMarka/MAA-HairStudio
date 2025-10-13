@@ -1,5 +1,6 @@
 @use '../../../../assets/styles/variables' as v;
 @use '../../../../assets/styles/mixins' as m;
+@use 'sass:color';
 
 .wishlist-template {
   // Mobile first - Contenedor principal
@@ -203,7 +204,7 @@
 
   &__explore-btn {
     // Mobile first
-    background: linear-gradient(135deg, v.color('primary'), darken(v.color('primary'), 10%));
+    background: linear-gradient(135deg, v.color('primary'), color.scale(v.color('primary'), $lightness: -20%));
     color: v.color('white1');
     border: none;
     padding: 1rem 2rem;
@@ -335,7 +336,7 @@
     }
 
     &:hover {
-      background: darken(v.color('primary'), 16%);
+      background: color.scale(v.color('primary'), $lightness: -32%);
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(v.color('primary'), 0.3);
     }
