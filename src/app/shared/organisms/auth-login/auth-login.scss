@@ -1,6 +1,6 @@
-
 @use '../../../../assets/styles/variables' as v;
 @use '../../../../assets/styles/mixins' as m;
+@use 'sass:color';
 
 .auth {
   // Mobile first: estilos base para pantallas pequeñas
@@ -119,14 +119,15 @@
       opacity: 0.7;
       cursor: not-allowed;
     }
-  }
 
-  &__btn--primary {
-    background: v.color('primary');
-    color: white;
+    // Modificador primary - CORRECCIÓN AQUÍ
+    &--primary {
+      background: v.color('primary');
+      color: white;
 
-    &:hover:not(:disabled) {
-      background: darken(v.color('primary'), 5%);
+      &:hover:not(:disabled) {
+        background: color.adjust(v.color('primary'), $lightness: -5%);
+      }
     }
   }
 
