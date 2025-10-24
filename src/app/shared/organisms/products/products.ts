@@ -179,9 +179,10 @@ export class Products {
     { label: 'Todos', value: '', image: '' },
     { label: 'Shampoo', value: 'Shampoo', image: 'images/absolutRepairMolecular.jpg' },
     { label: 'Acondicionador', value: 'Acondicionador', image: 'images/vitaminoColorSpectrum.jpg' },
-    { label: 'Máscara', value: 'Máscara', image: 'images/kerastase.png' },
-    { label: 'Aceite', value: 'Aceite', image: 'images/kerastase.png' },
+    { label: 'Mascarilla', value: 'Mascarilla', image: 'images/kerastase.png' },
+    { label: 'Serum', value: 'Serum', image: 'images/kerastase.png' },
     { label: 'Crema Termoprotectora', value: 'Crema Termoprotectora', image: 'images/kerastase.png' },
+    {label: 'Crema Para Peinar', value: 'Crema Para Peinar', image: 'images/kerastase.png' }
   ];
 
 
