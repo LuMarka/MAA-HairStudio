@@ -8,13 +8,13 @@
 
   <div class="pagination-controls">
     <!-- Botón Primera página -->
-    <button type="button" class="pagination-btn" [class.disabled]="meta().hasPrevPage" [disabled]="!meta().hasPrevPage"
+    <button type="button" class="pagination-btn" [class.disabled]="!meta().hasPrevPage" [disabled]="!meta().hasPrevPage"
       (click)="goToPage(1)" aria-label="Primera página">
       <i class="icon-first-page" aria-hidden="true">⏮</i>
     </button>
 
     <!-- Botón Página anterior -->
-    <button type="button" class="pagination-btn" [class.disabled]="meta().hasPrevPage" [disabled]="!meta().hasPrevPage"
+    <button type="button" class="pagination-btn" [class.disabled]="!meta().hasPrevPage" [disabled]="!meta().hasPrevPage"
       (click)="goToPage(meta().page - 1)" aria-label="Página anterior">
       <i class="icon-prev-page" aria-hidden="true">◀</i>
     </button>
@@ -35,20 +35,22 @@
     </div>
 
     <!-- Botón Página siguiente -->
-    <button type="button" class="pagination-btn" [class.disabled]="meta().hasNextPage" [disabled]="!meta().hasNextPage"
+    <button type="button" class="pagination-btn" [class.disabled]="!meta().hasNextPage" [disabled]="!meta().hasNextPage"
       (click)="goToPage(meta().page + 1)" aria-label="Página siguiente">
       <i class="icon-next-page" aria-hidden="true">▶</i>
     </button>
 
     <!-- Botón Última página -->
-    <button type="button" class="pagination-btn" [class.disabled]="meta().hasNextPage" [disabled]="!meta().hasNextPage"
+    <button type="button" class="pagination-btn" [class.disabled]="!meta().hasNextPage" [disabled]="!meta().hasNextPage"
       (click)="goToPage(meta().totalPages)" aria-label="Última página">
       <i class="icon-last-page" aria-hidden="true">⏭</i>
     </button>
   </div>
 
-  <!-- Selector de elementos por página -->
-  @if (showPageSizeSelector()) {
+  
+</nav>
+}
+<!-- Selector de elementos por página -->
   <div class="page-size-selector">
     <label for="page-size" class="page-size-label">
       Mostrar por página:
@@ -59,6 +61,3 @@
       }
     </select>
   </div>
-  }
-</nav>
-}
