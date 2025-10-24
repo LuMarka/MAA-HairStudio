@@ -3,9 +3,9 @@ import {
   input,
   output,
   computed,
-  ChangeDetectionStrategy,
-  OnInit
+  ChangeDetectionStrategy
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Meta } from '../../../core/models/interfaces/Product.interface';
 
 export interface PaginationEvent {
@@ -15,69 +15,79 @@ export interface PaginationEvent {
 
 @Component({
   selector: 'app-paginator',
-  styleUrl: './paginator.scss',
+  imports: [CommonModule],
   templateUrl: './paginator.html',
+  styleUrl: './paginator.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PaginatorComponent implements OnInit {
+export class PaginatorComponent {
   // Inputs
-  meta = input.required<Meta>();
-  entityName = input('elementos');
-  showPageSizeSelector = input(true);
-  pageSizeOptions = input([10, 20, 50, 100]);
-  maxVisiblePages = input(5);
+  readonly meta = input.required<Meta>();
+  readonly entityName = input('elementos');
+  readonly showPageSizeSelector = input(true);
+  readonly pageSizeOptions = input([10, 20, 50, 100]);
+  readonly maxVisiblePages = input(5);
+  readonly disabled = input(false);
 
-  // Outputs
-  pageChange = output<PaginationEvent>();
+  // Output
+  readonly pageChange = output<PaginationEvent>();
 
-  ngOnInit(): void {
-    this.visiblePages();
-    console.log('Paginator initialized with meta:', this.meta().page);
-  }
   // Computed values
-  showPagination = computed(() => {
-    const metaData = this.meta();
-    return metaData.totalPages > 1;
+  readonly showPagination = computed(() => this.meta().totalPages > 1);
+
+  readonly currentPage = computed(() => this.meta().page);
+  readonly totalPages = computed(() => this.meta().totalPages);
+  readonly hasNextPage = computed(() => this.meta().hasNextPage);
+  readonly hasPrevPage = computed(() => this.meta().hasPrevPage);
+  readonly totalItems = computed(() => this.meta().total);
+  readonly itemsPerPage = computed(() => this.meta().limit);
+
+  readonly startItem = computed(() => {
+    const meta = this.meta();
+    return meta.total === 0 ? 0 : (meta.page - 1) * meta.limit + 1;
   });
 
-  startItem = computed(() => {
-    const metaData = this.meta();
-    return (metaData.page - 1) * metaData.limit + 1;
+  readonly endItem = computed(() => {
+    const meta = this.meta();
+    return Math.min(meta.page * meta.limit, meta.total);
   });
 
-  endItem = computed(() => {
-    const metaData = this.meta();
-    const calculated = metaData.page * metaData.limit;
-    return Math.min(calculated, metaData.total);
+  readonly itemsInfo = computed(() => {
+    const start = this.startItem();
+    const end = this.endItem();
+    const total = this.totalItems();
+    const entity = this.entityName();
+
+    if (total === 0) {
+      return `No hay ${entity}`;
+    }
+
+    return `Mostrando ${start} - ${end} de ${total} ${entity}`;
   });
 
-  visiblePages = computed(() => {
-    const metaData = this.meta();
-    const current = metaData.page;
-    const total = metaData.totalPages;
+  readonly visiblePages = computed(() => {
+    const current = this.currentPage();
+    const total = this.totalPages();
     const maxVisible = this.maxVisiblePages();
 
     if (total <= maxVisible) {
       return Array.from({ length: total }, (_, i) => i + 1);
     }
 
-    const pages: (number | string)[] = [];
-    const halfVisible = Math.floor(maxVisible / 2);
+    const pages: (number | '...')[] = [];
+    const delta = Math.floor(maxVisible / 2);
 
-    let start = Math.max(1, current - halfVisible);
-    let end = Math.min(total, current + halfVisible);
+    let start = Math.max(1, current - delta);
+    let end = Math.min(total, current + delta);
 
-    // Ajustar si estamos cerca del inicio
-    if (start === 1) {
+    // Ajustar ventana si estamos cerca de los extremos
+    if (current <= delta) {
       end = Math.min(total, maxVisible);
-    }
-
-    // Ajustar si estamos cerca del final
-    if (end === total) {
+    } else if (current + delta >= total) {
       start = Math.max(1, total - maxVisible + 1);
     }
 
-    // Agregar primera página y puntos suspensivos si es necesario
+    // Agregar primera página y ellipsis si es necesario
     if (start > 1) {
       pages.push(1);
       if (start > 2) {
@@ -85,12 +95,12 @@ export class PaginatorComponent implements OnInit {
       }
     }
 
-    // Agregar páginas del rango
+    // Agregar páginas del rango visible
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
 
-    // Agregar puntos suspensivos y última página si es necesario
+    // Agregar ellipsis y última página si es necesario
     if (end < total) {
       if (end < total - 1) {
         pages.push('...');
@@ -101,25 +111,77 @@ export class PaginatorComponent implements OnInit {
     return pages;
   });
 
-  goToPage(page: number): void {
-    const metaData = this.meta();
-    if (page < 1 || page > metaData.totalPages || page === metaData.page) {
+  // Navigation methods
+  goToFirstPage(): void {
+    if (this.disabled() || !this.hasPrevPage()) return;
+    this.emitPageChange(1);
+  }
+
+  goToPreviousPage(): void {
+    if (this.disabled() || !this.hasPrevPage()) return;
+    this.emitPageChange(this.currentPage() - 1);
+  }
+
+  goToNextPage(): void {
+    if (this.disabled() || !this.hasNextPage()) return;
+    this.emitPageChange(this.currentPage() + 1);
+  }
+
+  goToLastPage(): void {
+    if (this.disabled() || !this.hasNextPage()) return;
+    this.emitPageChange(this.totalPages());
+  }
+
+  goToPage(page: number | '...'): void {
+    if (typeof page !== 'number' || this.disabled() || page === this.currentPage()) {
       return;
     }
 
-    this.pageChange.emit({
-      page,
-      limit: metaData.limit
-    });
+    if (page < 1 || page > this.totalPages()) {
+      return;
+    }
+
+    this.emitPageChange(page);
   }
 
   onPageSizeChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    const newLimit = parseInt(target.value, 10);
+    if (this.disabled()) return;
 
+    const target = event.target as HTMLSelectElement;
+    const newLimit = Number(target.value);
+
+    if (isNaN(newLimit) || newLimit <= 0) {
+      return;
+    }
+
+    this.emitPageChange(1, newLimit);
+  }
+
+  // Helper methods
+  isCurrentPage(page: number | '...'): boolean {
+    return typeof page === 'number' && page === this.currentPage();
+  }
+
+  isPageDisabled(page: number | '...'): boolean {
+    return this.disabled() || typeof page !== 'number';
+  }
+
+  getPageAriaLabel(page: number | '...'): string {
+    if (typeof page !== 'number') {
+      return 'Más páginas';
+    }
+
+    if (this.isCurrentPage(page)) {
+      return `Página actual ${page}`;
+    }
+
+    return `Ir a página ${page}`;
+  }
+
+  private emitPageChange(page: number, limit?: number): void {
     this.pageChange.emit({
-      page: 1, // Resetear a primera página cuando cambia el tamaño
-      limit: newLimit
+      page,
+      limit: limit ?? this.itemsPerPage()
     });
   }
 }

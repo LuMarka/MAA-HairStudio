@@ -97,11 +97,10 @@
             <app-product-card [product]="product"></app-product-card>
             }
           </div>
-          {{dataApi()?.meta| json}}
           <!-- Paginador -->
           @if (dataApi()?.meta) {
           <app-paginator [meta]="dataApi()!.meta" entityName="productos" [showPageSizeSelector]="true"
-            [pageSizeOptions]="[6, 24, 48, 96]" (pageChange)="onPageChange($event)" />
+            [pageSizeOptions]="[2, 4, 6, 8]" (pageChange)="onPageChange($event)" />
           }
         </section>
       </div>
