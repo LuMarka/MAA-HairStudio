@@ -1,6 +1,6 @@
 import { Component, Input, computed, inject } from '@angular/core';
 import { WishlistService } from '../../../core/services/wishlist.service';
-import { Product } from '../../../core/models/interfaces/Product.interface';
+import { Datum } from '../../../core/models/interfaces/Product.interface';
 
 @Component({
   selector: 'app-product-card',
@@ -9,7 +9,7 @@ import { Product } from '../../../core/models/interfaces/Product.interface';
   styleUrl: './product-card.scss',
 })
 export class ProductCard {
-  @Input() product!: Product;
+  @Input() product!: Datum;
   private readonly wishlist = inject(WishlistService) as WishlistService;
 
   readonly isWishlisted = computed(() => this.wishlist.isInWishlist(this.product));
