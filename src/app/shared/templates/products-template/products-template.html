@@ -1,4 +1,4 @@
 <section class="products-template">
-  <app-products></app-products>
+  <app-products [dataApi]="products()" (paginated)="onPageChange($event)"></app-products>
 </section>
 

@@ -1,172 +1,39 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Injectable } from '@angular/core';
 import { ProductCard } from '../../molecules/product-card/product-card';
+import { ProductsApiResponse } from '../../../core/services/products.service';
+import { PaginationEvent, PaginatorComponent } from "../../molecules/paginator/paginator";
 
-interface Product {
-  id: number;
-  name: string;
-  brand: 'Loreal' | 'Kerastase';
-  collection: string; // en lugar de familia
-  type: string;       // shampoo, conditioner, etc.
-  description: string;
-  price: number;
-  image: string;
-}
-
-@Injectable({ providedIn: 'root' })
-export class ProductsService {
-  getProducts(): Product[] {
-    return [
-      // Kerastase
-      {
-        id: 1,
-        name: 'Bain Satin 2',
-        brand: 'Kerastase',
-        collection: 'Nutritive',
-        type: 'Shampoo',
-        description:
-          'Shampoo nutritivo para cabello seco a muy seco. Limpia, nutre y suaviza el cabello.',
-        price: 14500,
-        image: 'images/ker_nutritive.jpg',
-      },
-      {
-        id: 4,
-        name: 'Masquintense',
-        brand: 'Kerastase',
-        collection: 'Nutritive',
-        type: 'Máscara',
-        description: 'Tratamiento intensivo para nutrir profundamente el cabello seco.',
-        price: 18500,
-        image: 'images/kerastase.png',
-      },
-      {
-        id: 6,
-        name: 'Ciment Thermique',
-        brand: 'Kerastase',
-        collection: 'Resistance',
-        type: 'Crema Termoprotectora',
-        description: 'Protege el cabello del calor y refuerza la fibra capilar.',
-        price: 16000,
-        image: '/images/kerastase.png',
-      },
-      {
-        id: 7,
-        name: 'Elixir Ultime',
-        brand: 'Kerastase',
-        collection: 'Elixir',
-        type: 'Aceite',
-        description: 'Aceite sublimador multiusos para todo tipo de cabello.',
-        price: 21000,
-        image: '/images/kerastase.png',
-      },
-      {
-        id: 9,
-        name: 'Genesis Bain Hydra-Fortifiant',
-        brand: 'Kerastase',
-        collection: 'Genesis',
-        type: 'Shampoo',
-        description: 'Shampoo fortificante anti-caída para cabello debilitado.',
-        price: 15500,
-        image: 'images/kerastase.png',
-      },
-      {
-        id: 10,
-        name: 'Discipline Maskeratine',
-        brand: 'Kerastase',
-        collection: 'Discipline',
-        type: 'Máscara',
-        description: 'Máscara suavizante para controlar el frizz y dar movimiento.',
-        price: 19500,
-        image: 'images/kerastase.png',
-      },
-      // Loreal
-      {
-        id: 2,
-        name: 'Absolut Repair',
-        brand: 'Loreal',
-        collection: 'Absolut Repair',
-        type: 'Shampoo',
-        description: 'Repara y fortalece el cabello dañado, dejándolo suave y brillante.',
-        price: 13200,
-        image: 'images/absolutRepairMolecular.jpg',
-      },
-      {
-        id: 3,
-        name: 'Vitamino Color',
-        brand: 'Loreal',
-        collection: 'Vitamino Color',
-        type: 'Acondicionador',
-        description: 'Protege y prolonga el color del cabello teñido, aportando suavidad y brillo.',
-        price: 12000,
-        image: 'images/vitaminoColorSpectrum.jpg',
-      },
-      {
-        id: 5,
-        name: 'Metal Detox',
-        brand: 'Loreal',
-        collection: 'Metal Detox',
-        type: 'Shampoo',
-        description: 'Elimina los metales del agua y protege el cabello de la rotura.',
-        price: 15000,
-        image: 'images/metalDetox.jpg',
-      },
-      {
-        id: 8,
-        name: 'Pro Longer',
-        brand: 'Loreal',
-        collection: 'Pro Longer',
-        type: 'Shampoo',
-        description: 'Shampoo renovador de largos para puntas más fuertes.',
-        price: 13500,
-        image: 'images/absolutRepairMolecular.jpg',
-      },
-      {
-        id: 11,
-        name: 'Inforcer',
-        brand: 'Loreal',
-        collection: 'Inforcer',
-        type: 'Acondicionador',
-        description: 'Acondicionador fortalecedor anti-quiebre para cabellos frágiles.',
-        price: 12500,
-        image: 'images/absolutRepairMolecular.jpg',
-      },
-      {
-        id: 12,
-        name: 'Blondifier',
-        brand: 'Loreal',
-        collection: 'Blondifier',
-        type: 'Shampoo',
-        description: 'Shampoo iluminador para cabellos rubios o decolorados.',
-        price: 14000,
-        image: 'images/absolutRepairMolecular.jpg',
-      },
-    ];
-  }
-}
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProductCard],
+  imports: [CommonModule, FormsModule, ProductCard, PaginatorComponent],
   templateUrl: './products.html',
   styleUrl: './products.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Products {
+  dataApi = input<ProductsApiResponse | null>();
+  inputPaginated = input<PaginationEvent | null>(null);
+  paginated = output<PaginationEvent>();
   selectedCollection: string = '';
-  get collectionOptions(): { label: string, value: string }[] {
+
+  onPageChange(event: PaginationEvent): void {
+    this.paginated.emit(event);
+  }
+  /* get collectionOptions(): { label: string, value: string }[] {
     if (!this.selectedBrand) return [];
     const collections = Array.from(new Set(
-      this.products.filter((p: Product) => p.brand === this.selectedBrand).map((p: Product) => p.collection)
+      this.dataApi()?.data.filter((p: Product) => p.brand === this.selectedBrand).map((p: Product) => p.collection)
     ));
     return [
       { label: 'Todas las colecciones', value: '' },
       ...collections.map(c => ({ label: c, value: c }))
     ];
-  }
-  public readonly brands = [
+  } */
+  /* public readonly brands = [
     { key: 'Kerastase', label: 'Kérastase' },
     { key: 'Loreal', label: `L'Oréal Proffesionnel` }
   ];
@@ -182,10 +49,9 @@ export class Products {
     { label: 'Mascarilla', value: 'Mascarilla', image: 'images/kerastase.png' },
     { label: 'Serum', value: 'Serum', image: 'images/kerastase.png' },
     { label: 'Crema Termoprotectora', value: 'Crema Termoprotectora', image: 'images/kerastase.png' },
-    {label: 'Crema Para Peinar', value: 'Crema Para Peinar', image: 'images/kerastase.png' }
-  ];
+  ]; */
 
-
+/*
 selectedType: string = '';
 
 // Handler para el cambio de tipo de producto (filtro horizontal)
@@ -261,7 +127,7 @@ get filteredProductsByBrand(): Record<string, Product[]> {
   }
   return result;
 }
-
+ */
 
 }
 

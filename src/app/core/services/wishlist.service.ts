@@ -1,10 +1,10 @@
 import { Injectable, signal } from '@angular/core';
-import { Product } from '../../core/models/interfaces/Product.interface';
+import { Datum } from '../models/interfaces/Product.interface';
 
 @Injectable({ providedIn: 'root' })
 export class WishlistService {
   private readonly STORAGE_KEY = 'maa-wishlist';
-  private readonly _wishlist = signal<Product[]>([]);
+  private readonly _wishlist = signal<Datum[]>([]);
 
   constructor() {
     this.loadFromStorage();
@@ -18,14 +18,14 @@ export class WishlistService {
     return this._wishlist().length;
   }
 
-  isInWishlist(product: Product): boolean {
+  isInWishlist(product: Datum): boolean {
     return this._wishlist().some(p => p.id === product.id);
   }
 
-  toggle(product: Product): void {
+  toggle(product: Datum): void {
     this._wishlist.update(list => {
       const exists = list.some(p => p.id === product.id);
-      let newList: Product[];
+      let newList: Datum[];
 
       if (exists) {
         newList = list.filter(p => p.id !== product.id);
@@ -38,7 +38,7 @@ export class WishlistService {
     });
   }
 
-  add(product: Product): void {
+  add(product: Datum): void {
     if (!this.isInWishlist(product)) {
       this._wishlist.update(list => {
         const newList = [...list, product];
@@ -48,7 +48,7 @@ export class WishlistService {
     }
   }
 
-  remove(product: Product): void {
+  remove(product: Datum): void {
     this._wishlist.update(list => {
       const newList = list.filter(p => p.id !== product.id);
       this.saveToStorage(newList);
@@ -66,7 +66,7 @@ export class WishlistService {
       try {
         const stored = localStorage.getItem(this.STORAGE_KEY);
         if (stored) {
-          const products = JSON.parse(stored) as Product[];
+          const products = JSON.parse(stored) as Datum[];
           this._wishlist.set(products);
         }
       } catch (error) {
@@ -75,7 +75,7 @@ export class WishlistService {
     }
   }
 
-  private saveToStorage(products: Product[]): void {
+  private saveToStorage(products: Datum[]): void {
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(products));

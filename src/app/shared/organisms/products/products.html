@@ -1,6 +1,6 @@
 <div class="products-container">
   <!-- Filtro horizontal por tipo que se muestra primero en mobile/tablet -->
-  <nav class="products-type-filter" aria-label="Filtrar por tipo">
+  <!--  <nav class="products-type-filter" aria-label="Filtrar por tipo">
     @for (t of productTypes; track t.value) {
       <button
         class="products-type-filter__btn"
@@ -17,10 +17,10 @@
         <span class="products-type-filter__label">{{ t.label }}</span>
       </button>
     }
-  </nav>
+  </nav> -->
 
   <!-- Filtro lateral que se muestra segundo en mobile/tablet -->
-  <aside class="products-filter">
+  <!--  <aside class="products-filter">
     <div class="products-filter__group">
       <label for="brand">Marca</label>
       <select #brandSelect id="brand" name="brand" [(ngModel)]="selectedBrand" (change)="onBrandChange(brandSelect.value)">
@@ -41,11 +41,11 @@
         <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
       </select>
     </div>
-  </aside>
+  </aside> -->
 
   <div class="products-layout">
     <!-- Filtro lateral para desktop -->
-    <aside class="products-filter products-filter--desktop">
+    <!-- <aside class="products-filter products-filter--desktop">
       <div class="products-filter__group">
         <label for="brand-desktop">Marca</label>
         <select #brandSelectDesktop id="brand-desktop" name="brand" [(ngModel)]="selectedBrand" (change)="onBrandChange(brandSelectDesktop.value)">
@@ -66,12 +66,12 @@
           <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
         </select>
       </div>
-    </aside>
+    </aside> -->
 
     <div class="products-main">
       <!-- Filtro horizontal por tipo (mostrado solo en desktop) -->
-      <nav class="products-type-filter products-type-filter--desktop" aria-label="Filtrar por tipo">
-        @for (t of productTypes; track t.value) {
+      <!-- <nav class="products-type-filter products-type-filter--desktop" aria-label="Filtrar por tipo">
+        @for (t of dataApi()?.data; track t.id) {
           <button
             class="products-type-filter__btn"
             [class.products-type-filter__btn--active]="selectedType === t.value"
@@ -87,21 +87,23 @@
             <span class="products-type-filter__label">{{ t.label }}</span>
           </button>
         }
-      </nav>
+      </nav> -->
 
       <div class="products-brand-sections">
-        @for (brand of brands; track brand.key) {
-          @if (!selectedBrand || selectedBrand === brand.key) {
-            <section class="products__brand-group">
-              <h2 class="products__brand-title">{{ brand.label }}</h2>
-              <div class="products">
-                @for (product of filteredProductsByBrand[brand.key]; track product.id) {
-                  <app-product-card [product]="product"></app-product-card>
-                }
-              </div>
-            </section>
+        <section class="products__brand-group">
+          <h2 class="products__brand-title">{{ 'luisa' }}</h2>
+          <div class="products">
+            @for (product of dataApi()?.data; track product.id) {
+            <app-product-card [product]="product"></app-product-card>
+            }
+          </div>
+          {{dataApi()?.meta| json}}
+          <!-- Paginador -->
+          @if (dataApi()?.meta) {
+          <app-paginator [meta]="dataApi()!.meta" entityName="productos" [showPageSizeSelector]="true"
+            [pageSizeOptions]="[6, 24, 48, 96]" (pageChange)="onPageChange($event)" />
           }
-        }
+        </section>
       </div>
     </div>
   </div>
