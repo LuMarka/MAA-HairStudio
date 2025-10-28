@@ -2,26 +2,26 @@
 <section class="auth auth--register">
 	<div class="auth__card">
 		<h1 class="auth__title">Crear cuenta</h1>
-		@if (successMessage) {
+		@if (successMessage()) {
 			<div class="auth__success">
-				{{ successMessage }}
+				{{ successMessage() }}
 				<div class="auth__actions">
 					<a (click)="onLoginClick()" class="auth__link">Ir a iniciar sesión</a>
 				</div>
 			</div>
 		} @else {
 			<form [formGroup]="form" (ngSubmit)="submit()" class="auth__form">
-								<div class="auth__form-group">
+				<div class="auth__form-group">
 					<label class="auth__label" for="name">Nombre completo</label>
 					<input
 						id="name"
 						type="text"
 						formControlName="name"
 						class="auth__input"
-						[class.auth__input--error]="f.name?.touched && f.name?.invalid"
+						[class.auth__input--error]="form.get('name')?.touched && form.get('name')?.invalid"
 						placeholder="Tu nombre completo"
 					/>
-					@if (f.name?.touched && f.name?.invalid) {
+					@if (form.get('name')?.touched && form.get('name')?.invalid) {
 						<p class="auth__error">El nombre es requerido.</p>
 					}
 				</div>
@@ -33,15 +33,15 @@
 						type="email"
 						formControlName="email"
 						class="auth__input"
-						[class.auth__input--error]="f.email?.touched && f.email?.invalid"
+						[class.auth__input--error]="form.get('email')?.touched && form.get('email')?.invalid"
 						placeholder="ejemplo@correo.com"
 					/>
-					@if (f.email?.touched && f.email?.invalid) {
+					@if (form.get('email')?.touched && form.get('email')?.invalid) {
 						<p class="auth__error">
-							@if (f.email?.errors?.['required']) {
+							@if (form.get('email')?.errors?.['required']) {
 								<span>El correo es requerido.</span>
 							}
-							@if (f.email?.errors?.['email']) {
+							@if (form.get('email')?.errors?.['email']) {
 								<span>Ingresa un correo válido.</span>
 							}
 						</p>
@@ -56,17 +56,17 @@
 							[type]="passwordVisible() ? 'text' : 'password'"
 							formControlName="password"
 							class="auth__input"
-							[class.auth__input--error]="f.password?.touched && f.password?.invalid"
+							[class.auth__input--error]="form.get('password')?.touched && form.get('password')?.invalid"
 							placeholder="Al menos 6 caracteres"
 						/>
 						<button type="button" class="auth__toggle" (click)="togglePasswordVisibility('password')">👁️</button>
 					</div>
-					@if (f.password?.touched && f.password?.invalid) {
+					@if (form.get('password')?.touched && form.get('password')?.invalid) {
 						<p class="auth__error">
-							@if (f.password?.errors?.['required']) {
+							@if (form.get('password')?.errors?.['required']) {
 								<span>La contraseña es requerida.</span>
 							}
-							@if (f.password?.errors?.['minlength']) {
+							@if (form.get('password')?.errors?.['minlength']) {
 								<span>Mínimo 6 caracteres.</span>
 							}
 						</p>
@@ -81,29 +81,29 @@
 							[type]="confirmPasswordVisible() ? 'text' : 'password'"
 							formControlName="confirm"
 							class="auth__input"
-							[class.auth__input--error]="f.confirm?.touched && f.confirm?.invalid || form.errors?.['passwordMismatch']"
+							[class.auth__input--error]="form.get('confirm')?.touched && form.get('confirm')?.invalid || form.errors?.['passwordMismatch']"
 							placeholder="Confirma tu contraseña"
 						/>
 						<button type="button" class="auth__toggle" (click)="togglePasswordVisibility('confirm')">👁️</button>
 					</div>
-					@if (f.confirm?.touched && f.confirm?.invalid) {
+					@if (form.get('confirm')?.touched && form.get('confirm')?.invalid) {
 						<p class="auth__error">
-							@if (f.confirm?.errors?.['required']) {
+							@if (form.get('confirm')?.errors?.['required']) {
 								<span>Confirma tu contraseña.</span>
 							}
 						</p>
 					}
-					@if (form.errors?.['passwordMismatch'] && f.confirm?.touched) {
+					@if (form.errors?.['passwordMismatch'] && form.get('confirm')?.touched) {
 						<p class="auth__error">Las contraseñas no coinciden.</p>
 					}
 				</div>
 
-				@if (error) {
-					<p class="auth__server-error">{{ error }}</p>
+				@if (error()) {
+					<p class="auth__server-error">{{ error() }}</p>
 				}
 
-				<button class="auth__btn auth__btn--primary" type="submit" [disabled]="loading || form.invalid">
-					{{ loading ? 'Procesando...' : 'Registrarse' }}
+				<button class="auth__btn auth__btn--primary" type="submit" [disabled]="loading() || form.invalid">
+					{{ loading() ? 'Procesando...' : 'Registrarse' }}
 				</button>
 
 				<p class="auth__footer">¿Ya tienes una cuenta? <a (click)="onLoginClick()">Inicia sesión</a></p>
