@@ -1,13 +1,3 @@
-export interface Product {
-  id: number;
-  name: string;
-  brand: 'Loreal' | 'Kerastase';
-  collection: string; // en lugar de familia
-  type: string;       // shampoo, conditioner, etc.
-  description: string;
-  price: number;
-  image: string;
-}
 export interface Data {
   success: boolean;
   message: string;
@@ -24,6 +14,7 @@ export interface Datum {
   shortDescription:   string;
   type_hair:          string;
   desired_result:     string;
+  type_product:       null;
   price:              number;
   originalPrice:      number;
   discountPercentage: string;
@@ -36,6 +27,7 @@ export interface Datum {
   images:             string[];
   videoUrl:           null;
   brand:              string;
+  collection:         string;
   volume:             string;
   sku:                string;
   barcode:            null;
@@ -71,11 +63,20 @@ export interface Category {
 }
 
 export interface Filters {
-  applied:     number;
-  search:      null;
-  category:    null;
-  subcategory: null;
-  priceRange:  null;
+  applied:      number;
+  search:       null;
+  category:     null;
+  subcategory:  null;
+  brand:        null;
+  collection:   null;
+  type_product: null;
+  priceRange:   null;
+  sorting:      Sorting;
+}
+
+export interface Sorting {
+  sortBy:    string;
+  sortOrder: string;
 }
 
 export interface Meta {

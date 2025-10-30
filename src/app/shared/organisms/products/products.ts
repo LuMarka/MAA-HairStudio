@@ -1,267 +1,192 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, input, output, OnInit, signal, computed, DestroyRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Injectable } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProductCard } from '../../molecules/product-card/product-card';
+import { ProductsApiResponse } from '../../../core/services/products.service';
+import { PaginationEvent, Paginator } from "../../molecules/paginator/paginator";
+import { CategoryService } from '../../../core/services/category.service';
+import { SubCategoryService } from '../../../core/services/subcategory.service';
 
-interface Product {
-  id: number;
-  name: string;
-  brand: 'Loreal' | 'Kerastase';
-  collection: string; // en lugar de familia
-  type: string;       // shampoo, conditioner, etc.
-  description: string;
-  price: number;
-  image: string;
-}
-
-@Injectable({ providedIn: 'root' })
-export class ProductsService {
-  getProducts(): Product[] {
-    return [
-      // Kerastase
-      {
-        id: 1,
-        name: 'Bain Satin 2',
-        brand: 'Kerastase',
-        collection: 'Nutritive',
-        type: 'Shampoo',
-        description:
-          'Shampoo nutritivo para cabello seco a muy seco. Limpia, nutre y suaviza el cabello.',
-        price: 14500,
-        image: 'images/ker_nutritive.jpg',
-      },
-      {
-        id: 4,
-        name: 'Masquintense',
-        brand: 'Kerastase',
-        collection: 'Nutritive',
-        type: 'Máscara',
-        description: 'Tratamiento intensivo para nutrir profundamente el cabello seco.',
-        price: 18500,
-        image: 'images/kerastase.png',
-      },
-      {
-        id: 6,
-        name: 'Ciment Thermique',
-        brand: 'Kerastase',
-        collection: 'Resistance',
-        type: 'Crema Termoprotectora',
-        description: 'Protege el cabello del calor y refuerza la fibra capilar.',
-        price: 16000,
-        image: '/images/kerastase.png',
-      },
-      {
-        id: 7,
-        name: 'Elixir Ultime',
-        brand: 'Kerastase',
-        collection: 'Elixir',
-        type: 'Aceite',
-        description: 'Aceite sublimador multiusos para todo tipo de cabello.',
-        price: 21000,
-        image: '/images/kerastase.png',
-      },
-      {
-        id: 9,
-        name: 'Genesis Bain Hydra-Fortifiant',
-        brand: 'Kerastase',
-        collection: 'Genesis',
-        type: 'Shampoo',
-        description: 'Shampoo fortificante anti-caída para cabello debilitado.',
-        price: 15500,
-        image: 'images/kerastase.png',
-      },
-      {
-        id: 10,
-        name: 'Discipline Maskeratine',
-        brand: 'Kerastase',
-        collection: 'Discipline',
-        type: 'Máscara',
-        description: 'Máscara suavizante para controlar el frizz y dar movimiento.',
-        price: 19500,
-        image: 'images/kerastase.png',
-      },
-      // Loreal
-      {
-        id: 2,
-        name: 'Absolut Repair',
-        brand: 'Loreal',
-        collection: 'Absolut Repair',
-        type: 'Shampoo',
-        description: 'Repara y fortalece el cabello dañado, dejándolo suave y brillante.',
-        price: 13200,
-        image: 'images/absolutRepairMolecular.jpg',
-      },
-      {
-        id: 3,
-        name: 'Vitamino Color',
-        brand: 'Loreal',
-        collection: 'Vitamino Color',
-        type: 'Acondicionador',
-        description: 'Protege y prolonga el color del cabello teñido, aportando suavidad y brillo.',
-        price: 12000,
-        image: 'images/vitaminoColorSpectrum.jpg',
-      },
-      {
-        id: 5,
-        name: 'Metal Detox',
-        brand: 'Loreal',
-        collection: 'Metal Detox',
-        type: 'Shampoo',
-        description: 'Elimina los metales del agua y protege el cabello de la rotura.',
-        price: 15000,
-        image: 'images/metalDetox.jpg',
-      },
-      {
-        id: 8,
-        name: 'Pro Longer',
-        brand: 'Loreal',
-        collection: 'Pro Longer',
-        type: 'Shampoo',
-        description: 'Shampoo renovador de largos para puntas más fuertes.',
-        price: 13500,
-        image: 'images/absolutRepairMolecular.jpg',
-      },
-      {
-        id: 11,
-        name: 'Inforcer',
-        brand: 'Loreal',
-        collection: 'Inforcer',
-        type: 'Acondicionador',
-        description: 'Acondicionador fortalecedor anti-quiebre para cabellos frágiles.',
-        price: 12500,
-        image: 'images/absolutRepairMolecular.jpg',
-      },
-      {
-        id: 12,
-        name: 'Blondifier',
-        brand: 'Loreal',
-        collection: 'Blondifier',
-        type: 'Shampoo',
-        description: 'Shampoo iluminador para cabellos rubios o decolorados.',
-        price: 14000,
-        image: 'images/absolutRepairMolecular.jpg',
-      },
-    ];
-  }
+interface SelectOption {
+  readonly label: string;
+  readonly value: string;
+  readonly disabled?: boolean;
+  readonly color?: string;
+  readonly icon?: string;
 }
 
 @Component({
   selector: 'app-products',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ProductCard],
+  imports: [CommonModule, FormsModule, ProductCard, Paginator],
   templateUrl: './products.html',
   styleUrl: './products.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Products {
-  selectedCollection: string = '';
-  get collectionOptions(): { label: string, value: string }[] {
-    if (!this.selectedBrand) return [];
-    const collections = Array.from(new Set(
-      this.products.filter((p: Product) => p.brand === this.selectedBrand).map((p: Product) => p.collection)
-    ));
-    return [
-      { label: 'Todas las colecciones', value: '' },
-      ...collections.map(c => ({ label: c, value: c }))
-    ];
-  }
-  public readonly brands = [
-    { key: 'Kerastase', label: 'Kérastase' },
-    { key: 'Loreal', label: `L'Oréal Proffesionnel` }
-  ];
-  private readonly productsService = inject(ProductsService);
+export class Products implements OnInit {
+  private readonly categoryService = inject(CategoryService);
+  private readonly subCategoryService = inject(SubCategoryService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  products: Product[] = this.productsService.getProducts();
+  // Inputs
+  readonly dataApi = input<ProductsApiResponse | null>();
+  readonly inputPaginated = input<PaginationEvent | null>(null);
 
-  // Tipos de producto para el filtro horizontal (con imagen)
-  productTypes = [
-    { label: 'Todos', value: '', image: '' },
-    { label: 'Shampoo', value: 'Shampoo', image: 'images/absolutRepairMolecular.jpg' },
-    { label: 'Acondicionador', value: 'Acondicionador', image: 'images/vitaminoColorSpectrum.jpg' },
-    { label: 'Mascarilla', value: 'Mascarilla', image: 'images/kerastase.png' },
-    { label: 'Serum', value: 'Serum', image: 'images/kerastase.png' },
-    { label: 'Crema Termoprotectora', value: 'Crema Termoprotectora', image: 'images/kerastase.png' },
-    {label: 'Crema Para Peinar', value: 'Crema Para Peinar', image: 'images/kerastase.png' }
-  ];
+  // Outputs - nombres consistentes
+  readonly paginated = output<PaginationEvent>();
+  readonly categoryFilterChanged = output<string>();
+  readonly subCategoryFilterChanged = output<string>();
 
+  // Signals para el estado local
+  readonly selectedCategory = signal<string>('');
+  readonly selectedSubCategory = signal<string>('');
 
-selectedType: string = '';
+  // Computed values para categorías
+  readonly categoryOptions = computed(() => this.categoryService.categorySelectOptions());
+  readonly isLoadingCategories = computed(() => this.categoryService.isLoading());
+  readonly categoryError = computed(() => this.categoryService.error());
+  readonly activeCategories = computed(() => this.categoryService.activeCategories());
+  readonly hasCategoriesAvailable = computed(() => this.activeCategories().length > 0);
 
-// Handler para el cambio de tipo de producto (filtro horizontal)
-selectType(type: string) {
-  this.selectedType = type;
-}
+  // Computed values para subcategorías
+  readonly subCategoryOptions = computed((): SelectOption[] => {
+    const categoryId = this.selectedCategory();
+    if (!categoryId) return [];
 
-// Opciones de ordenamiento (solo las requeridas)
-sortOptions = [
-  { label: 'Nombre, A-Z', value: 'name-asc' },
-  { label: 'Nombre, Z-A', value: 'name-desc' },
-  { label: 'Precio, ascendente', value: 'price-asc' },
-  { label: 'Precio, descendente', value: 'price-desc' },
-  { label: 'Descuento', value: 'discount' },
-];
+    return this.subCategoryService.subCategorySelectOptionsByCategory()(categoryId);
+  });
 
-// Opciones de marcas para el filtro lateral
-brandOptions = [
-  { label: 'Todas las marcas', value: '' },
-  { label: 'Kerastase', value: 'Kerastase' },
-  { label: `L'Oréal Professionnel`, value: 'Loreal' },
-];
+  readonly isLoadingSubCategories = computed(() => this.subCategoryService.isLoading());
+  readonly subCategoryError = computed(() => this.subCategoryService.error());
 
-selectedBrand: string = '';
+  readonly hasSubCategoriesAvailable = computed(() => {
+    const options = this.subCategoryOptions();
+    return options.length > 1 && !options[0]?.disabled;
+  });
 
+  readonly shouldShowSubCategorySelect = computed(() => Boolean(this.selectedCategory()));
 
-selectedSort: string = 'name-asc';
+  // Computed para obtener los datos seleccionados
+  readonly selectedCategoryData = computed(() => {
+    const selectedId = this.selectedCategory();
+    return selectedId ? this.categoryService.getCategoryFromCache(selectedId) : null;
+  });
 
-// Handler para el cambio de ordenamiento (sidebar)
-onSortChange(sort: string) {
-  this.selectedSort = sort;
-}
+  readonly selectedSubCategoryData = computed(() => {
+    const selectedId = this.selectedSubCategory();
+    return selectedId ? this.subCategoryService.getSubCategoryFromCache(selectedId) : null;
+  });
 
-// Handler para el cambio de marca (sidebar)
-onBrandChange(brand: string) {
-  this.selectedBrand = brand;
-  this.selectedCollection = '';
-}
+  // Computed para el título dinámico
+  readonly currentTitle = computed(() => {
+    const subCategory = this.selectedSubCategoryData();
+    const category = this.selectedCategoryData();
 
-// Handler para el cambio de colección (sidebar)
-onCollectionChange(collection: string) {
-  this.selectedCollection = collection;
-}
+    return subCategory?.name ?? category?.name ?? 'Todos los productos';
+  });
 
-get filteredProductsByBrand(): Record<string, Product[]> {
-  const filterType = this.selectedType;
-  const sort = this.selectedSort;
-  const selectedBrand = this.selectedBrand;
-  const selectedCollection = this.selectedCollection;
-  const sortFn = (a: Product, b: Product) => {
-    switch (sort) {
-      case 'price-desc': return b.price - a.price;
-      case 'price-asc': return a.price - b.price;
-      case 'name-asc': return a.name.localeCompare(b.name);
-      case 'name-desc': return b.name.localeCompare(a.name);
-      // Lógica para descuento (ejemplo: productos con descuento primero)
-      case 'discount': return 0; // Implementar si hay campo de descuento
-      default: return 0;
+  readonly hasActiveFilters = computed(() =>
+    Boolean(this.selectedCategory() || this.selectedSubCategory())
+  );
+
+  // Effect para cargar subcategorías automáticamente cuando cambie la categoría
+  private readonly categoryChangeEffect = effect(() => {
+    const categoryId = this.selectedCategory();
+
+    if (categoryId) {
+      this.loadSubCategoriesByCategory(categoryId);
+    } else {
+      // Limpiar subcategoría cuando no hay categoría seleccionada
+      this.selectedSubCategory.set('');
     }
-  };
-  // Si hay una marca seleccionada, solo mostrar esa
-  const brandsToShow = selectedBrand ? [selectedBrand] : ['Loreal', 'Kerastase'];
-  const result: Record<string, Product[]> = {};
-  for (const brand of brandsToShow) {
-    result[brand] = this.products
-      .filter(p =>
-        p.brand === brand &&
-        (filterType === '' || p.type === filterType) &&
-        (!selectedCollection || p.collection === selectedCollection)
-      )
-      .slice()
-      .sort(sortFn);
+  });
+
+  ngOnInit(): void {
+    this.loadCategories();
   }
-  return result;
-}
 
+  // Métodos de manejo de eventos
+  onPageChange(event: PaginationEvent): void {
+    this.paginated.emit(event);
+  }
 
+  onCategoryChange(categoryId: string): void {
+    if (categoryId === this.selectedCategory()) return; // Evitar re-renders innecesarios
+
+    // Actualizar estado local
+    this.selectedCategory.set(categoryId);
+    this.selectedSubCategory.set(''); // Limpiar subcategoría al cambiar categoría
+
+    // Emitir cambios al componente padre
+    this.categoryFilterChanged.emit(categoryId);
+    this.subCategoryFilterChanged.emit(''); // Notificar que se limpió la subcategoría
+  }
+
+  onSubCategoryChange(subCategoryId: string): void {
+    if (subCategoryId === this.selectedSubCategory()) return; // Evitar re-renders innecesarios
+
+    this.selectedSubCategory.set(subCategoryId);
+    this.subCategoryFilterChanged.emit(subCategoryId);
+  }
+
+  // Métodos de utilidad
+  clearCategorySelection(): void {
+    this.onCategoryChange('');
+  }
+
+  clearSubCategorySelection(): void {
+    this.onSubCategoryChange('');
+  }
+
+  clearAllFilters(): void {
+    this.selectedCategory.set('');
+    this.selectedSubCategory.set('');
+    this.categoryFilterChanged.emit('');
+    this.subCategoryFilterChanged.emit('');
+  }
+
+  refreshCategories(): void {
+    this.loadCategories();
+  }
+
+  refreshSubCategories(): void {
+    const categoryId = this.selectedCategory();
+    if (categoryId) {
+      this.loadSubCategoriesByCategory(categoryId);
+    }
+  }
+
+  // Métodos privados
+  private loadCategories(): void {
+    this.categoryService.getAllCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (categories) => {
+          console.log('Categories loaded successfully:', categories.length, 'categories');
+        },
+        error: (error) => {
+          console.error('Error loading categories:', error);
+        }
+      });
+  }
+
+  private loadSubCategoriesByCategory(categoryId: string): void {
+    // Solo cargar si no están en cache
+    const cachedSubCategories = this.subCategoryService
+      .getSubCategoriesByCategoryFromCache(categoryId);
+
+    if (cachedSubCategories.length === 0) {
+      this.subCategoryService.getSubCategoriesByCategory(categoryId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (subCategories) => {
+            console.log(`Subcategories loaded for category ${categoryId}:`, subCategories.length, 'subcategories');
+          },
+          error: (error) => {
+            console.error('Error loading subcategories:', error);
+          }
+        });
+    }
+  }
 }
 

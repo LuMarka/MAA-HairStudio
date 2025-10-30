@@ -1,0 +1,63 @@
+@if (showPagination()) {
+<nav class="pagination-container" [attr.aria-label]="'Paginación de ' + entityName()">
+  <div class="pagination-info">
+    <span class="pagination-summary">
+      Mostrando {{ startItem() }} - {{ endItem() }} de {{ meta().total }} {{ entityName() }}
+    </span>
+  </div>
+
+  <div class="pagination-controls">
+    <!-- Botón Primera página -->
+    <button type="button" class="pagination-btn" [class.disabled]="!meta().hasPrevPage" [disabled]="!meta().hasPrevPage"
+      (click)="goToPage(1)" aria-label="Primera página">
+      <i class="icon-first-page" aria-hidden="true">⏮</i>
+    </button>
+
+    <!-- Botón Página anterior -->
+    <button type="button" class="pagination-btn" [class.disabled]="!meta().hasPrevPage" [disabled]="!meta().hasPrevPage"
+      (click)="goToPage(meta().page - 1)" aria-label="Página anterior">
+      <i class="icon-prev-page" aria-hidden="true">◀</i>
+    </button>
+
+    <!-- Números de página -->
+    <div class="pagination-numbers">
+      @for (pageNum of visiblePages(); track pageNum) {
+      @if (pageNum === '...') {
+      <span class="pagination-ellipsis">{{ pageNum }}</span>
+      } @else {
+      <button type="button" class="pagination-btn pagination-number" [class.active]="pageNum === meta().page"
+        (click)="goToPage(+pageNum)" [attr.aria-label]="'Ir a página ' + pageNum"
+        [attr.aria-current]="pageNum === meta().page ? 'page' : null">
+        {{ pageNum }}
+      </button>
+      }
+      }
+    </div>
+
+    <!-- Botón Página siguiente -->
+    <button type="button" class="pagination-btn" [class.disabled]="!meta().hasNextPage" [disabled]="!meta().hasNextPage"
+      (click)="goToPage(meta().page + 1)" aria-label="Página siguiente">
+      <i class="icon-next-page" aria-hidden="true">▶</i>
+    </button>
+
+    <!-- Botón Última página -->
+    <button type="button" class="pagination-btn" [class.disabled]="!meta().hasNextPage" [disabled]="!meta().hasNextPage"
+      (click)="goToPage(meta().totalPages)" aria-label="Última página">
+      <i class="icon-last-page" aria-hidden="true">⏭</i>
+    </button>
+  </div>
+
+  
+</nav>
+}
+<!-- Selector de elementos por página -->
+  <div class="page-size-selector">
+    <label for="page-size" class="page-size-label">
+      Mostrar por página:
+    </label>
+    <select id="page-size" class="page-size-select" [value]="meta().limit" (change)="onPageSizeChange($event)">
+      @for (size of pageSizeOptions(); track size) {
+      <option [value]="size">{{ size }}</option>
+      }
+    </select>
+  </div>
