@@ -20,14 +20,20 @@
   </nav> -->
 
   <!-- Filtro lateral que se muestra segundo en mobile/tablet -->
-  <!--  <aside class="products-filter">
+  <aside class="products-filter">
     <div class="products-filter__group">
-      <label for="brand">Marca</label>
-      <select #brandSelect id="brand" name="brand" [(ngModel)]="selectedBrand" (change)="onBrandChange(brandSelect.value)">
-        <option *ngFor="let opt of brandOptions" [value]="opt.value">{{ opt.label }}</option>
+      <label for="category-desktop">Marca</label>
+      <select id="category-desktop" name="category" [value]="selectedCategory()" [disabled]="isLoadingCategories()"
+        (change)="onCategoryChange($any($event.target).value)">
+        @for (option of categoryOptions(); track option.value) {
+        <option [value]="option.value">{{ option.label }}</option>
+        }
       </select>
+      @if (isLoadingCategories()) {
+      <small class="loading-text">Cargando categorías...</small>
+      }
     </div>
-    @if (selectedBrand) {
+    <!-- @if (selectedBrand) {
       <div class="products-filter__group">
         <label for="collection">Colección</label>
         <select #collectionSelect id="collection" name="collection" [(ngModel)]="selectedCollection" (change)="onCollectionChange(collectionSelect.value)">
@@ -40,19 +46,25 @@
       <select #sortSelect id="sort" name="sort" [(ngModel)]="selectedSort" (change)="onSortChange(sortSelect.value)">
         <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
       </select>
-    </div>
-  </aside> -->
+    </div>-->
+  </aside>
 
   <div class="products-layout">
     <!-- Filtro lateral para desktop -->
-    <!-- <aside class="products-filter products-filter--desktop">
+    <aside class="products-filter products-filter--desktop">
       <div class="products-filter__group">
-        <label for="brand-desktop">Marca</label>
-        <select #brandSelectDesktop id="brand-desktop" name="brand" [(ngModel)]="selectedBrand" (change)="onBrandChange(brandSelectDesktop.value)">
-          <option *ngFor="let opt of brandOptions" [value]="opt.value">{{ opt.label }}</option>
+        <label for="category-desktop">Marca</label>
+        <select id="category-desktop" name="category" [value]="selectedCategory()" [disabled]="isLoadingCategories()"
+          (change)="onCategoryChange($any($event.target).value)">
+          @for (option of categoryOptions(); track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+          }
         </select>
+        @if (isLoadingCategories()) {
+        <small class="loading-text">Cargando categorías...</small>
+        }
       </div>
-      @if (selectedBrand) {
+      <!--@if (selectedId) {
         <div class="products-filter__group">
           <label for="collection-desktop">Colección</label>
           <select #collectionSelectDesktop id="collection-desktop" name="collection" [(ngModel)]="selectedCollection" (change)="onCollectionChange(collectionSelectDesktop.value)">
@@ -65,8 +77,8 @@
         <select #sortSelectDesktop id="sort-desktop" name="sort" [(ngModel)]="selectedSort" (change)="onSortChange(sortSelectDesktop.value)">
           <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
         </select>
-      </div>
-    </aside> -->
+      </div>-->
+    </aside>
 
     <div class="products-main">
       <!-- Filtro horizontal por tipo (mostrado solo en desktop) -->
@@ -100,7 +112,7 @@
           <!-- Paginador -->
           @if (dataApi()?.meta) {
           <app-paginator [meta]="dataApi()!.meta" entityName="productos" [showPageSizeSelector]="true"
-            [pageSizeOptions]="[2, 4, 6, 8]" (pageChange)="onPageChange($event)" />
+            (pageChange)="onPageChange($event)" />
           }
         </section>
       </div>

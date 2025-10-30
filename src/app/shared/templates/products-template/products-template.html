@@ -1,4 +1,6 @@
 <section class="products-template">
-  <app-products [dataApi]="products()" (paginated)="onPageChange($event)"></app-products>
+  <app-products 
+    [dataApi]="productsData()" 
+    (paginated)="onPageChange($event)" 
+    (categoryFilterChanged)="onCategoryFilterChange($event)" />
 </section>
-

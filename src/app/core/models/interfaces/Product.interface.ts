@@ -1,10 +1,9 @@
-
 export interface Data {
   success: boolean;
   message: string;
   data:    Datum[];
   meta:    Meta;
- /*  filters: Filters; */
+  filters: Filters;
 }
 
 export interface Datum {
@@ -15,6 +14,7 @@ export interface Datum {
   shortDescription:   string;
   type_hair:          string;
   desired_result:     string;
+  type_product:       null;
   price:              number;
   originalPrice:      number;
   discountPercentage: string;
@@ -27,6 +27,7 @@ export interface Datum {
   images:             string[];
   videoUrl:           null;
   brand:              string;
+  collection:         string;
   volume:             string;
   sku:                string;
   barcode:            null;
@@ -62,11 +63,20 @@ export interface Category {
 }
 
 export interface Filters {
-  applied:     number;
-  search:      null;
-  category:    null;
-  subcategory: null;
-  priceRange:  null;
+  applied:      number;
+  search:       null;
+  category:     null;
+  subcategory:  null;
+  brand:        null;
+  collection:   null;
+  type_product: null;
+  priceRange:   null;
+  sorting:      Sorting;
+}
+
+export interface Sorting {
+  sortBy:    string;
+  sortOrder: string;
 }
 
 export interface Meta {

@@ -17,7 +17,7 @@ import { tap, catchError, finalize } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
 import { Products } from '../../organisms/products/products';
 import { ScrollAnimationService } from '../../../core/services/scroll-animation.service';
-import { ProductsService, Product, ProductsApiResponse, ProductFilters } from '../../../core/services/products.service';
+import { ProductsService, ProductsApiResponse, ProductFilters } from '../../../core/services/products.service';
 import { PaginationEvent } from '../../molecules/paginator/paginator';
 
 @Component({
@@ -28,32 +28,45 @@ import { PaginationEvent } from '../../molecules/paginator/paginator';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
+  // Dependencias inyectadas
   private readonly scrollAnimationService = inject(ScrollAnimationService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly productsService = inject(ProductsService);
 
+  // Inputs
+  readonly title = input.required<string>();
+  readonly showFilters = input(true);
+  readonly limit = input(10);
+
   // State management con signals
   private readonly _productsData = signal<ProductsApiResponse | null>(null);
   private readonly _localLoading = signal(false);
   private readonly _localError = signal<string | null>(null);
+  private readonly _currentFilters = signal<Partial<ProductFilters>>({});
 
-  // Computed values
+  // Computed values - estado derivado
   readonly productsData = computed(() => this._productsData());
   readonly productsList = computed(() => this._productsData()?.data || []);
   readonly meta = computed(() => this._productsData()?.meta);
-  readonly filters = signal<ProductFilters | null>(null);
+  readonly currentFilters = computed(() => this._currentFilters());
   readonly isLoading = computed(() => this._localLoading() || this.productsService.loading());
   readonly error = computed(() => this._localError() || this.productsService.error());
   readonly hasProducts = computed(() => this.productsList().length > 0);
+  readonly allFilters = computed(() => this._productsData()?.filters || {});
 
-  // Inputs usando input()
-  title = input.required<string>();
-  products = signal<ProductsApiResponse | null>(null);
-  showFilters = input(true);
-  limit = input(2);
+  // Computed para verificar si hay filtros activos
+  readonly hasActiveFilters = computed(() => {
+    const filters = this.getCurrentFilters();
+    const baseFilters = ['limit', 'page', 'isFeatured'];
+    
+    return Object.keys(filters).some(key => 
+      !baseFilters.includes(key) && filters[key as keyof ProductFilters]
+    );
+  });
 
   ngOnInit(): void {
+    this.initializeFilters();
     this.loadProducts();
   }
 
@@ -67,86 +80,123 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
     // takeUntilDestroyed maneja la limpieza automáticamente
   }
 
-  private loadProducts(): void {
-    this._localLoading.set(true);
-    this._localError.set(null);
+  // Métodos públicos para manejo de eventos
+  onPageChange(event: PaginationEvent): void {
+    const newFilters = {
+      page: event.page,
+      limit: event.limit
+    };
 
-    this.productsService.getProducts({
-      limit: this.limit(),
-      isFeatured: true // O cualquier filtro que necesites
-    })
-    .pipe(
-      tap((response: ProductsApiResponse) => {
-        this._productsData.set(response);
-        // Actualizar el estado del servicio también
-        this.products.set(response);
-        console.log('Productos cargados exitosamente:', response);
-      }),
-      catchError((error) => {
-        const errorMessage = error?.error?.message || 'Error al cargar productos';
-        this._localError.set(errorMessage);
-        this.productsService.setError(errorMessage);
-        console.error('Error al cargar productos:', error);
-        return EMPTY;
-      }),
-      finalize(() => {
-        this._localLoading.set(false);
-      }),
-      takeUntilDestroyed(this.destroyRef)
-    )
-    .subscribe();
+    this.updateFilters(newFilters, false); // No resetear página aquí
+    this.loadProductsWithFilters(this.getCurrentFilters());
   }
 
-  // Método para recargar productos
+  onCategoryFilterChange(categoryId: string): void {
+    const categoryFilter = categoryId ? { categoryId } : {};
+    // Si categoryFilter está vacío, eliminar el filtro de categoría
+    if (!categoryId || categoryId.trim() === '') {
+      this.clearFilter('categoryId');
+      return;
+    }
+    this.updateFilters(categoryFilter, true); // Resetear a página 1
+    this.loadProductsWithFilters(this.getCurrentFilters());
+  }
+
+  onSearchChange(searchTerm: string): void {
+    const searchFilter = searchTerm ? { search: searchTerm } : {};
+    
+    this.updateFilters(searchFilter, true);
+    this.loadProductsWithFilters(this.getCurrentFilters());
+  }
+
+  onPriceFilterChange(minPrice?: number, maxPrice?: number): void {
+    const priceFilters: Partial<ProductFilters> = {};
+    
+    if (minPrice !== undefined) priceFilters.minPrice = minPrice;
+    if (maxPrice !== undefined) priceFilters.maxPrice = maxPrice;
+    
+    this.updateFilters(priceFilters, true);
+    this.loadProductsWithFilters(this.getCurrentFilters());
+  }
+
+  // Métodos públicos para control de filtros
+  clearAllFilters(): void {
+    this.initializeFilters();
+    this.loadProducts();
+  }
+
+  clearFilter(filterKey: keyof ProductFilters): void {
+    this._currentFilters.update(current => {
+      const updated = { ...current };
+      delete updated[filterKey];
+      return updated;
+    });
+    
+    this.loadProductsWithFilters(this.getCurrentFilters());
+  }
+
   reloadProducts(): void {
     this.loadProducts();
   }
 
-  onPageChange(event: PaginationEvent): void {
-    const currentFilters = this.getCurrentFilters(); // Obtén tus filtros actuales
+  clearError(): void {
+    this._localError.set(null);
+    this.productsService.clearError();
+  }
 
-    this.loadProductsWithFilters({
-      ...currentFilters,
-      page: event.page,
-      limit: event.limit
+  // Método genérico para manejar cambios de filtros desde componentes hijos
+  onFilterChange(filters: Partial<ProductFilters>): void {
+    this.updateFilters(filters, true);
+    this.loadProductsWithFilters(this.getCurrentFilters());
+  }
+
+  // Métodos privados - lógica interna
+  private initializeFilters(): void {
+    this._currentFilters.set({
+      limit: this.limit(),
+      page: 1,
+      isFeatured: true
     });
   }
 
-  private getCurrentFilters(): Partial<any> {
-    // Retorna los filtros actuales basados en el estado de los filtros
-    return this.filters() || {};
+  private loadProducts(): void {
+    this.loadProductsWithFilters(this.getCurrentFilters());
   }
 
-  // Método para cargar productos con filtros específicos
-  loadProductsWithFilters(filters: Partial<any>): void {
+  private getCurrentFilters(): Partial<ProductFilters> {
+    return this._currentFilters();
+  }
+
+  private updateFilters(newFilters: Partial<ProductFilters>, resetPage = true): void {
+    this._currentFilters.update(current => ({
+      ...current,
+      ...newFilters,
+      ...(resetPage && { page: 1 })
+    }));
+  }
+
+  private loadProductsWithFilters(filters: Partial<ProductFilters>): void {
     this._localLoading.set(true);
     this._localError.set(null);
 
     this.productsService.getProducts(filters)
-    .pipe(
-      tap((response: ProductsApiResponse) => {
-        this._productsData.set(response);
-        this.products.set(response);
-        console.log('Productos cargados exitosamente:', response);
-      }),
-      catchError((error) => {
-        const errorMessage = error?.error?.message || 'Error al cargar productos';
-        this._localError.set(errorMessage);
-        this.productsService.setError(errorMessage);
-        return EMPTY;
-      }),
-      finalize(() => {
-        this._localLoading.set(false);
-      }),
-      takeUntilDestroyed(this.destroyRef)
-    )
-    .subscribe();
-  }
-
-  // Método para limpiar errores
-  clearError(): void {
-    this._localError.set(null);
-    this.productsService.clearError();
+      .pipe(
+        tap((response: ProductsApiResponse) => {
+          this._productsData.set(response);
+          console.log('Productos cargados exitosamente:', response.data.length, 'productos');
+        }),
+        catchError((error) => {
+          const errorMessage = error?.error?.message || 'Error al cargar productos';
+          this._localError.set(errorMessage);
+          console.error('Error al cargar productos:', error);
+          return EMPTY;
+        }),
+        finalize(() => {
+          this._localLoading.set(false);
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
   }
 
   private initializeScrollAnimations(): void {
@@ -171,10 +221,6 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
   // Métodos para manejar eventos de UI
   onRetry(): void {
     this.reloadProducts();
-  }
-
-  onFilterChange(filters: any): void {
-    this.loadProductsWithFilters(filters);
   }
 }
 

@@ -20,7 +20,7 @@ export interface PaginationEvent {
   styleUrl: './paginator.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PaginatorComponent {
+export class Paginator {
   // Inputs
   readonly meta = input.required<Meta>();
   readonly entityName = input('elementos');

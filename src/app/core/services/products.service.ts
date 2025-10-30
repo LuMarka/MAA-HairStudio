@@ -5,20 +5,21 @@ import { Datum, Data, Meta, Filters, Category } from '../models/interfaces/Produ
 import { environment } from '../../../environments/environment.development';
 
 export interface ProductFilters {
-  search?: string;
-  subcategoryId?: string;
-  categoryId?: string;
-  brand?: string;
-  collection?: string;
+  search?: string;                    // Búsqueda en nombre, descripción, marca, colección, tipo
+  subcategoryId?: string;             // UUID de subcategoría
+  categoryId?: string;                // UUID de categoría
+  brand?: string;                     // Filtro por marca
+  collection?: string;                // Filtro por colección
   type_hair?: 'Graso' | 'Seco' | 'Mixto' | 'Rizado' | 'Liso' | 'Ondulado' | 'Teñido' | 'Dañado';
-  desired_result?: 'Hidratación' | 'Volumen' | 'Anti-caspa' | 'Reparación' | 'Brillo' | 'Control de grasa' | 'Crecimiento' | 'Protección del color';
+  desired_result?: 'Hidratación' | 'Volumen' | 'Anti-caspa' | 'Reparación' | 'Brillo' | 'Control de grasa' | 'Crecimiento' | 'Protección del color' | 'Definición';
+  type_product?: 'Shampoo' | 'Acondicionador' | 'Mascarilla' | 'Serum' | 'Aceite' | 'Spray' | 'Crema' | 'Gel' | 'Mousse' | 'Cera' | 'Pomada' | 'Tratamiento' | 'Tinte' | 'Decolorante' | 'Protector Térmico' | 'Leave-in' | 'Ampolla' | 'Tónico' | 'Exfoliante';
   minPrice?: number;
   maxPrice?: number;
   minRating?: number;
   isFeatured?: boolean;
   isOnSale?: boolean;
   inStock?: boolean;
-  sortBy?: 'name' | 'price' | 'rating' | 'popularity' | 'createdAt';
+  sortBy?: 'name' | 'price' | 'finalPrice' | 'rating' | 'popularity' | 'createdAt' | 'updatedAt' | 'brand' | 'viewCount';
   sortOrder?: 'ASC' | 'DESC';
   page?: number;
   limit?: number;
