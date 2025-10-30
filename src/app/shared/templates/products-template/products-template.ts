@@ -59,8 +59,8 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
   readonly hasActiveFilters = computed(() => {
     const filters = this.getCurrentFilters();
     const baseFilters = ['limit', 'page', 'isFeatured'];
-    
-    return Object.keys(filters).some(key => 
+
+    return Object.keys(filters).some(key =>
       !baseFilters.includes(key) && filters[key as keyof ProductFilters]
     );
   });
@@ -102,19 +102,31 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
     this.loadProductsWithFilters(this.getCurrentFilters());
   }
 
+  onSubCategoryFilterChange(subcategoryId: string): void {
+    // Si subcategoryId está vacío, eliminar el filtro de subcategoría
+    if (!subcategoryId || subcategoryId.trim() === '') {
+      this.clearFilter('subcategoryId' as keyof ProductFilters);
+      return;
+    }
+
+    const subcategoryFilter: Partial<ProductFilters> = { subcategoryId };
+    this.updateFilters(subcategoryFilter, true); // Resetear a página 1
+    this.loadProductsWithFilters(this.getCurrentFilters());
+  }
+
   onSearchChange(searchTerm: string): void {
     const searchFilter = searchTerm ? { search: searchTerm } : {};
-    
+
     this.updateFilters(searchFilter, true);
     this.loadProductsWithFilters(this.getCurrentFilters());
   }
 
   onPriceFilterChange(minPrice?: number, maxPrice?: number): void {
     const priceFilters: Partial<ProductFilters> = {};
-    
+
     if (minPrice !== undefined) priceFilters.minPrice = minPrice;
     if (maxPrice !== undefined) priceFilters.maxPrice = maxPrice;
-    
+
     this.updateFilters(priceFilters, true);
     this.loadProductsWithFilters(this.getCurrentFilters());
   }
@@ -131,7 +143,7 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
       delete updated[filterKey];
       return updated;
     });
-    
+
     this.loadProductsWithFilters(this.getCurrentFilters());
   }
 

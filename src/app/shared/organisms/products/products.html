@@ -32,16 +32,33 @@
       @if (isLoadingCategories()) {
       <small class="loading-text">Cargando categorías...</small>
       }
+      @if (categoryError()) {
+      <small class="error-text">{{ categoryError() }}</small>
+      }
     </div>
-    <!-- @if (selectedBrand) {
-      <div class="products-filter__group">
-        <label for="collection">Colección</label>
-        <select #collectionSelect id="collection" name="collection" [(ngModel)]="selectedCollection" (change)="onCollectionChange(collectionSelect.value)">
-          <option *ngFor="let opt of collectionOptions" [value]="opt.value">{{ opt.label }}</option>
-        </select>
-      </div>
-    }
+    @if (shouldShowSubCategorySelect()) {
     <div class="products-filter__group">
+      <label for="collection">Colección</label>
+      <select id="collection" name="collection" [value]="selectedSubCategory()" [disabled]="isLoadingSubCategories()"
+        (change)="onSubCategoryChange($any($event.target).value)">
+        @for (option of subCategoryOptions(); track option.value) {
+        <option [value]="option.value" [disabled]="option.disabled">
+          {{ option.label }}
+        </option>
+        }
+      </select>
+      @if (isLoadingSubCategories()) {
+      <small class="loading-text">Cargando subcategorías...</small>
+      }
+      @if (subCategoryError()) {
+      <small class="error-text">{{ subCategoryError() }}</small>
+      }
+      @if (!hasSubCategoriesAvailable() && !isLoadingSubCategories()) {
+      <small class="info-text">No hay subcategorías disponibles</small>
+      }
+    </div>
+    }
+    <!--<div class="products-filter__group">
       <label for="sort">Ordenar por</label>
       <select #sortSelect id="sort" name="sort" [(ngModel)]="selectedSort" (change)="onSortChange(sortSelect.value)">
         <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
@@ -63,16 +80,33 @@
         @if (isLoadingCategories()) {
         <small class="loading-text">Cargando categorías...</small>
         }
+        @if (categoryError()) {
+        <small class="error-text">{{ categoryError() }}</small>
+        }
       </div>
-      <!--@if (selectedId) {
-        <div class="products-filter__group">
-          <label for="collection-desktop">Colección</label>
-          <select #collectionSelectDesktop id="collection-desktop" name="collection" [(ngModel)]="selectedCollection" (change)="onCollectionChange(collectionSelectDesktop.value)">
-            <option *ngFor="let opt of collectionOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
-        </div>
-      }
+      @if (shouldShowSubCategorySelect()) {
       <div class="products-filter__group">
+        <label for="collection-desktop">Colección</label>
+        <select id="collection-desktop" name="collection" [value]="selectedSubCategory()"
+          [disabled]="isLoadingSubCategories()" (change)="onSubCategoryChange($any($event.target).value)">
+          @for (option of subCategoryOptions(); track option.value) {
+          <option [value]="option.value" [disabled]="option.disabled">
+            {{ option.label }}
+          </option>
+          }
+        </select>
+        @if (isLoadingSubCategories()) {
+        <small class="loading-text">Cargando subcategorías...</small>
+        }
+        @if (subCategoryError()) {
+        <small class="error-text">{{ subCategoryError() }}</small>
+        }
+        @if (!hasSubCategoriesAvailable() && !isLoadingSubCategories()) {
+        <small class="info-text">No hay subcategorías disponibles</small>
+        }
+      </div>
+      }
+      <!--<div class="products-filter__group">
         <label for="sort-desktop">Ordenar por</label>
         <select #sortSelectDesktop id="sort-desktop" name="sort" [(ngModel)]="selectedSort" (change)="onSortChange(sortSelectDesktop.value)">
           <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
