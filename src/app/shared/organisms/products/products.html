@@ -65,6 +65,48 @@
         }
       </select>
     </div>
+    @if (hasActiveFilters()) {
+    <div class="products-filter__active">
+      <h4>Filtros activos</h4>
+      <div class="filter-tags">
+        @if (selectedCategoryData()) {
+        <div class="filter-tag filter-tag--category">
+          <span>{{ selectedCategoryData()!.name }}</span>
+          <button type="button" (click)="clearCategorySelection()" aria-label="Quitar filtro de marca">
+            ×
+          </button>
+        </div>
+        }
+        @if (selectedSubCategoryData()) {
+        <div class="filter-tag filter-tag--subcategory">
+          <span>{{ selectedSubCategoryData()!.name }}</span>
+          <button type="button" (click)="clearSubCategorySelection()" aria-label="Quitar filtro de colección">
+            ×
+          </button>
+        </div>
+        }
+        @if (selectedProductType()) {
+        <div class="filter-tag filter-tag--product-type">
+          <span>{{ selectedProductTypeData()?.label }}</span>
+          <button type="button" (click)="clearProductTypeSelection()" aria-label="Quitar filtro de tipo de producto">
+            ×
+          </button>
+        </div>
+        }
+        @if (selectedSortOption()?.value !== 'name-ASC') {
+        <div class="filter-tag filter-tag--sort">
+          <span>{{ selectedSortOption()?.label }}</span>
+          <button type="button" (click)="resetSort()" aria-label="Resetear ordenamiento">
+            ×
+          </button>
+        </div>
+        }
+      </div>
+      <button type="button" class="clear-all-btn" (click)="clearAllFilters()">
+        Limpiar todos los filtros
+      </button>
+    </div>
+    }
   </aside>
 
   <div class="products-layout">
