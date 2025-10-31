@@ -1,23 +1,22 @@
 <div class="products-container">
   <!-- Filtro horizontal por tipo que se muestra primero en mobile/tablet -->
-  <!--  <nav class="products-type-filter" aria-label="Filtrar por tipo">
-    @for (t of productTypes; track t.value) {
-      <button
-        class="products-type-filter__btn"
-        [class.products-type-filter__btn--active]="selectedType === t.value"
-        (click)="selectType(t.value)"
-        type="button"
-        [attr.aria-pressed]="selectedType === t.value"
-      >
-        @if (t.image) {
-          <span class="products-type-filter__icon">
-            <img [src]="t.image" [alt]="t.label" />
-          </span>
-        }
-        <span class="products-type-filter__label">{{ t.label }}</span>
-      </button>
+  @if (productTypeOptions().length > 1) {
+  <nav class="products-type-filter" aria-label="Filtrar por tipo">
+    @for (productType of productTypeOptions(); track productType.value) {
+    <button class="products-type-filter__btn"
+      [class.products-type-filter__btn--active]="selectedProductType() === productType.value"
+      (click)="onProductTypeChange(productType.value)" type="button"
+      [attr.aria-pressed]="selectedProductType() === productType.value">
+      @if (productType.icon) {
+      <span class="products-type-filter__icon">
+        <i class="fas fa-{{ productType.icon }}" [attr.aria-hidden]="true"></i>
+      </span>
+      }
+      <span class="products-type-filter__label">{{ productType.label }}</span>
+    </button>
     }
-  </nav> -->
+  </nav>
+  }
 
   <!-- Filtro lateral que se muestra segundo en mobile/tablet -->
   <aside class="products-filter">
@@ -58,12 +57,14 @@
       }
     </div>
     }
-    <!--<div class="products-filter__group">
-      <label for="sort">Ordenar por</label>
-      <select #sortSelect id="sort" name="sort" [(ngModel)]="selectedSort" (change)="onSortChange(sortSelect.value)">
-        <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
+    <div class="products-filter__group">
+      <label for="sort-mobile">Ordenar por</label>
+      <select id="sort-mobile" name="sort" [value]="selectedSort()" (change)="onSortChange($any($event.target).value)">
+        @for (option of sortOptions(); track option.value) {
+        <option [value]="option.value">{{ option.label }}</option>
+        }
       </select>
-    </div>-->
+    </div>
   </aside>
 
   <div class="products-layout">
@@ -106,41 +107,95 @@
         }
       </div>
       }
-      <!--<div class="products-filter__group">
+      <div class="products-filter__group">
         <label for="sort-desktop">Ordenar por</label>
-        <select #sortSelectDesktop id="sort-desktop" name="sort" [(ngModel)]="selectedSort" (change)="onSortChange(sortSelectDesktop.value)">
-          <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
+        <select id="sort-desktop" name="sort" [value]="selectedSort()" (change)="onSortChange($any($event.target).value)">
+          @for (option of sortOptions(); track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+          }
         </select>
-      </div>-->
+      </div>
+      <!-- Filtros activos -->
+      @if (hasActiveFilters()) {
+      <div class="products-filter__active">
+        <h4>Filtros activos</h4>
+        <div class="filter-tags">
+          @if (selectedCategoryData()) {
+          <div class="filter-tag filter-tag--category">
+            <span>{{ selectedCategoryData()!.name }}</span>
+            <button type="button" (click)="clearCategorySelection()" aria-label="Quitar filtro de marca">
+              ×
+            </button>
+          </div>
+          }
+          @if (selectedSubCategoryData()) {
+          <div class="filter-tag filter-tag--subcategory">
+            <span>{{ selectedSubCategoryData()!.name }}</span>
+            <button type="button" (click)="clearSubCategorySelection()" aria-label="Quitar filtro de colección">
+              ×
+            </button>
+          </div>
+          }
+          @if (selectedProductType()) {
+          <div class="filter-tag filter-tag--product-type">
+            <span>{{ selectedProductTypeData()?.label }}</span>
+            <button type="button" (click)="clearProductTypeSelection()" aria-label="Quitar filtro de tipo de producto">
+              ×
+            </button>
+          </div>
+          }
+          @if (selectedSortOption()?.value !== 'name-ASC') {
+          <div class="filter-tag filter-tag--sort">
+            <span>{{ selectedSortOption()?.label }}</span>
+            <button type="button" (click)="resetSort()" aria-label="Resetear ordenamiento">
+              ×
+            </button>
+          </div>
+          }
+        </div>
+        <button type="button" class="clear-all-btn" (click)="clearAllFilters()">
+          Limpiar todos los filtros
+        </button>
+      </div>
+      }
     </aside>
 
     <div class="products-main">
       <!-- Filtro horizontal por tipo (mostrado solo en desktop) -->
-      <!-- <nav class="products-type-filter products-type-filter--desktop" aria-label="Filtrar por tipo">
-        @for (t of dataApi()?.data; track t.id) {
-          <button
-            class="products-type-filter__btn"
-            [class.products-type-filter__btn--active]="selectedType === t.value"
-            (click)="selectType(t.value)"
-            type="button"
-            [attr.aria-pressed]="selectedType === t.value"
-          >
-            @if (t.image) {
-              <span class="products-type-filter__icon">
-                <img [src]="t.image" [alt]="t.label" />
-              </span>
-            }
-            <span class="products-type-filter__label">{{ t.label }}</span>
-          </button>
+      @if (productTypeOptions().length > 1) {
+      <nav class="products-type-filter products-type-filter--desktop" aria-label="Filtrar por tipo">
+        @for (productType of productTypeOptions(); track productType.value) {
+        <button class="products-type-filter__btn"
+          [class.products-type-filter__btn--active]="selectedProductType() === productType.value"
+          (click)="onProductTypeChange(productType.value)" type="button"
+          [attr.aria-pressed]="selectedProductType() === productType.value">
+          @if (productType.icon) {
+          <span class="products-type-filter__icon">
+            <i class="fas fa-{{ productType.icon }}" [attr.aria-hidden]="true"></i>
+          </span>
+          }
+          <span class="products-type-filter__label">{{ productType.label }}</span>
+        </button>
         }
-      </nav> -->
+      </nav>
+      }
 
       <div class="products-brand-sections">
         <section class="products__brand-group">
           <h2 class="products__brand-title">{{ 'luisa' }}</h2>
           <div class="products">
+            @if (isLoadingCategories() || isLoadingSubCategories()) {
+            <div class="products__loading">
+              Cargando productos...
+            </div>
+            } @else if (!dataApi()?.data?.length) {
+            <div class="products__empty">
+              No hay productos disponibles para los filtros seleccionados.
+            </div>
+            } @else {
             @for (product of dataApi()?.data; track product.id) {
             <app-product-card [product]="product"></app-product-card>
+            }
             }
           </div>
           <!-- Paginador -->

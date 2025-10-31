@@ -131,6 +131,28 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
     this.loadProductsWithFilters(this.getCurrentFilters());
   }
 
+  onSortChange(sortData: { sortBy: string; sortOrder: string }): void {
+    const sortFilter = {
+      sortBy: sortData.sortBy as ProductFilters['sortBy'],
+      sortOrder: sortData.sortOrder as ProductFilters['sortOrder']
+    };
+
+    this.updateFilters(sortFilter, true); // Resetear a página 1
+    this.loadProductsWithFilters(this.getCurrentFilters());
+  }
+
+  onProductTypeFilterChange(type: ProductFilters['type_product']): void {
+    // Si el tipo está vacío, eliminar el filtro de tipo de producto
+    if (!type || type.trim() === '') {
+      this.clearFilter('type_product');
+      return;
+    }
+
+    const productTypeFilter: Partial<ProductFilters> = { type_product: type };
+    this.updateFilters(productTypeFilter, true); // Resetear a página 1
+    this.loadProductsWithFilters(this.getCurrentFilters());
+  }
+
   // Métodos públicos para control de filtros
   clearAllFilters(): void {
     this.initializeFilters();
