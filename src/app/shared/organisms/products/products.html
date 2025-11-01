@@ -224,7 +224,18 @@
 
       <div class="products-brand-sections">
         <section class="products__brand-group">
-          <h2 class="products__brand-title">{{ 'luisa' }}</h2>
+          @if (selectedCategoryData()) {
+          <header class="products__brand-header">
+            <h2 class="products__brand-title">{{ selectedCategoryData()!.name }}</h2>
+            @if (selectedSubCategoryData()) {
+            <p class="products__brand-subtitle">{{ selectedSubCategoryData()!.name }}</p>
+            }
+          </header>
+          } @else {
+          <header class="products__brand-header">
+            <h2 class="products__brand-title">Todos los productos</h2>
+          </header>
+          }
           <div class="products">
             @if (isLoadingCategories() || isLoadingSubCategories()) {
             <div class="products__loading">
