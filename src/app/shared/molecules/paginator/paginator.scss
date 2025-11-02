@@ -207,7 +207,7 @@ $btn-size-desktop: 2.5rem;  // 40px
   // Usa tu mixin de SASS para el foco
   &:focus-visible {
     @include m.focused();
-    --focus-ring: 0 0 0 3px #{variables.color(secondary)};
+    --focus-ring: 0 0 0 3px #{v.color(secondary)};
   }
 }
 
