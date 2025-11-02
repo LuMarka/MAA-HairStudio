@@ -1,145 +1,213 @@
-.pagination-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin: 2rem 0;
+/* --- Imports (Asegúrate que las rutas sean correctas) --- */
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
 
-  @media (min-width: 768px) {
+
+/* --- Variables locales (específicas de este componente) --- */
+$btn-size-mobile: 2.25rem; // 36px
+$btn-size-desktop: 2.5rem;  // 40px
+
+/* --- 1. Contenedor Wrapper (NUEVO) --- */
+/* Gestiona el layout entre la navegación y el selector */
+.pagination-wrapper {
+  display: flex;
+  flex-direction: column; // Mobile-first: apilado
+  align-items: center;   // Centrado en móvil
+  gap: v.$spacing-lg; // 24px
+  margin: v.$spacing-xl;// 32px
+
+  // Usa mixin para desktop
+  @include m.desktop-up() {
     flex-direction: row;
     justify-content: space-between;
-    align-items: center;
   }
 }
 
-.pagination-info {
-  .pagination-summary {
-    font-size: 0.875rem;
-    color: var(--text-secondary, #666);
-    font-weight: 500;
+/* --- 2. Bloque: Paginación (Nav) --- */
+.pagination {
+  display: flex;
+  flex-direction: column; // Mobile-first: apilado
+  align-items: center;
+  gap: v.$spacing-md; // 16px
+  width: 100%;
+
+
+
+
+  // Usa mixin para tablet
+  @include m.tablet-up() {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  // Usa mixin para desktop
+  @include m.desktop-up() {
+    width: auto;
+    flex-grow: 1;
   }
 }
 
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  justify-content: center;
+/* --- Elementos de Paginación --- */
+.pagination__info {
+  text-align: center;
+
+  @include m.tablet-up() {
+    text-align: left;
+    white-space: nowrap;
+  }
 }
 
-.pagination-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2.5rem;
-  height: 2.5rem;
-  padding: 0.5rem;
-  border: 1px solid var(--border-color, #e5e7eb);
-  background: var(--bg-primary, #fff);
-  color: var(--text-primary, #374151);
-  font-size: 0.875rem;
+.pagination__summary {
+  font-size: v.$font-size-sm; // 14px
+  color: v.color(text-muted);
   font-weight: 500;
-  border-radius: 0.375rem;
+}
+
+.pagination__controls {
+  display: flex;
+  flex-wrap: wrap; // Mobile-first: permite que los números bajen
+  justify-content: center;
+  gap: v.$spacing-xs; // 4px
+}
+
+.pagination__numbers {
+  display: flex;
+  align-items: center;
+  gap: v.$spacing-xs; // 4px
+
+  /* En móvil, los números saltan de línea y van al centro */
+  flex-basis: 100%;
+  justify-content: center;
+  margin: v.$spacing-sm 0; // 8px
+  order: 1; // Fuerza a los números a ir debajo de [Prev] [Next]
+
+  /* En tablet, vuelve a la línea */
+  @include m.tablet-up() {
+    flex-basis: auto;
+    margin: 0 v.$spacing-sm;
+    order: 0; // Vuelve al orden normal del DOM
+  }
+}
+
+.pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: $btn-size-mobile;
+  min-width: $btn-size-mobile;
+  padding: v.$spacing-xs; // 4px
+  border: 1px solid v.color(green-200);
+  background: v.color(surface); // #FFFFFF
+  color: v.color(text-dark); // #1F2937
+  font-size: v.$font-size-sm; // 14px
+  font-weight: 500;
+  border-radius: v.$borderRadius; // 12px
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all v.$transitionDuration;
+  user-select: none;
+
+  [class^="icon-"] {
+    font-style: normal;
+    font-size: 1rem;
+    line-height: 1;
+  }
 
   &:hover:not(.disabled) {
-    background: var(--bg-hover, #f9fafb);
-    border-color: var(--border-hover, #d1d5db);
+    background: v.color(bg-alt); // #F1F4F1
+    border-color: v.color(green-300);
     transform: translateY(-1px);
   }
 
-  &:focus {
-    outline: none;
-    ring: 2px;
-    ring-color: var(--primary-color, #3b82f6);
-    ring-offset: 2px;
+  &:focus-visible {
+    @include m.focused();
+    z-index: 1;
   }
 
   &.active {
-    background: var(--primary-color, #3b82f6);
-    border-color: var(--primary-color, #3b82f6);
-    color: white;
+    background: v.color(primary); // #728F70
+    border-color: v.color(primary);
+    color: v.color(text-light); // #FFFFFF
     font-weight: 600;
+    font-family: 'Poiret One';
   }
 
   &.disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
-    background: var(--bg-disabled, #f9fafb);
-    color: var(--text-disabled, #9ca3af);
+    background: v.color(bg-alt);
+    color: v.color(text-muted);
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Ajuste para Tablet: botones más grandes */
+  @include m.tablet-up() {
+    height: $btn-size-desktop;
+    min-width: $btn-size-desktop;
+    padding: v.$spacing-sm; // 8px
   }
 }
 
-.pagination-numbers {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin: 0 0.5rem;
-}
-
-.pagination-number {
-  min-width: 2.5rem;
-}
-
-.pagination-ellipsis {
-  display: flex;
+.pagination__ellipsis {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.5rem;
-  height: 2.5rem;
-  color: var(--text-secondary, #6b7280);
+  height: $btn-size-mobile;
+  min-width: $btn-size-mobile;
+  padding: v.$spacing-xs;
+  color: v.color(text-muted);
   font-weight: 500;
+  font-family: v.$font-family-secondary; // Aseguramos sans-serif
+
+  @include m.tablet-up() {
+    height: $btn-size-desktop;
+    min-width: $btn-size-desktop;
+    padding: v.$spacing-sm;
+  }
 }
 
+/* --- 3. Bloque: Selector de Tamaño --- */
 .page-size-selector {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
+  justify-content: center; // Centrado en mobile
+  gap: v.$spacing-sm; // 8px
 
-  .page-size-label {
-    color: var(--text-secondary, #666);
-    font-weight: 500;
-    white-space: nowrap;
-  }
 
-  .page-size-select {
-    padding: 0.5rem;
-    border: 1px solid var(--border-color, #e5e7eb);
-    border-radius: 0.375rem;
-    background: var(--bg-primary, #fff);
-    color: var(--text-primary, #374151);
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: border-color 0.2s ease;
-
-    &:focus {
-      outline: none;
-      border-color: var(--primary-color, #3b82f6);
-      ring: 2px;
-      ring-color: var(--primary-color, #3b82f6);
-      ring-opacity: 0.2;
-    }
+  @include m.desktop-up() {
+     justify-content: flex-end;
+     margin-right:160px;
   }
 }
 
-// Responsive adjustments
-@media (max-width: 567px) {
-  .pagination-controls {
-    flex-wrap: wrap;
+.page-size-selector__label {
+  color: v.color(text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  font-size: v.$font-size-sm;
+}
+
+.page-size-selector__select {
+  padding: v.$spacing-sm v.$spacing-xs;
+  border: 1px solid v.color(green-200);
+  border-radius: v.$borderRadius; // 12px (para coincidir)
+  background: v.color(surface);
+  color: v.color(text-dark);
+  font-size: v.$font-size-sm;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color v.$transitionDuration, box-shadow v.$transitionDuration;
+
+  /* Ajuste de altura para alinear con botones en desktop */
+  @include m.tablet-up() {
+    height: $btn-size-desktop; // 40px
   }
 
-  .pagination-btn {
-    min-width: 2rem;
-    height: 2rem;
-    padding: 0.25rem;
-    font-size: 0.75rem;
-  }
-
-  .pagination-numbers {
-    order: 3;
-    flex-basis: 100%;
-    justify-content: center;
-    margin-top: 0.5rem;
+  // Usa tu mixin de SASS para el foco
+  &:focus-visible {
+    @include m.focused();
+    --focus-ring: 0 0 0 3px #{variables.color(secondary)};
   }
 }
+
