@@ -11,14 +11,14 @@
           type="email" 
           formControlName="email" 
           class="auth__input" 
-          [class.auth__input--error]="f.email?.touched && f.email?.invalid"
+          [class.auth__input--error]="form.get('email')?.touched && form.get('email')?.invalid"
           placeholder="ejemplo@correo.com"
         />
-        @if (f.email?.touched && f.email?.invalid) {
+        @if (form.get('email')?.touched && form.get('email')?.invalid) {
           <p class="auth__error">
-            @if (f.email?.errors?.['required']) {
+            @if (form.get('email')?.errors?.['required']) {
               El correo es requerido.
-            } @else if (f.email?.errors?.['email']) {
+            } @else if (form.get('email')?.errors?.['email']) {
               Ingresa un correo válido.
             }
           </p>
@@ -34,7 +34,7 @@
             [type]="passwordVisible() ? 'text' : 'password'" 
             formControlName="password" 
             class="auth__input" 
-            [class.auth__input--error]="f.password?.touched && f.password?.invalid"
+            [class.auth__input--error]="form.get('password')?.touched && form.get('password')?.invalid"
             placeholder="Contraseña"
           />
           <button 
@@ -46,11 +46,11 @@
             👁️
           </button>
         </div>
-        @if (f.password?.touched && f.password?.invalid) {
+        @if (form.get('password')?.touched && form.get('password')?.invalid) {
           <p class="auth__error">
-            @if (f.password?.errors?.['required']) {
+            @if (form.get('password')?.errors?.['required']) {
               La contraseña es requerida.
-            } @else if (f.password?.errors?.['minlength']) {
+            } @else if (form.get('password')?.errors?.['minlength']) {
               Mínimo 6 caracteres.
             }
           </p>
@@ -66,9 +66,9 @@
       </div>
       
       <!-- Error message -->
-      @if (error) {
+      @if (error()) {
         <div class="auth__server-error">
-          {{ error }}
+          {{ error() }}
         </div>
       }
       
@@ -76,9 +76,9 @@
       <button 
         class="auth__btn auth__btn--primary" 
         type="submit" 
-        [disabled]="loading"
+        [disabled]="loading()"
       >
-        {{ loading ? 'Cargando...' : 'Entrar' }}
+        {{ loading() ? 'Cargando...' : 'Entrar' }}
       </button>
       
       <!-- Registration link -->
