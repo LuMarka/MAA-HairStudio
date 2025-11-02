@@ -59,6 +59,10 @@ export class Search {
     }
   ];
 
+  onSearch(result: { query: string; timestamp: number }): void {
+    console.log('Búsqueda realizada:', result.query);
+  }
+
   // readonly actions = [
   //   {
   //     icon: this.icons.favorites,

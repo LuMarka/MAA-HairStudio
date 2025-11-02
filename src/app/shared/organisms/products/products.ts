@@ -7,6 +7,7 @@ import { ProductsApiResponse } from '../../../core/services/products.service';
 import { PaginationEvent, Paginator } from "../../molecules/paginator/paginator";
 import { CategoryService } from '../../../core/services/category.service';
 import { SubCategoryService } from '../../../core/services/subcategory.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 
 // Enum para los tipos de productos
@@ -68,10 +69,13 @@ export class Products implements OnInit {
   private readonly categoryService = inject(CategoryService);
   private readonly subCategoryService = inject(SubCategoryService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   // Inputs
   readonly dataApi = input<ProductsApiResponse | null>();
   readonly inputPaginated = input<PaginationEvent | null>(null);
+  readonly searchQuery = input<string>(''); // Nuevo input para la búsqueda
 
   // Outputs
   readonly paginated = output<PaginationEvent>();
@@ -79,6 +83,7 @@ export class Products implements OnInit {
   readonly subCategoryFilterChanged = output<string>();
   readonly sortChanged = output<{ sortBy: string; sortOrder: string }>();
   readonly productTypeFilterChanged = output<string>();
+  readonly searchChanged = output<string>(); // Nuevo output para búsquedas
 
   // Signals para el estado local
   readonly selectedCategory = signal<string>('');
@@ -203,8 +208,13 @@ export class Products implements OnInit {
     return this.productTypeOptions().find(option => option.value === selectedType);
   });
 
-  // Computed para el título dinámico
+  // Computed para el título dinámico (actualizado para incluir búsquedas)
   readonly currentTitle = computed(() => {
+    const searchQuery = this.searchQuery();
+    if (searchQuery) {
+      return `Resultados para "${searchQuery}"`;
+    }
+
     const subCategory = this.selectedSubCategoryData();
     const category = this.selectedCategoryData();
     const productType = this.selectedProductTypeData();
@@ -216,8 +226,32 @@ export class Products implements OnInit {
     return 'Todos los productos';
   });
 
+  // Computed para información de búsqueda
+  readonly searchInfo = computed(() => {
+    const query = this.searchQuery();
+    const hasResults = this.dataApi()?.data?.length || 0;
+    const total = this.dataApi()?.meta?.total || 0;
+
+    if (!query) return null;
+
+    return {
+      query,
+      hasResults: hasResults > 0,
+      resultsCount: hasResults,
+      totalCount: total,
+      message: hasResults > 0
+        ? `${total} productos encontrados para "${query}"`
+        : `No se encontraron productos para "${query}"`
+    };
+  });
+
+  // Computed para verificar si hay búsqueda activa
+  readonly hasActiveSearch = computed(() => Boolean(this.searchQuery().trim()));
+
+  // Actualizar hasActiveFilters para incluir búsqueda
   readonly hasActiveFilters = computed(() =>
     Boolean(
+      this.searchQuery() ||
       this.selectedCategory() ||
       this.selectedSubCategory() ||
       this.selectedProductType() !== ProductType.TODOS
@@ -304,6 +338,26 @@ export class Products implements OnInit {
     this.onSortChange('name-ASC');
   }
 
+  // Nuevo método para limpiar búsqueda
+  clearSearch(): void {
+    this.searchChanged.emit('');
+    // Remover el parámetro 'search' de la URL
+    this.removeSearchParam();
+  }
+
+  // Método privado para remover el parámetro search de la URL
+  private removeSearchParam(): void {
+    const currentUrl = this.router.url;
+    const urlTree = this.router.parseUrl(currentUrl);
+
+    // Eliminar el parámetro 'search' de los queryParams
+    delete urlTree.queryParams['search'];
+
+    // Navegar a la nueva URL sin el parámetro search
+    this.router.navigateByUrl(urlTree, { replaceUrl: true });
+  }
+
+  // Actualizar clearAllFilters para incluir búsqueda
   clearAllFilters(): void {
     this.selectedCategory.set('');
     this.selectedSubCategory.set('');
@@ -314,6 +368,19 @@ export class Products implements OnInit {
     this.subCategoryFilterChanged.emit('');
     this.sortChanged.emit({ sortBy: 'name', sortOrder: 'ASC' });
     this.productTypeFilterChanged.emit('');
+    this.searchChanged.emit(''); // Emitir limpieza de búsqueda
+
+    // Limpiar todos los query params relacionados con filtros
+    this.clearAllQueryParams();
+  }
+
+  // Método privado para limpiar todos los query params de filtros
+  private clearAllQueryParams(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
   }
 
   refreshCategories(): void {

@@ -15,6 +15,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { tap, catchError, finalize } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 import { Products } from '../../organisms/products/products';
 import { ScrollAnimationService } from '../../../core/services/scroll-animation.service';
 import { ProductsService, ProductsApiResponse, ProductFilters } from '../../../core/services/products.service';
@@ -33,6 +34,7 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly productsService = inject(ProductsService);
+  private readonly route = inject(ActivatedRoute);
 
   // Inputs
   readonly title = input.required<string>();
@@ -44,30 +46,50 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
   private readonly _localLoading = signal(false);
   private readonly _localError = signal<string | null>(null);
   private readonly _currentFilters = signal<Partial<ProductFilters>>({});
+  private readonly _searchQuery = signal<string>('');
 
   // Computed values - estado derivado
   readonly productsData = computed(() => this._productsData());
   readonly productsList = computed(() => this._productsData()?.data || []);
   readonly meta = computed(() => this._productsData()?.meta);
   readonly currentFilters = computed(() => this._currentFilters());
+  readonly searchQuery = computed(() => this._searchQuery());
   readonly isLoading = computed(() => this._localLoading() || this.productsService.loading());
   readonly error = computed(() => this._localError() || this.productsService.error());
   readonly hasProducts = computed(() => this.productsList().length > 0);
   readonly allFilters = computed(() => this._productsData()?.filters || {});
 
-  // Computed para verificar si hay filtros activos
+  // Computed para verificar si hay filtros activos (incluyendo búsqueda)
   readonly hasActiveFilters = computed(() => {
     const filters = this.getCurrentFilters();
-    const baseFilters = ['limit', 'page', 'isFeatured'];
+    const baseFilters = ['limit', 'page'];
 
     return Object.keys(filters).some(key =>
       !baseFilters.includes(key) && filters[key as keyof ProductFilters]
     );
   });
 
+  // Computed para el título dinámico (incluyendo búsquedas)
+  readonly dynamicTitle = computed(() => {
+    const searchQuery = this.searchQuery();
+    if (searchQuery) {
+      return `Resultados para "${searchQuery}"`;
+    }
+    return this.title();
+  });
+
   ngOnInit(): void {
-    this.initializeFilters();
-    this.loadProducts();
+    // Escuchar cambios en los query parameters
+    this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const searchParam = params['search'] || '';
+        this._searchQuery.set(searchParam);
+
+        // Inicializar filtros con búsqueda si existe
+        this.initializeFilters(searchParam);
+        this.loadProducts();
+      });
   }
 
   ngAfterViewInit(): void {
@@ -87,34 +109,33 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
       limit: event.limit
     };
 
-    this.updateFilters(newFilters, false); // No resetear página aquí
+    this.updateFilters(newFilters, false);
     this.loadProductsWithFilters(this.getCurrentFilters());
   }
 
   onCategoryFilterChange(categoryId: string): void {
     const categoryFilter = categoryId ? { categoryId } : {};
-    // Si categoryFilter está vacío, eliminar el filtro de categoría
     if (!categoryId || categoryId.trim() === '') {
       this.clearFilter('categoryId');
       return;
     }
-    this.updateFilters(categoryFilter, true); // Resetear a página 1
+    this.updateFilters(categoryFilter, true);
     this.loadProductsWithFilters(this.getCurrentFilters());
   }
 
   onSubCategoryFilterChange(subcategoryId: string): void {
-    // Si subcategoryId está vacío, eliminar el filtro de subcategoría
     if (!subcategoryId || subcategoryId.trim() === '') {
       this.clearFilter('subcategoryId' as keyof ProductFilters);
       return;
     }
 
     const subcategoryFilter: Partial<ProductFilters> = { subcategoryId };
-    this.updateFilters(subcategoryFilter, true); // Resetear a página 1
+    this.updateFilters(subcategoryFilter, true);
     this.loadProductsWithFilters(this.getCurrentFilters());
   }
 
   onSearchChange(searchTerm: string): void {
+    this._searchQuery.set(searchTerm);
     const searchFilter = searchTerm ? { search: searchTerm } : {};
 
     this.updateFilters(searchFilter, true);
@@ -137,29 +158,33 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
       sortOrder: sortData.sortOrder as ProductFilters['sortOrder']
     };
 
-    this.updateFilters(sortFilter, true); // Resetear a página 1
+    this.updateFilters(sortFilter, true);
     this.loadProductsWithFilters(this.getCurrentFilters());
   }
 
   onProductTypeFilterChange(type: ProductFilters['type_product']): void {
-    // Si el tipo está vacío, eliminar el filtro de tipo de producto
     if (!type || type.trim() === '') {
       this.clearFilter('type_product');
       return;
     }
 
     const productTypeFilter: Partial<ProductFilters> = { type_product: type };
-    this.updateFilters(productTypeFilter, true); // Resetear a página 1
+    this.updateFilters(productTypeFilter, true);
     this.loadProductsWithFilters(this.getCurrentFilters());
   }
 
   // Métodos públicos para control de filtros
   clearAllFilters(): void {
+    this._searchQuery.set('');
     this.initializeFilters();
     this.loadProducts();
   }
 
   clearFilter(filterKey: keyof ProductFilters): void {
+    if (filterKey === 'search') {
+      this._searchQuery.set('');
+    }
+
     this._currentFilters.update(current => {
       const updated = { ...current };
       delete updated[filterKey];
@@ -178,19 +203,23 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
     this.productsService.clearError();
   }
 
-  // Método genérico para manejar cambios de filtros desde componentes hijos
   onFilterChange(filters: Partial<ProductFilters>): void {
     this.updateFilters(filters, true);
     this.loadProductsWithFilters(this.getCurrentFilters());
   }
 
   // Métodos privados - lógica interna
-  private initializeFilters(): void {
-    this._currentFilters.set({
+  private initializeFilters(searchQuery?: string): void {
+    const baseFilters: Partial<ProductFilters> = {
       limit: this.limit(),
-      page: 1,
-      isFeatured: true
-    });
+      page: 1
+    };
+
+    if (searchQuery) {
+      baseFilters.search = searchQuery;
+    }
+
+    this._currentFilters.set(baseFilters);
   }
 
   private loadProducts(): void {
@@ -217,7 +246,11 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
       .pipe(
         tap((response: ProductsApiResponse) => {
           this._productsData.set(response);
-          console.log('Productos cargados exitosamente:', response.data.length, 'productos');
+          const searchQuery = this.searchQuery();
+          const logMessage = searchQuery
+            ? `Productos encontrados para "${searchQuery}": ${response.data.length} resultados`
+            : `Productos cargados: ${response.data.length} productos`;
+          console.log(logMessage);
         }),
         catchError((error) => {
           const errorMessage = error?.error?.message || 'Error al cargar productos';
@@ -236,23 +269,19 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
   private initializeScrollAnimations(): void {
     if (!this.hasProducts()) return;
 
-    // Observar elementos principales de productos
     this.scrollAnimationService.observeElements('.products-type-filter');
     this.scrollAnimationService.observeElements('.products-filter');
     this.scrollAnimationService.observeElements('.products__brand-group');
 
-    // Observar las cards de productos con efecto escalonado
     setTimeout(() => {
       const productCards = document.querySelectorAll('.product-card');
       productCards.forEach((card, index) => {
-        // Agregar delay escalonado
         (card as HTMLElement).style.transitionDelay = `${index * 0.05}s`;
       });
       this.scrollAnimationService.observeElements('.product-card');
     }, 300);
   }
 
-  // Métodos para manejar eventos de UI
   onRetry(): void {
     this.reloadProducts();
   }

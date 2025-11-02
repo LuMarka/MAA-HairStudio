@@ -1,12 +1,31 @@
-<div class="search-input" [class.search-input--focused]="isFocused()">
-  <input class="search-input__field" [formControl]="searchControl" [placeholder]="placeholder()"
-    [attr.aria-label]="ariaLabel()" type="text" autocomplete="off">
-  <button class="search-input__button" type="submit" [disabled]="isDisabled()"
-    [attr.aria-label]="'Buscar ' + searchControl.value || 'Realizar búsqueda'">
+<form class="search-input"
+      [class.search-input--focused]="isFocused()"
+      [class.search-input--has-value]="hasValue()"
+      (submit)="onSubmit(); $event.preventDefault()">
+
+  <input class="search-input__field"
+         [formControl]="searchControl"
+         [placeholder]="placeholder()"
+         [attr.aria-label]="ariaLabel()"
+         type="text"
+         autocomplete="off">
+
+  @if (hasValue()) {
+    <button class="search-input__clear"
+            type="button"
+            (click)="clearSearch()"
+            aria-label="Limpiar búsqueda">
+      ✕
+    </button>
+  }
+
+  <button class="search-input__button"
+          type="submit"
+          [attr.aria-label]="'Buscar ' + searchControl.value">
     <svg class="search-input__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
     </svg>
   </button>
-</div>
+</form>

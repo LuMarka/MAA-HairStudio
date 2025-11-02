@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-search-input',
@@ -13,45 +14,85 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
   }
 })
 export class SearchInput {
-  placeholder = input<string>('Busca por producto, servicio, marca...');
-  ariaLabel = input<string>('Campo de búsqueda');
-  isDisabled = input<boolean>(false);
-  initialValue = input<string>('');
+  private readonly router = inject(Router);
 
-  searchValue = output<string>();
-  searchSubmit = output<string>();
+  // Inputs
+  readonly placeholder = input('Busca por producto, servicio, marca...');
+  readonly ariaLabel = input('Campo de búsqueda');
+  readonly isDisabled = input(false);
+  readonly initialValue = input('');
+  readonly navigateOnSearch = input(true); // Nueva opción para controlar navegación
 
-  searchControl = new FormControl('', { nonNullable: true });
-  isFocused = input<boolean>(false);
+  // Outputs
+  readonly searchValue = output<string>();
+  readonly searchSubmit = output<string>();
+
+  // State
+  readonly searchControl = new FormControl('', { nonNullable: true });
+  readonly isFocused = signal(false);
+  readonly hasValue = signal(false);
 
   constructor() {
     // Set initial value
     effect(() => {
-      if (this.initialValue()) {
-        this.searchControl.setValue(this.initialValue());
+      const initial = this.initialValue();
+      if (initial) {
+        this.searchControl.setValue(initial);
+        this.hasValue.set(true);
+      }
+    });
+
+    // Handle disabled state
+    effect(() => {
+      const disabled = this.isDisabled();
+      if (disabled) {
+        this.searchControl.disable();
+      } else {
+        this.searchControl.enable();
       }
     });
 
     // Emit value changes
     effect(() => {
       this.searchControl.valueChanges.subscribe(value => {
+        this.hasValue.set(value.length > 0);
         this.searchValue.emit(value);
       });
     });
   }
 
   onFocusIn(): void {
-    // Focus state handled by CSS :focus-within
+    this.isFocused.set(true);
   }
 
   onFocusOut(): void {
-    // Focus state handled by CSS :focus-within
+    this.isFocused.set(false);
   }
 
   onSubmit(): void {
     const value = this.searchControl.value.trim();
     if (value) {
       this.searchSubmit.emit(value);
+
+      // Navegar solo si está habilitado
+      if (this.navigateOnSearch()) {
+        this.navigateToProducts(value);
+      }
     }
+  }
+
+  onSearch(result: { query: string; timestamp: number }): void {
+    console.log('Búsqueda realizada:', result.query);
+  }
+
+  clearSearch(): void {
+    this.searchControl.setValue('');
+    this.hasValue.set(false);
+  }
+
+  private navigateToProducts(query: string): void {
+    this.router.navigate(['/products'], {
+      queryParams: { search: query }
+    });
   }
 }

@@ -102,6 +102,21 @@
         </div>
         }
       </div>
+      @if (searchInfo()) {
+      <div class="products-search-info">
+        <div class="products-search-info__content">
+          <h2 class="products-search-info__title">{{ searchInfo()!.message }}</h2>
+          @if (searchInfo()!.hasResults) {
+          <p class="products-search-info__subtitle">
+            Mostrando {{ searchInfo()!.resultsCount }} de {{ searchInfo()!.totalCount }} resultados
+          </p>
+          }
+          <button class="products-search-info__clear" type="button" (click)="clearSearch()">
+            Limpiar búsqueda
+          </button>
+        </div>
+      </div>
+      }
       <button type="button" class="clear-all-btn" (click)="clearAllFilters()">
         Limpiar todos los filtros
       </button>
@@ -151,7 +166,8 @@
       }
       <div class="products-filter__group">
         <label for="sort-desktop">Ordenar por</label>
-        <select id="sort-desktop" name="sort" [value]="selectedSort()" (change)="onSortChange($any($event.target).value)">
+        <select id="sort-desktop" name="sort" [value]="selectedSort()"
+          (change)="onSortChange($any($event.target).value)">
           @for (option of sortOptions(); track option.value) {
           <option [value]="option.value">{{ option.label }}</option>
           }
