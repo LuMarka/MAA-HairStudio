@@ -1,0 +1,454 @@
+<section class="admin-products-manager">
+  <!-- Header with filters and actions -->
+  <header class="admin-products-manager__header">
+    <div class="admin-products-manager__title-section">
+      <h2 class="admin-products-manager__title">Gestión de Productos</h2>
+      <p class="admin-products-manager__subtitle">
+        {{ filteredProducts().length }} productos encontrados
+      </p>
+    </div>
+
+    <div class="admin-products-manager__actions">
+      <button
+        class="admin-products-manager__btn admin-products-manager__btn--primary"
+        (click)="openAddModal()"
+        aria-label="Agregar nuevo producto"
+      >
+        ➕ Agregar Producto
+      </button>
+
+      @if (selectedCount() > 0) {
+        <button
+          class="admin-products-manager__btn admin-products-manager__btn--danger"
+          (click)="deleteSelectedProducts()"
+          [disabled]="isLoading()"
+        >
+          🗑️ Eliminar ({{ selectedCount() }})
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- Filters section -->
+  <div class="admin-products-manager__filters">
+    <div class="admin-products-manager__filter-group">
+      <input
+        type="text"
+        class="admin-products-manager__search"
+        placeholder="Buscar productos..."
+        [value]="filters().search"
+        (input)="onSearchChange($event)"
+      />
+
+      <select
+        class="admin-products-manager__select"
+        [value]="filters().category"
+        (change)="onCategoryChange($event)"
+      >
+        <option value="">Todas las categorías</option>
+        @for (category of categories(); track category) {
+          <option [value]="category">{{ category }}</option>
+        }
+      </select>
+
+      <select
+        class="admin-products-manager__select"
+        [value]="filters().status"
+        (change)="onStatusChange($event)"
+      >
+        <option value="all">Todos los estados</option>
+        <option value="active">Activos</option>
+        <option value="inactive">Inactivos</option>
+      </select>
+
+      <select
+        class="admin-products-manager__select"
+        [value]="filters().sortBy"
+        (change)="onSortChange($event)"
+      >
+        <option value="createdAt">Fecha creación</option>
+        <option value="name">Nombre</option>
+        <option value="price">Precio</option>
+        <option value="stock">Stock</option>
+      </select>
+
+      <button
+        class="admin-products-manager__btn admin-products-manager__btn--secondary"
+        (click)="updateFilters({ sortOrder: filters().sortOrder === 'asc' ? 'desc' : 'asc' })"
+        [attr.aria-label]="filters().sortOrder === 'asc' ? 'Cambiar a descendente' : 'Cambiar a ascendente'"
+      >
+        {{ filters().sortOrder === 'asc' ? '⬆️' : '⬇️' }}
+      </button>
+
+      <button
+        class="admin-products-manager__btn admin-products-manager__btn--ghost"
+        (click)="clearFilters()"
+      >
+        Limpiar
+      </button>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  @if (error()) {
+    <div class="admin-products-manager__error">
+      <span class="admin-products-manager__error-icon">⚠️</span>
+      <p class="admin-products-manager__error-text">{{ error() }}</p>
+      <button
+        class="admin-products-manager__error-retry"
+        (click)="loadProducts()"
+      >
+        Reintentar
+      </button>
+    </div>
+  }
+
+  <!-- Loading state -->
+  @if (isLoading()) {
+    <div class="admin-products-manager__loading">
+      <div class="admin-products-manager__loading-spinner"></div>
+      <p class="admin-products-manager__loading-text">Cargando productos...</p>
+    </div>
+  }
+
+  <!-- Products table -->
+  @if (!isLoading() && !error()) {
+    <div class="admin-products-manager__table-container">
+      <table class="admin-products-manager__table">
+        <thead class="admin-products-manager__table-head">
+          <tr>
+            <th class="admin-products-manager__table-header">
+              <input
+                type="checkbox"
+                class="admin-products-manager__checkbox"
+                [checked]="selectedCount() === filteredProducts().length && filteredProducts().length > 0"
+                [indeterminate]="selectedCount() > 0 && selectedCount() < filteredProducts().length"
+                (change)="toggleAllSelection()"
+                aria-label="Seleccionar todos"
+              />
+            </th>
+            <th class="admin-products-manager__table-header">Imagen</th>
+            <th class="admin-products-manager__table-header">Producto</th>
+            <th class="admin-products-manager__table-header">Categoría</th>
+            <th class="admin-products-manager__table-header">Precio</th>
+            <th class="admin-products-manager__table-header">Stock</th>
+            <th class="admin-products-manager__table-header">Estado</th>
+            <th class="admin-products-manager__table-header">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody class="admin-products-manager__table-body">
+          @for (product of filteredProducts(); track product.id) {
+            <tr
+              class="admin-products-manager__table-row"
+              [class.admin-products-manager__table-row--selected]="selectedProducts().has(product.id)"
+            >
+              <td class="admin-products-manager__table-cell">
+                <input
+                  type="checkbox"
+                  class="admin-products-manager__checkbox"
+                  [checked]="selectedProducts().has(product.id)"
+                  (change)="toggleProductSelection(product.id)"
+                  [attr.aria-label]="'Seleccionar ' + product.name"
+                />
+              </td>
+
+              <td class="admin-products-manager__table-cell">
+                <img
+                  class="admin-products-manager__product-image"
+                  [src]="product.image"
+                  [alt]="product.name"
+                  loading="lazy"
+                />
+              </td>
+
+              <td class="admin-products-manager__table-cell">
+                <div class="admin-products-manager__product-info">
+                  <h3 class="admin-products-manager__product-name">{{ product.name }}</h3>
+                  <p class="admin-products-manager__product-description">{{ product.description }}</p>
+                </div>
+              </td>
+
+              <td class="admin-products-manager__table-cell">
+                <span class="admin-products-manager__category-tag">{{ product.category }}</span>
+              </td>
+
+              <td class="admin-products-manager__table-cell">
+                <span class="admin-products-manager__price">{{ formatPrice(product.price) }}</span>
+              </td>
+
+              <td class="admin-products-manager__table-cell">
+                <span
+                  class="admin-products-manager__stock admin-products-manager__stock--{{ getStockStatus(product.stock) }}"
+                >
+                  {{ product.stock }}
+                </span>
+              </td>
+
+              <td class="admin-products-manager__table-cell">
+                <span
+                  class="admin-products-manager__status admin-products-manager__status--{{ product.isActive ? 'active' : 'inactive' }}"
+                >
+                  {{ product.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+
+              <td class="admin-products-manager__table-cell">
+                <div class="admin-products-manager__actions-cell">
+                  <button
+                    class="admin-products-manager__action-btn admin-products-manager__action-btn--edit"
+                    (click)="openEditModal(product)"
+                    [attr.aria-label]="'Editar ' + product.name"
+                  >
+                    ✏️
+                  </button>
+
+                  <button
+                    class="admin-products-manager__action-btn admin-products-manager__action-btn--delete"
+                    (click)="openDeleteModal(product)"
+                    [attr.aria-label]="'Eliminar ' + product.name"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td
+                class="admin-products-manager__table-cell admin-products-manager__empty-state"
+                colspan="8"
+              >
+                <p class="admin-products-manager__empty-text">No se encontraron productos</p>
+                <button
+                  class="admin-products-manager__btn admin-products-manager__btn--primary"
+                  (click)="openAddModal()"
+                >
+                  Agregar primer producto
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Add/Edit Product Modal -->
+  @if (showAddModal() || showEditModal()) {
+    <div class="admin-products-manager__modal-backdrop" (click)="closeModals()">
+      <div class="admin-products-manager__modal" (click)="$event.stopPropagation()">
+        <header class="admin-products-manager__modal-header">
+          <h3 class="admin-products-manager__modal-title">
+            {{ showAddModal() ? 'Agregar Producto' : 'Editar Producto' }}
+          </h3>
+          <button
+            class="admin-products-manager__modal-close"
+            (click)="closeModals()"
+            aria-label="Cerrar modal"
+          >
+            ✕
+          </button>
+        </header>
+
+        <form
+          class="admin-products-manager__form"
+          [formGroup]="productForm"
+          (ngSubmit)="saveProduct($event)"
+        >
+          <div class="admin-products-manager__form-group">
+            <label class="admin-products-manager__label" for="productName">
+              Nombre del producto *
+            </label>
+            <input
+              id="productName"
+              type="text"
+              class="admin-products-manager__input"
+              formControlName="name"
+              placeholder="Ej: Shampoo Nutritivo"
+            />
+            @if (productForm.get('name')?.touched && productForm.get('name')?.errors) {
+              <span class="admin-products-manager__error-message">
+                El nombre es requerido (mínimo 3 caracteres)
+              </span>
+            }
+          </div>
+
+          <div class="admin-products-manager__form-group">
+            <label class="admin-products-manager__label" for="productDescription">
+              Descripción *
+            </label>
+            <textarea
+              id="productDescription"
+              class="admin-products-manager__textarea"
+              formControlName="description"
+              placeholder="Descripción detallada del producto"
+              rows="3"
+            ></textarea>
+            @if (productForm.get('description')?.touched && productForm.get('description')?.errors) {
+              <span class="admin-products-manager__error-message">
+                La descripción es requerida (mínimo 10 caracteres)
+              </span>
+            }
+          </div>
+
+          <div class="admin-products-manager__form-row">
+            <div class="admin-products-manager__form-group">
+              <label class="admin-products-manager__label" for="productPrice">
+                Precio *
+              </label>
+              <input
+                id="productPrice"
+                type="number"
+                class="admin-products-manager__input"
+                formControlName="price"
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+              />
+              @if (productForm.get('price')?.touched && productForm.get('price')?.errors) {
+                <span class="admin-products-manager__error-message">
+                  El precio debe ser mayor a 0
+                </span>
+              }
+            </div>
+
+            <div class="admin-products-manager__form-group">
+              <label class="admin-products-manager__label" for="productStock">
+                Stock *
+              </label>
+              <input
+                id="productStock"
+                type="number"
+                class="admin-products-manager__input"
+                formControlName="stock"
+                placeholder="0"
+                min="0"
+              />
+              @if (productForm.get('stock')?.touched && productForm.get('stock')?.errors) {
+                <span class="admin-products-manager__error-message">
+                  El stock no puede ser negativo
+                </span>
+              }
+            </div>
+          </div>
+
+          <div class="admin-products-manager__form-group">
+            <label class="admin-products-manager__label" for="productCategory">
+              Categoría *
+            </label>
+            <select
+              id="productCategory"
+              class="admin-products-manager__select"
+              formControlName="category"
+            >
+              <option value="">Seleccionar categoría</option>
+              @for (category of categories(); track category) {
+                <option [value]="category">{{ category }}</option>
+              }
+            </select>
+            @if (productForm.get('category')?.touched && productForm.get('category')?.errors) {
+              <span class="admin-products-manager__error-message">
+                Selecciona una categoría
+              </span>
+            }
+          </div>
+
+          <div class="admin-products-manager__form-group">
+            <label class="admin-products-manager__label" for="productImage">
+              URL de imagen *
+            </label>
+            <input
+              id="productImage"
+              type="url"
+              class="admin-products-manager__input"
+              formControlName="image"
+              placeholder="https://ejemplo.com/imagen.jpg"
+            />
+            @if (productForm.get('image')?.touched && productForm.get('image')?.errors) {
+              <span class="admin-products-manager__error-message">
+                La URL de imagen es requerida
+              </span>
+            }
+          </div>
+
+          <div class="admin-products-manager__form-group">
+            <label class="admin-products-manager__checkbox-label">
+              <input
+                type="checkbox"
+                class="admin-products-manager__checkbox"
+                formControlName="isActive"
+              />
+              Producto activo
+            </label>
+          </div>
+
+          <div class="admin-products-manager__modal-actions">
+            <button
+              type="button"
+              class="admin-products-manager__btn admin-products-manager__btn--ghost"
+              (click)="closeModals()"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              class="admin-products-manager__btn admin-products-manager__btn--primary"
+              [disabled]="productForm.invalid || isLoading()"
+            >
+              {{ isLoading() ? 'Guardando...' : (showAddModal() ? 'Agregar' : 'Actualizar') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Delete Confirmation Modal -->
+  @if (showDeleteModal() && currentProduct()) {
+    <div class="admin-products-manager__modal-backdrop" (click)="closeModals()">
+      <div class="admin-products-manager__modal admin-products-manager__modal--small" (click)="$event.stopPropagation()">
+        <header class="admin-products-manager__modal-header">
+          <h3 class="admin-products-manager__modal-title">Confirmar eliminación</h3>
+          <button
+            class="admin-products-manager__modal-close"
+            (click)="closeModals()"
+            aria-label="Cerrar modal"
+          >
+            ✕
+          </button>
+        </header>
+
+        <div class="admin-products-manager__modal-content">
+          <p class="admin-products-manager__delete-message">
+            ¿Estás seguro de que deseas eliminar el producto
+            <strong>{{ currentProduct()?.name }}</strong>?
+          </p>
+          <p class="admin-products-manager__delete-warning">
+            Esta acción no se puede deshacer.
+          </p>
+        </div>
+
+        <div class="admin-products-manager__modal-actions">
+          <button
+            type="button"
+            class="admin-products-manager__btn admin-products-manager__btn--ghost"
+            (click)="closeModals()"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            class="admin-products-manager__btn admin-products-manager__btn--danger"
+            (click)="deleteProduct(currentProduct()!.id)"
+            [disabled]="isLoading()"
+          >
+            {{ isLoading() ? 'Eliminando...' : 'Eliminar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</section>

@@ -1,0 +1,620 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+@use 'sass:color';
+
+.admin-products-manager {
+  // Mobile-first base styles
+  padding: v.$spacing-md;
+  background: v.color('bg-main');
+
+  // Header
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: v.$spacing-md;
+    margin-bottom: v.$spacing-lg;
+    padding-bottom: v.$spacing-md;
+    border-bottom: 2px solid v.color('gray1');
+
+    @include m.tablet {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+  }
+
+  &__title-section {
+    flex: 1;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: v.color('white1');
+    margin: 0 0 v.$spacing-xs 0;
+
+    @include m.tablet {
+      font-size: 1.75rem;
+    }
+  }
+
+  &__subtitle {
+    color: v.color('white1');
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$spacing-sm;
+  }
+
+  // Buttons
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: v.$spacing-xs;
+    padding: v.$spacing-sm v.$spacing-md;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    &--primary {
+      background: v.color('primary');
+      color: v.color('white1');
+
+      &:hover:not(:disabled) {
+        background: color.adjust(v.color('primary'), $lightness: -10%);
+        transform: translateY(-1px);
+      }
+    }
+
+    &--secondary {
+      background: v.color('secondary');
+      color: v.color('white1');
+
+      &:hover:not(:disabled) {
+        background: color.adjust(v.color('secondary'), $lightness: -10%);
+      }
+    }
+
+    &--danger {
+      background: v.color('error');
+      color: v.color('white1');
+
+      &:hover:not(:disabled) {
+        background: color.adjust(v.color('error'), $lightness: -10%);
+      }
+    }
+
+    &--ghost {
+      background: transparent;
+      color: v.color('text-dark');
+      border-color: v.color('gray2');
+
+      &:hover:not(:disabled) {
+        background: v.color('gray1');
+      }
+    }
+  }
+
+  // Filters
+  &__filters {
+    background: v.color('white1');
+    padding: v.$spacing-md;
+    border-radius: 12px;
+    margin-bottom: v.$spacing-lg;
+    border: 1px solid v.color('gray1');
+  }
+
+  &__filter-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: v.$spacing-sm;
+
+    @include m.tablet-up {
+      grid-template-columns: 2fr 1fr;
+    }
+
+    @include m.tablet {
+      grid-template-columns: 2fr repeat(4, 1fr) auto auto;
+    }
+  }
+
+  &__search {
+    padding: v.$spacing-sm v.$spacing-md;
+    border: 1px solid v.color('gray2');
+    border-radius: 8px;
+    font-size: 0.9rem;
+
+    &:focus {
+      outline: none;
+      border-color: v.color('primary');
+      box-shadow: 0 0 0 2px rgba(v.color('primary'), 0.1);
+    }
+  }
+
+  &__select {
+    padding: v.$spacing-sm v.$spacing-md;
+    border: 1px solid v.color('gray2');
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: v.color('white1');
+
+    &:focus {
+      outline: none;
+      border-color: v.color('primary');
+      box-shadow: 0 0 0 2px rgba(v.color('primary'), 0.1);
+    }
+  }
+
+  // Error state
+  &__error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: v.$spacing-xl;
+    background: rgba(v.color('error'), 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(v.color('error'), 0.2);
+    margin-bottom: v.$spacing-lg;
+  }
+
+  &__error-icon {
+    font-size: 2rem;
+    margin-bottom: v.$spacing-sm;
+  }
+
+  &__error-text {
+    color: v.color('error');
+    margin: 0 0 v.$spacing-md 0;
+    font-weight: 500;
+  }
+
+  &__error-retry {
+    padding: v.$spacing-sm v.$spacing-md;
+    background: v.color('error');
+    color: v.color('white1');
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+
+    &:hover {
+      background: v.color('error'), 10%;
+    }
+  }
+
+  // Loading state
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: v.$spacing-xl;
+    text-align: center;
+  }
+
+  &__loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid v.color('gray2');
+    border-top: 3px solid v.color('primary');
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: v.$spacing-md;
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  }
+
+  &__loading-text {
+    color: v.color('text-muted');
+    margin: 0;
+  }
+
+  // Table
+  &__table-container {
+    background: v.color('white1');
+    border-radius: 12px;
+    border: 1px solid v.color('gray1');
+    overflow: hidden;
+
+    // Mobile: convert table to cards
+    @include m.mobile {
+      .admin-products-manager__table {
+        display: block;
+      }
+
+      .admin-products-manager__table-head {
+        display: none;
+      }
+
+      .admin-products-manager__table-body {
+        display: block;
+      }
+
+      .admin-products-manager__table-row {
+        display: block;
+        background: v.color('white1');
+        border: 1px solid v.color('gray1');
+        border-radius: 8px;
+        margin-bottom: v.$spacing-md;
+        padding: v.$spacing-md;
+
+        &--selected {
+          border-color: v.color('primary');
+          background: rgba(v.color('primary'), 0.05);
+        }
+      }
+
+      .admin-products-manager__table-cell {
+        display: block;
+        border: none;
+        padding: v.$spacing-xs 0;
+
+        &:before {
+          content: attr(data-label) ': ';
+          font-weight: 600;
+          color: v.color('text-dark');
+        }
+      }
+    }
+
+    // Desktop table styles
+    @include m.tablet {
+      overflow-x: auto;
+    }
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+
+    @include m.tablet {
+      min-width: 800px;
+    }
+  }
+
+  &__table-header {
+    background: v.color('gray1');
+    color: v.color('text-dark');
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-align: left;
+    padding: v.$spacing-md;
+    border-bottom: 1px solid v.color('gray2');
+
+    &:first-child {
+      width: 40px;
+    }
+
+    &:nth-child(2) {
+      width: 80px;
+    }
+  }
+
+  &__table-row {
+    border-bottom: 1px solid v.color('gray1');
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background: v.color('bg-main');
+    }
+
+    &--selected {
+      background: rgba(v.color('primary'), 0.05);
+    }
+  }
+
+  &__table-cell {
+    padding: v.$spacing-md;
+    vertical-align: top;
+    border-bottom: 1px solid v.color('gray1');
+  }
+
+  &__checkbox {
+    width: 16px;
+    height: 16px;
+    accent-color: v.color('primary');
+  }
+
+  &__product-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid v.color('gray1');
+  }
+
+  &__product-info {
+    max-width: 250px;
+  }
+
+  &__product-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: v.color('text-dark');
+    margin: 0 0 v.$spacing-xs 0;
+
+    // Truncate long names
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__product-description {
+    font-size: 0.8rem;
+    color: v.color('text-muted');
+    margin: 0;
+
+    // Truncate long descriptions
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  &__category-tag {
+    display: inline-block;
+    padding: v.$spacing-xs v.$spacing-sm;
+    background: v.color('secondary');
+    color: v.color('white1');
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 12px;
+  }
+
+  &__price {
+    font-weight: 600;
+    color: v.color('success');
+    font-size: 0.9rem;
+  }
+
+  &__stock {
+    display: inline-block;
+    padding: v.$spacing-xs v.$spacing-sm;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 12px;
+
+    &--high {
+      background: rgba(v.color('success'), 0.1);
+      color: v.color('success');
+    }
+
+    &--medium {
+      background: rgba(v.color('warning'), 0.1);
+      color: v.color('warning');
+    }
+
+    &--low {
+      background: rgba(v.color('error'), 0.1);
+      color: v.color('error');
+    }
+
+    &--out {
+      background: rgba(v.color('text-muted'), 0.1);
+      color: v.color('text-muted');
+    }
+  }
+
+  &__status {
+    display: inline-block;
+    padding: v.$spacing-xs v.$spacing-sm;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 12px;
+
+    &--active {
+      background: rgba(v.color('success'), 0.1);
+      color: v.color('success');
+    }
+
+    &--inactive {
+      background: rgba(v.color('text-muted'), 0.1);
+      color: v.color('text-muted');
+    }
+  }
+
+  &__actions-cell {
+    display: flex;
+    gap: v.$spacing-xs;
+  }
+
+  &__action-btn {
+    padding: v.$spacing-xs;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+
+    &--edit {
+      background: rgba(v.color('primary'), 0.1);
+      color: v.color('primary');
+
+      &:hover {
+        background: v.color('primary');
+        color: v.color('white1');
+      }
+    }
+
+    &--delete {
+      background: rgba(v.color('error'), 0.1);
+      color: v.color('error');
+
+      &:hover {
+        background: v.color('error');
+        color: v.color('white1');
+      }
+    }
+  }
+
+  &__empty-state {
+    text-align: center;
+    padding: v.$spacing-xl !important;
+  }
+
+  &__empty-text {
+    color: v.color('text-muted');
+    margin: 0 0 v.$spacing-md 0;
+    font-size: 1.1rem;
+  }
+
+  // Modal
+  &__modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: v.$spacing-md;
+    z-index: 1000;
+  }
+
+  &__modal {
+    background: v.color('white1');
+    border-radius: 12px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+
+    &--small {
+      max-width: 400px;
+    }
+  }
+
+  &__modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: v.$spacing-lg;
+    border-bottom: 1px solid v.color('gray1');
+  }
+
+  &__modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: v.color('text-dark');
+    margin: 0;
+  }
+
+  &__modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: v.color('text-muted');
+    padding: v.$spacing-xs;
+
+    &:hover {
+      color: v.color('text-dark');
+    }
+  }
+
+  &__modal-content {
+    padding: v.$spacing-lg;
+  }
+
+  &__modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: v.$spacing-sm;
+    padding: v.$spacing-lg;
+    border-top: 1px solid v.color('gray1');
+  }
+
+  // Form
+  &__form {
+    padding: v.$spacing-lg;
+  }
+
+  &__form-group {
+    margin-bottom: v.$spacing-md;
+  }
+
+  &__form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: v.$spacing-md;
+
+    @include m.tablet {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  &__label {
+    display: block;
+    font-weight: 500;
+    color: v.color('text-dark');
+    margin-bottom: v.$spacing-xs;
+    font-size: 0.9rem;
+  }
+
+  &__input,
+  &__textarea {
+    width: 100%;
+    padding: v.$spacing-sm v.$spacing-md;
+    border: 1px solid v.color('gray2');
+    border-radius: 8px;
+    font-size: 0.9rem;
+
+    &:focus {
+      outline: none;
+      border-color: v.color('primary');
+      box-shadow: 0 0 0 2px rgba(v.color('primary'), 0.1);
+    }
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  &__checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: v.$spacing-sm;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  &__error-message {
+    display: block;
+    color: v.color('error');
+    font-size: 0.8rem;
+    margin-top: v.$spacing-xs;
+  }
+
+  &__delete-message {
+    margin: 0 0 v.$spacing-sm 0;
+    font-size: 1rem;
+  }
+
+  &__delete-warning {
+    margin: 0;
+    font-size: 0.875rem;
+    color: v.color('text-muted');
+    font-style: italic;
+  }
+}

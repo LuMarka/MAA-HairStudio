@@ -1,0 +1,156 @@
+<section class="admin-dashboard">
+  <!-- Header Section -->
+  <header class="admin-dashboard__header">
+    <div class="admin-dashboard__title-group">
+      <h1 class="admin-dashboard__title">Dashboard Administrativo</h1>
+      <p class="admin-dashboard__subtitle">Panel de control para gestión de productos y pedidos</p>
+    </div>
+
+    <div class="admin-dashboard__actions">
+      <button
+        class="admin-dashboard__refresh-btn"
+        (click)="refreshDashboard()"
+        [disabled]="isLoading()"
+        aria-label="Actualizar dashboard"
+      >
+        <span class="admin-dashboard__refresh-icon">🔄</span>
+        Actualizar
+      </button>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="admin-dashboard__loading">
+      <div class="admin-dashboard__loading-spinner"></div>
+      <p class="admin-dashboard__loading-text">Cargando datos...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <div class="admin-dashboard__error">
+      <span class="admin-dashboard__error-icon">⚠️</span>
+      <p class="admin-dashboard__error-text">{{ error() }}</p>
+      <button
+        class="admin-dashboard__error-retry"
+        (click)="refreshDashboard()"
+      >
+        Reintentar
+      </button>
+    </div>
+  }
+
+  <!-- Main Content -->
+  @if (!isLoading() && !error()) {
+    <div class="admin-dashboard__content">
+
+      <!-- Statistics Cards -->
+      <section class="admin-dashboard__stats" aria-labelledby="stats-heading">
+        <h2 id="stats-heading" class="admin-dashboard__section-title">Estadísticas Generales</h2>
+
+        <div class="admin-dashboard__stats-grid">
+          <div class="admin-dashboard__stat-card admin-dashboard__stat-card--products">
+            <div class="admin-dashboard__stat-icon">📦</div>
+            <div class="admin-dashboard__stat-content">
+              <h3 class="admin-dashboard__stat-title">Productos</h3>
+              <p class="admin-dashboard__stat-value">{{ stats().totalProducts }}</p>
+              <span class="admin-dashboard__stat-label">Total en catálogo</span>
+            </div>
+          </div>
+
+          <div class="admin-dashboard__stat-card admin-dashboard__stat-card--orders">
+            <div class="admin-dashboard__stat-icon">🛍️</div>
+            <div class="admin-dashboard__stat-content">
+              <h3 class="admin-dashboard__stat-title">Pedidos</h3>
+              <p class="admin-dashboard__stat-value">{{ stats().totalOrders }}</p>
+              <span class="admin-dashboard__stat-label">Total histórico</span>
+            </div>
+          </div>
+
+          <div class="admin-dashboard__stat-card admin-dashboard__stat-card--users">
+            <div class="admin-dashboard__stat-icon">👥</div>
+            <div class="admin-dashboard__stat-content">
+              <h3 class="admin-dashboard__stat-title">Usuarios</h3>
+              <p class="admin-dashboard__stat-value">{{ stats().totalUsers }}</p>
+              <span class="admin-dashboard__stat-label">Registrados</span>
+            </div>
+          </div>
+
+          <div class="admin-dashboard__stat-card admin-dashboard__stat-card--revenue">
+            <div class="admin-dashboard__stat-icon">💰</div>
+            <div class="admin-dashboard__stat-content">
+              <h3 class="admin-dashboard__stat-title">Ingresos</h3>
+              <p class="admin-dashboard__stat-value">{{ revenueFormatted() }}</p>
+              <span class="admin-dashboard__stat-label">Ventas totales</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Actions -->
+      <section class="admin-dashboard__quick-actions" aria-labelledby="actions-heading">
+        <h2 id="actions-heading" class="admin-dashboard__section-title">Acciones Rápidas</h2>
+
+        <div class="admin-dashboard__actions-grid">
+          @for (action of quickActions(); track action.id) {
+            <button
+              class="admin-dashboard__action-card admin-dashboard__action-card--{{ action.color }}"
+              (click)="onQuickAction(action)"
+              [attr.aria-label]="action.description"
+            >
+              <span class="admin-dashboard__action-icon">{{ action.icon }}</span>
+              <h3 class="admin-dashboard__action-title">{{ action.title }}</h3>
+              <p class="admin-dashboard__action-description">{{ action.description }}</p>
+            </button>
+          }
+        </div>
+      </section>
+
+      <!-- Alerts Section -->
+      @if (pendingOrdersAlert()) {
+        <section class="admin-dashboard__alerts" aria-labelledby="alerts-heading">
+          <h2 id="alerts-heading" class="admin-dashboard__section-title">Alertas</h2>
+
+          <div class="admin-dashboard__alert admin-dashboard__alert--warning">
+            <span class="admin-dashboard__alert-icon">⚠️</span>
+            <div class="admin-dashboard__alert-content">
+              <h3 class="admin-dashboard__alert-title">Pedidos Pendientes</h3>
+              <p class="admin-dashboard__alert-message">
+                Tienes {{ stats().pendingOrders }} pedidos pendientes de procesar.
+              </p>
+            </div>
+            <button
+              class="admin-dashboard__alert-action"
+              (click)="navigateTo('/admin/orders')"
+            >
+              Ver Pedidos
+            </button>
+          </div>
+        </section>
+      }
+
+      <!-- Recent Activity Preview -->
+      <section class="admin-dashboard__recent" aria-labelledby="recent-heading">
+        <h2 id="recent-heading" class="admin-dashboard__section-title">Actividad Reciente</h2>
+
+        <div class="admin-dashboard__recent-content">
+          <div class="admin-dashboard__recent-item">
+            <span class="admin-dashboard__recent-icon">🛍️</span>
+            <div class="admin-dashboard__recent-info">
+              <h4 class="admin-dashboard__recent-title">{{ stats().recentOrders }} nuevos pedidos</h4>
+              <p class="admin-dashboard__recent-time">En las últimas 24 horas</p>
+            </div>
+          </div>
+
+          <button
+            class="admin-dashboard__recent-view-all"
+            (click)="navigateTo('/admin/orders')"
+          >
+            Ver todos los pedidos →
+          </button>
+        </div>
+      </section>
+    </div>
+  }
+</section>
