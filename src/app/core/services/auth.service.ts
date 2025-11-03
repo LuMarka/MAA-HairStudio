@@ -1,209 +1,301 @@
 // src/app/auth/auth.service.ts
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, BehaviorSubject, throwError, timer } from 'rxjs';
+import { catchError, tap, switchMap, take } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
+import {
+  User,
+  RegisterRequest,
+  LoginRequest,
+  LoginResponse,
+  ProfileResponse,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
+  RefreshTokenResponse,
+  VerifyTokenResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
+  ConfirmResetPasswordRequest,
+  AuthError
+} from '../models/interfaces/auth.interface';
 
-/** Tipos mínimos: adáptalos a tu backend */
-export interface User {
-  id?: string | number;
-  name?: string;
-  email?: string;
-  roles?: string[];
-  [key: string]: any;
-}
-
-interface LoginResponse {
-  token: string;
-  refreshToken?: string;
-  user?: User;
-}
-
-interface RegisterPayload {
-  name: string;
-  email: string;
-  password: string;
-}
-
-/** Servicio de autenticación */
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class AuthService {
-  private readonly base = '/api/auth'; // Ajusta la URL si hace falta
-  private readonly KEY_TOKEN = 'auth_token';
-  private readonly KEY_REFRESH = 'auth_refresh';
-  private readonly KEY_USER = 'auth_user';
-  private readonly storage = typeof window !== 'undefined' ? window.localStorage : null; // por defecto localStorage
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
 
-  /** BehaviorSubject con el usuario actual (null si no hay) */
-  private _currentUser$ = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this._currentUser$.asObservable();
+  private readonly apiUrl = `${environment.apiUrl}auth`;
+  private readonly tokenKey = 'access_token';
+  private readonly refreshTimerKey = 'refresh_timer';
 
-  constructor(private http: HttpClient, private router: Router) {
-    this.loadFromStorage();
+  // Signals para el estado de autenticación
+  private readonly currentUserSignal = signal<User | null>(null);
+  private readonly isLoadingSignal = signal(false);
+  private readonly errorSignal = signal<string | null>(null);
+
+  // Computed values
+  readonly currentUser = this.currentUserSignal.asReadonly();
+  readonly isLoading = this.isLoadingSignal.asReadonly();
+  readonly error = this.errorSignal.asReadonly();
+  readonly isAuthenticated = computed(() => !!this.currentUserSignal());
+  readonly isAdmin = computed(() => this.currentUserSignal()?.role === 'admin');
+  readonly isUser = computed(() => this.currentUserSignal()?.role === 'user');
+
+  // BehaviorSubject para mantener compatibilidad con observables si es necesario
+  private readonly authStateSubject = new BehaviorSubject<User | null>(null);
+  readonly authState$ = this.authStateSubject.asObservable();
+
+  constructor() {
+    this.initializeAuth();
   }
 
-  /** Carga desde storage al iniciar el servicio */
-  private loadFromStorage(): void {
-    try {
-      const raw = this.storage?.getItem(this.KEY_USER);
-      if (raw) {
-        const user: User = JSON.parse(raw);
-        this._currentUser$.next(user);
-      } else {
-        this._currentUser$.next(null);
-      }
-    } catch (err) {
-      console.warn('AuthService: error leyendo storage', err);
-      this._currentUser$.next(null);
-    }
+  // Métodos públicos de autenticación
+  register(registerData: RegisterRequest): Observable<User> {
+    this.setLoading(true);
+    this.clearError();
+
+    return this.http.post<User>(`${this.apiUrl}/register`, registerData)
+      .pipe(
+        tap(user => {
+          console.log('Usuario registrado exitosamente:', user);
+        }),
+        catchError(error => this.handleError(error)),
+        tap(() => this.setLoading(false))
+      );
   }
 
-  /**
-   * Iniciar sesión
-   * - devuelve una Promise que resuelve con el objeto { token, user } (útil para await en componentes)
-   * - guarda tokens y user en localStorage
-   */
-  async login(email: string, password: string, remember = true): Promise<{ token: string; user?: User }> {
-    try {
-      const obs$ = this.http.post<LoginResponse>(`${this.base}/login`, { email, password }).pipe(
-        catchError((err) => {
-          // Re-lanzar el error para catch en componentes
-          throw err;
+  login(loginData: LoginRequest): Observable<LoginResponse> {
+    this.setLoading(true);
+    this.clearError();
+
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, loginData)
+      .pipe(
+        tap(response => {
+          this.setAuthData(response);
+          this.scheduleTokenRefresh(response.expiresIn);
+        }),
+        catchError(error => this.handleError(error)),
+        tap(() => this.setLoading(false))
+      );
+  }
+
+  logout(): void {
+    this.clearAuthData();
+    this.clearRefreshTimer();
+    this.router.navigate(['/login']);
+  }
+
+  getProfile(): Observable<ProfileResponse> {
+    this.setLoading(true);
+
+    return this.http.get<ProfileResponse>(`${this.apiUrl}/profile`)
+      .pipe(
+        tap(response => {
+          this.setUser(response.user);
+        }),
+        catchError(error => this.handleError(error)),
+        tap(() => this.setLoading(false))
+      );
+  }
+
+  changePassword(passwordData: ChangePasswordRequest): Observable<ChangePasswordResponse> {
+    this.setLoading(true);
+    this.clearError();
+
+    return this.http.patch<ChangePasswordResponse>(`${this.apiUrl}/change-password`, passwordData)
+      .pipe(
+        catchError(error => this.handleError(error)),
+        tap(() => this.setLoading(false))
+      );
+  }
+
+  refreshToken(): Observable<RefreshTokenResponse> {
+    return this.http.post<RefreshTokenResponse>(`${this.apiUrl}/refresh`, {})
+      .pipe(
+        tap(response => {
+          this.setToken(response.access_token);
+          // Asumir 1 hora de expiración si no se proporciona
+          this.scheduleTokenRefresh('3600s');
+        }),
+        catchError(error => {
+          this.logout();
+          return this.handleError(error);
         })
       );
-
-      const res = await firstValueFrom(obs$);
-
-      if (!res || !res.token) {
-        throw new Error('Respuesta inválida del servidor');
-      }
-
-      this.saveAuth(res.token, res.refreshToken, res.user, remember);
-
-      return { token: res.token, user: res.user };
-    } catch (err: any) {
-      // Puedes mapear errores aquí si quieres mensajes más legibles
-      throw err;
-    }
   }
 
-  /**
-   * Registro
-   * - devuelve Promise con el user (si el backend lo retorna) o la respuesta completa
-   */
-  async register(payload: RegisterPayload): Promise<any> {
-    try {
-      const obs$ = this.http.post(`${this.base}/register`, payload).pipe(
-        catchError((err) => { throw err; })
+  verifyToken(): Observable<VerifyTokenResponse> {
+    return this.http.get<VerifyTokenResponse>(`${this.apiUrl}/verify`)
+      .pipe(
+        tap(response => {
+          if (response.valid) {
+            this.setUser(response.user);
+            this.scheduleTokenRefresh(response.expiresIn);
+          } else {
+            this.logout();
+          }
+        }),
+        catchError(error => {
+          this.logout();
+          return this.handleError(error);
+        })
       );
-      const res = await firstValueFrom(obs$);
-      return res;
-    } catch (err) {
-      throw err;
-    }
   }
 
-  /**
-   * Refresh token (si tu backend implementa refresh)
-   * - actualiza token en storage y mantiene currentUser
-   */
-  async refreshToken(): Promise<string | null> {
-    const refresh = this.storage?.getItem(this.KEY_REFRESH);
-    if (!refresh) return null;
-    try {
-      const obs$ = this.http.post<{ token: string }>(`${this.base}/refresh`, { refreshToken: refresh }).pipe(
-        catchError((err) => { throw err; })
+  resetPassword(email: string): Observable<ResetPasswordResponse> {
+    this.setLoading(true);
+    this.clearError();
+
+    const resetData: ResetPasswordRequest = { email };
+
+    return this.http.post<ResetPasswordResponse>(`${this.apiUrl}/reset-password`, resetData)
+      .pipe(
+        catchError(error => this.handleError(error)),
+        tap(() => this.setLoading(false))
       );
-      const res = await firstValueFrom(obs$);
-      if (res?.token) {
-        // mantiene el mismo user almacenado
-        const rawUser = this.storage?.getItem(this.KEY_USER);
-        this.saveAuth(res.token, refresh ?? undefined, rawUser ? JSON.parse(rawUser) : undefined, true);
-        return res.token;
-      }
-      return null;
-    } catch (err) {
-      // si falla el refresh, hacemos logout silencioso
-      this.logout();
-      return null;
-    }
   }
 
-  /** Logout: limpia storage y BehaviorSubject */
-  logout(redirect = '/auth/login'): void {
+  confirmResetPassword(resetData: ConfirmResetPasswordRequest): Observable<ChangePasswordResponse> {
+    this.setLoading(true);
+    this.clearError();
+
+    return this.http.post<ChangePasswordResponse>(`${this.apiUrl}/confirm-reset-password`, resetData)
+      .pipe(
+        catchError(error => this.handleError(error)),
+        tap(() => this.setLoading(false))
+      );
+  }
+
+  // Métodos de utilidad
+  getToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(this.tokenKey);
+  }
+
+  hasValidToken(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
+
     try {
-      this.storage?.removeItem(this.KEY_TOKEN);
-      this.storage?.removeItem(this.KEY_REFRESH);
-      this.storage?.removeItem(this.KEY_USER);
-      this._currentUser$.next(null);
-      // Si usás router dentro de un guard o interceptor, cuidado con bucles
-      this.router.navigate([redirect]);
-    } catch (err) {
-      console.warn('AuthService.logout error', err);
-    }
-  }
-
-  /** Guarda token, refresh y user; si remember=false usa sessionStorage */
-  private saveAuth(token: string, refreshToken?: string, user?: User, remember = true): void {
-    try {
-      const targetStorage = remember ? localStorage : sessionStorage;
-
-      targetStorage.setItem(this.KEY_TOKEN, token);
-      if (refreshToken) targetStorage.setItem(this.KEY_REFRESH, refreshToken);
-      if (user) targetStorage.setItem(this.KEY_USER, JSON.stringify(user));
-
-      // SI querés un uso más estricto, podrías en vez de usar localStorage guardar solo en cookies HttpOnly desde el backend.
-      this._currentUser$.next(user ?? null);
-    } catch (err) {
-      console.warn('AuthService.saveAuth error', err);
-    }
-  }
-
-  /** Devuelve el token actual buscando en localStorage y sessionStorage */
-  get token(): string | null {
-    return localStorage.getItem(this.KEY_TOKEN) ?? sessionStorage.getItem(this.KEY_TOKEN);
-  }
-
-  /** Devuelve si el usuario está autenticado (y token no expirado si es JWT) */
-  isAuthenticated(): boolean {
-    const t = this.token;
-    if (!t) return false;
-
-    // Try to decode JWT and check exp
-    const exp = this.getTokenExpiration(t);
-    if (!exp) return true; // no es JWT o no tiene exp: asumimos válido
-    const now = Math.floor(Date.now() / 1000);
-    return exp > now;
-  }
-
-  /** Helper: parsea JWT (si no es JWT devuelve null) y retorna exp en segundos (UNIX) */
-  private getTokenExpiration(token: string): number | null {
-    try {
-      const parts = token.split('.');
-      if (parts.length !== 3) return null;
-      const payload = JSON.parse(atob(this.padBase64(parts[1])));
-      return typeof payload.exp === 'number' ? payload.exp : null;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      return payload.exp > currentTime;
     } catch {
-      return null;
+      return false;
     }
   }
 
-  /** Base64 padding helper para evitar errores con atob */
-  private padBase64(b64: string): string {
-    return b64.padEnd(Math.ceil(b64.length / 4) * 4, '=');
+  clearError(): void {
+    this.errorSignal.set(null);
   }
 
-  /** Getter del usuario actual (sync) */
-  get currentUser(): User | null {
-    return this._currentUser$.value;
+  // Métodos privados
+  private initializeAuth(): void {
+    const token = this.getToken();
+    if (token && this.hasValidToken()) {
+      this.verifyToken().pipe(take(1)).subscribe({
+        error: () => this.logout()
+      });
+    } else if (token) {
+      this.logout();
+    }
   }
 
-  /** Para llamadas internas: headers con Authorization (útil en casos puntuales) */
-  getAuthHeaders(): { headers: HttpHeaders } {
-    const token = this.token;
-    if (!token) return { headers: new HttpHeaders() };
-    return { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) };
+  private setAuthData(loginResponse: LoginResponse): void {
+    this.setToken(loginResponse.access_token);
+    this.setUser(loginResponse.user);
+  }
+
+  private setToken(token: string): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.tokenKey, token);
+    }
+  }
+
+  private setUser(user: User): void {
+    this.currentUserSignal.set(user);
+    this.authStateSubject.next(user);
+  }
+
+  private setLoading(loading: boolean): void {
+    this.isLoadingSignal.set(loading);
+  }
+
+  private clearAuthData(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(this.tokenKey);
+    }
+    this.currentUserSignal.set(null);
+    this.authStateSubject.next(null);
+    this.clearError();
+  }
+
+  private scheduleTokenRefresh(expiresIn: string): void {
+    this.clearRefreshTimer();
+
+    const expirationMs = this.parseExpirationTime(expiresIn);
+    // Refrescar 5 minutos antes de que expire
+    const refreshTime = Math.max(expirationMs - 300000, 60000);
+
+    const refreshTimer = timer(refreshTime).pipe(
+      switchMap(() => this.refreshToken()),
+      take(1)
+    ).subscribe({
+      error: () => this.logout()
+    });
+
+    if (typeof window !== 'undefined') {
+      (window as any)[this.refreshTimerKey] = refreshTimer;
+    }
+  }
+
+  private clearRefreshTimer(): void {
+    if (typeof window !== 'undefined') {
+      const timer = (window as any)[this.refreshTimerKey];
+      if (timer) {
+        timer.unsubscribe();
+        delete (window as any)[this.refreshTimerKey];
+      }
+    }
+  }
+
+  private parseExpirationTime(expiresIn: string): number {
+    const match = expiresIn.match(/(\d+)([smhd]?)/);
+    if (!match) return 3600000; // Default 1 hour
+
+    const value = parseInt(match[1], 10);
+    const unit = match[2] || 's';
+
+    const multipliers: Record<string, number> = {
+      's': 1000,
+      'm': 60000,
+      'h': 3600000,
+      'd': 86400000
+    };
+
+    return value * (multipliers[unit] || 1000);
+  }
+
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'Ha ocurrido un error inesperado';
+
+    if (error.error instanceof ErrorEvent) {
+      // Error del cliente
+      errorMessage = error.error.message;
+    } else {
+      // Error del servidor
+      const authError = error.error as AuthError;
+      errorMessage = authError?.message || `Error ${error.status}: ${error.statusText}`;
+    }
+
+    this.errorSignal.set(errorMessage);
+    console.error('Error en AuthService:', error);
+
+    return throwError(() => new Error(errorMessage));
   }
 }
 
