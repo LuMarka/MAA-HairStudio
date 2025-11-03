@@ -9,8 +9,8 @@ $btn-size-desktop: 2.5rem;  // 40px
 /* --- 1. Contenedor Wrapper (NUEVO) --- */
 .pagination-wrapper {
   display: flex;
-  flex-direction: column; // Mobile-first: apilado
-  align-items: center;   // Centrado en móvil
+  flex-direction: column;
+  align-items: center;  
   gap: v.$spacing-lg; // 24px
   margin: v.$spacing-xl;// 32px
 
