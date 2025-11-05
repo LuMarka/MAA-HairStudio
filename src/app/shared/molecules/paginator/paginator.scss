@@ -1,3 +1,4 @@
+/* --- Imports (Asegúrate que las rutas sean correctas) --- */
 @use '../../../../assets/styles/variables' as v;
 @use '../../../../assets/styles/mixins' as m;
 
@@ -7,10 +8,11 @@ $btn-size-mobile: 2.25rem; // 36px
 $btn-size-desktop: 2.5rem;  // 40px
 
 /* --- 1. Contenedor Wrapper (NUEVO) --- */
+/* Gestiona el layout entre la navegación y el selector */
 .pagination-wrapper {
   display: flex;
-  flex-direction: column;
-  align-items: center;  
+  flex-direction: column; // Mobile-first: apilado
+  align-items: center;   // Centrado en móvil
   gap: v.$spacing-lg; // 24px
   margin: v.$spacing-xl;// 32px
 
@@ -208,3 +210,4 @@ $btn-size-desktop: 2.5rem;  // 40px
     --focus-ring: 0 0 0 3px #{v.color(secondary)};
   }
 }
+
