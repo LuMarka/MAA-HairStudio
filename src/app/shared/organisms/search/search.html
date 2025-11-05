@@ -2,11 +2,8 @@
   <div class="search__container">
     <div class="search__bar">
       <app-search-bar
-        placeholder="Busca por producto, servicio, marca..."
-        [suggestions]="searchSuggestions()"
-        [isLoading]="isLoading()"
-        (searchPerformed)="onSearchPerformed($event)"
-        (searchValueChanged)="onSearchValueChanged($event)"
+        placeholder="Buscar productos..."
+        (searchPerformed)="onSearch($event)"
       />
     </div>
 

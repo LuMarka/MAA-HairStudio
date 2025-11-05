@@ -1,16 +1,15 @@
-<form class="search-bar" (ngSubmit)="onFormSubmit()">
-  <div class="search-bar__container">
-    <app-search-input [placeholder]="placeholder()" [initialValue]="initialValue()" [isDisabled]="isLoading()"
-      (searchValue)="onSearchValueChange($event)" (searchSubmit)="onDirectSearch($event)" />
+<div class="search-bar">
+  <app-search-input
+    [placeholder]="placeholder()"
+    [initialValue]="initialValue()"
+    [isDisabled]="isLoading()"
+    [navigateOnSearch]="true"
+    (searchValue)="onSearchValueChange($event)"
+    (searchSubmit)="onSearchSubmit($event)" />
 
-    <app-search-suggestions [suggestions]="suggestions()" [isVisible]="showSuggestions()"
-      [highlightedIndex]="highlightedIndex()" (suggestionSelected)="onSuggestionSelected($event)"
-      (suggestionHovered)="onSuggestionHovered($event)" (keyboardNavigation)="onKeyboardNavigation($event)" />
-
-    @if (isLoading()) {
+  @if (isLoading()) {
     <div class="search-bar__loading">
-      <div class="search-bar__spinner"></div>
+      <span class="search-bar__spinner"></span>
     </div>
-    }
-  </div>
-</form>
+  }
+</div>
