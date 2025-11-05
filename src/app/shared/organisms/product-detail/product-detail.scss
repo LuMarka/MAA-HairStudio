@@ -13,6 +13,7 @@
   width: 100%;
   max-width: v.$container-max-width;
   margin: 0 auto;
+  padding-top: 80px;
   // Usamos la fuente secundaria (sans-serif) para toda la UI
   font-family: v.$font-family-secondary;
 }
@@ -211,7 +212,7 @@
   transition: background-color v.$transitionDuration, transform v.$transitionDuration;
 
   &:hover {
-    background-color: lighten(v.color(secondary), 5%);
+    background-color: color.adjust(v.color(secondary), $lightness: 5%);
     transform: translateY(-2px);
   }
 
@@ -283,6 +284,45 @@
       color: v.color(text-darker);
       margin-right: v.$spacing-md;
     }
+  }
+}
+
+// --- 4. Botón de Regreso ---
+.product-detail__back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+
+  &:hover {
+    background: #f5f5f5;
+    border-color: #ccc;
+  }
+
+  &:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    position: sticky;
+    top: 1rem;
+    z-index: 10;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 }
 

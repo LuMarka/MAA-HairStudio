@@ -105,7 +105,7 @@ export const pagesRoutes: Routes = [
         }
       },
       {
-        path: 'details',
+        path: 'details/:id',
         component: DetailProduct,
         data: {
           title: "Detalles | MAA Hair Studio",

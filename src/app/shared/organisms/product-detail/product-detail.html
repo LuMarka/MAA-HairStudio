@@ -1,154 +1,226 @@
-<p>product-detail works!</p><!-- Solo renderiza si el producto existe -->
-@if (product(); as product) {
-<div class="product-detail">
-  <!--
-    LAYOUT PRINCIPAL:
-    En mobile: flex-direction: column (stackeado)
-    En desktop: display: grid (Carrusel | Imagen | Info)
-  -->
-  <div class="product-detail__layout">
+@if (loading()) {
+  <div class="product-detail__loading">
+    <div class="loading-spinner"></div>
+    <p>Cargando producto...</p>
+  </div>
+} @else if (error()) {
+  <div class="product-detail__error">
+    <p>{{ error() }}</p>
+    <button type="button" (click)="reloadProduct()">Reintentar</button>
+    <button type="button" (click)="goBack()">Volver</button>
+  </div>
+} @else if (product(); as product) {
+  <div class="product-detail">
+    <!-- Botón para volver atrás -->
+    <button type="button" class="product-detail__back-btn" (click)="goBack()" aria-label="Volver a la página anterior">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5"></path>
+        <path d="m12 19-7-7 7-7"></path>
+      </svg>
+      <span>Volver</span>
+    </button>
 
-    <!-- 1. GALERÍA DE IMÁGENES (Carrusel + Imagen Principal) -->
-    <div class="product-detail__gallery">
+    <div class="product-detail__layout">
+      <!-- 1. GALERÍA DE IMÁGENES -->
+      <div class="product-detail__gallery">
+        @if (hasImages()) {
+          <!-- Carrusel de thumbnails -->
+          <div class="product-detail__carousel">
+            @for (image of product.images; track image) {
+              <button
+                type="button"
+                class="product-detail__thumbnail"
+                [class.product-detail__thumbnail--active]="selectedImage() === image"
+                (click)="changeImage(image)"
+                [attr.aria-label]="'Ver imagen ' + ($index + 1) + ' de ' + product.name"
+              >
+                <img 
+                  [src]="image" 
+                  [alt]="'Imagen ' + ($index + 1) + ' de ' + product.name"
+                  (error)="onImageError()"
+                  (load)="onImageLoad()"
+                  loading="lazy"
+                />
+              </button>
+            }
+          </div>
+        }
 
-      <!-- Carrusel vertical (se muestra vertical en desktop, horizontal en mobile) -->
-      <div class="product-detail__carousel">
-        @for (image of product.images; track $index) {
-        <button
-          type="button"
-          class="product-detail__thumbnail"
-          [class.product-detail__thumbnail--active]="selectedImage() === image"
-          (click)="changeImage(image)"
-          [attr.aria-label]="'Ver imagen ' + ($index + 1) + ' de ' + product.name"
-        >
-          <img [src]="image" [alt]="'Imagen ' + ($index + 1) + ' de ' + product.name" />
-        </button>
+        <!-- Imagen principal -->
+        <div class="product-detail__main-image">
+          @if (displayImage()) {
+            <img 
+              [src]="displayImage()" 
+              [alt]="product.name"
+              (error)="onImageError()"
+              (load)="onImageLoad()"
+              class="product-detail__image"
+              loading="eager"
+            />
+          } @else {
+            <div class="product-detail__image-placeholder">
+              <span>Sin imagen disponible</span>
+            </div>
+          }
+          
+          @if (imageLoadError()) {
+            <div class="product-detail__image-error">
+              <span>Error al cargar imagen</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- 2. INFORMACIÓN Y ACCIONES -->
+      <div class="product-detail__info">
+        @if (categoryName()) {
+          <span class="product-detail__category">{{ categoryName() }}</span>
+        }
+        
+        <span class="product-detail__brand">{{ product.brand }}</span>
+        <h1 class="product-detail__name">{{ product.name }}</h1>
+
+        @if (product.volume) {
+          <span class="product-detail__volume">{{ product.volume }}</span>
+        }
+
+        <!-- Precios -->
+        <div class="product-detail__pricing">
+          <span class="product-detail__price">
+            {{ product.price | currency : "$" : "symbol" : "1.0-0" }}
+          </span>
+
+          @if (hasDiscount()) {
+            <span class="product-detail__original-price">
+              {{ product.originalPrice | currency : "$" : "symbol" : "1.0-0" }}
+            </span>
+            <span class="product-detail__discount">
+              -{{ product.discountPercentage }}%
+            </span>
+          }
+        </div>
+
+        <span class="product-detail__tax-note">
+          Precio sin IVA: {{ priceWithoutTax() | currency : "$" : "symbol" : "1.0-0" }}
+        </span>
+
+        <!-- Stock -->
+        <div class="product-detail__stock">
+          @if (inStock()) {
+            <span class="product-detail__stock--available">
+              {{ product.stock }} unidades disponibles
+            </span>
+          } @else {
+            <span class="product-detail__stock--unavailable">
+              Producto agotado
+            </span>
+          }
+        </div>
+
+        <!-- Contador de cantidad y botón -->
+        @if (inStock()) {
+          <div class="product-detail__actions">
+            <div class="product-detail__quantity">
+              <label class="product-detail__quantity-label">Cantidad</label>
+              <div class="product-detail__quantity-control">
+                <button
+                  type="button"
+                  (click)="decrementQuantity()"
+                  [disabled]="quantity() === 1"
+                  aria-label="Restar uno"
+                >
+                  -
+                </button>
+                <span class="product-detail__quantity-value" aria-live="polite">
+                  {{ quantity() }}
+                </span>
+                <button
+                  type="button"
+                  (click)="incrementQuantity()"
+                  [disabled]="!canIncrementQuantity()"
+                  aria-label="Sumar uno"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="product-detail__add-to-cart"
+              (click)="addToCart()"
+              [disabled]="!inStock()"
+            >
+              Añadir al carrito
+            </button>
+          </div>
         }
       </div>
 
-      <!-- Imagen principal -->
-      <div class="product-detail__main-image">
-        <img [src]="selectedImage()" [alt]="product.name" />
-      </div>
-    </div>
-
-    <!-- 2. INFORMACIÓN Y ACCIONES -->
-    <div class="product-detail__info">
-      <!-- Mapeo BBDD: Category.name -->
-      <span class="product-detail__brand">{{ product.category }}</span>
-
-      <!-- Mapeo BBDD: name -->
-      <h1 class="product-detail__name">{{ product.name }}</h1>
-
-      <!-- Mapeo BBDD: volume -->
-      <span class="product-detail__volume">{{ product.volume }} ML</span>
-
-      <!-- Precios -->
-      <div class="product-detail__pricing">
-        <!-- Mapeo BBDD: price (precio final) -->
-        <span class="product-detail__price">{{
-          product.price | currency : "$" : "symbol" : "1.0-0"
-        }}</span>
-
-        <!-- Mapeo BBDD: originalPrice (precio tachado) -->
-        @if(product.originalPrice > product.price) {
-        <span class="product-detail__original-price">{{
-          product.originalPrice | currency : "$" : "symbol" : "1.0-0"
-        }}</span>
-        }
-      </div>
-
-      <!-- Mapeo BBDD: price (calculado) -->
-      <span class="product-detail__tax-note"
-        >Precio sin imp/nacional {{ priceWithoutTax() | currency : "$" }}</span
-      >
-
-      <!-- Contador de Cantidad -->
-      <div class="product-detail__quantity">
-        <label class="product-detail__quantity-label">Cantidad</label>
-        <div class="product-detail__quantity-control">
+      <!-- 3. DETALLES Y ESPECIFICACIONES -->
+      <div class="product-detail__specs">
+        <nav class="product-detail__tabs-nav">
           <button
             type="button"
-            (click)="decrementQuantity()"
-            [disabled]="quantity() === 1"
-            aria-label="Restar uno"
+            role="tab"
+            class="product-detail__tab-btn"
+            [class.product-detail__tab-btn--active]="activeTab() === 'details'"
+            (click)="selectTab('details')"
+            [attr.aria-selected]="activeTab() === 'details'"
           >
-            -
+            Detalles del Producto
           </button>
-          <span class="product-detail__quantity-value" aria-live="polite">{{
-            quantity()
-          }}</span>
           <button
             type="button"
-            (click)="incrementQuantity()"
-            aria-label="Sumar uno"
+            role="tab"
+            class="product-detail__tab-btn"
+            [class.product-detail__tab-btn--active]="activeTab() === 'specs'"
+            (click)="selectTab('specs')"
+            [attr.aria-selected]="activeTab() === 'specs'"
           >
-            +
+            Especificaciones
           </button>
-        </div>
-      </div>
+        </nav>
 
-      <!-- Botón Añadir al Carrito -->
-      <button
-        type="button"
-        class="product-detail__add-to-cart"
-        (click)="addToCart()"
-      >
-        Añadir al carrito
-      </button>
-    </div>
-
-    <!-- 3. DETALLES Y ESPECIFICACIONES (Tabs) -->
-    <div class="product-detail__specs">
-      <!-- Navegación de Tabs -->
-      <nav class="product-detail__tabs-nav">
-        <button
-          type="button"
-          role="tab"
-          class="product-detail__tab-btn"
-          [class.product-detail__tab-btn--active]="activeTab() === 'details'"
-          (click)="selectTab('details')"
-          [attr.aria-selected]="activeTab() === 'details'"
-        >
-          Detalles del Producto
-        </button>
-        <button
-          type="button"
-          role="tab"
-          class="product-detail__tab-btn"
-          [class.product-detail__tab-btn--active]="activeTab() === 'specs'"
-          (click)="selectTab('specs')"
-          [attr.aria-selected]="activeTab() === 'specs'"
-        >
-          Especificaciones
-        </button>
-      </nav>
-
-      <!-- Contenido de Tabs -->
-      <div class="product-detail__tabs-content">
-        @if (activeTab() === 'details') {
-        <div class="product-detail__tab-pane" role="tabpanel">
-          <!-- Mapeo BBDD: description -->
-          <p>{{ product.description }}</p>
+        <div class="product-detail__tabs-content">
+          @if (activeTab() === 'details') {
+            <div class="product-detail__tab-pane" role="tabpanel">
+              <p>{{ product.description }}</p>
+            </div>
+          } @else if (activeTab() === 'specs') {
+            <div class="product-detail__tab-pane" role="tabpanel">
+              <ul class="product-detail__spec-list">
+                <li>
+                  <strong>Marca:</strong>
+                  <span>{{ product.brand }}</span>
+                </li>
+                <li>
+                  <strong>Colección:</strong>
+                  <span>{{ product.collection }}</span>
+                </li>
+                <li>
+                  <strong>Tipo de cabello:</strong>
+                  <span>{{ product.type_hair }}</span>
+                </li>
+                <li>
+                  <strong>Resultado deseado:</strong>
+                  <span>{{ product.desired_result }}</span>
+                </li>
+                @if (product.sku) {
+                  <li>
+                    <strong>SKU:</strong>
+                    <span>{{ product.sku }}</span>
+                  </li>
+                }
+                <li>
+                  <strong>Rating:</strong>
+                  <span>{{ product.rating }}/5 ({{ product.reviewCount }} reseñas)</span>
+                </li>
+              </ul>
+            </div>
+          }
         </div>
-        } @if (activeTab() === 'specs') {
-        <div class="product-detail__tab-pane" role="tabpanel">
-          <ul class="product-detail__spec-list">
-            <li>
-              <strong>Resultados</strong>
-              <!-- Mapeo BBDD: desiredResult -->
-              <span>{{ product.desiredResult }}</span>
-            </li>
-            <li>
-              <strong>Tipo de cabello</strong>
-              <!-- Mapeo BBDD: type_hair -->
-              <span>{{ product.type_hair }}</span>
-            </li>
-          </ul>
-        </div>
-        }
       </div>
     </div>
   </div>
-</div>
 }
