@@ -45,11 +45,11 @@ export class ProductDetail implements OnInit {
   readonly mainImage = computed(() => {
     const currentProduct = this.product();
     if (!currentProduct) return '';
-    
+
     if (currentProduct.images && currentProduct.images.length > 0) {
       return currentProduct.images[0];
     }
-    
+
     return currentProduct.image || '';
   });
 
@@ -61,11 +61,11 @@ export class ProductDetail implements OnInit {
     const selected = this.selectedImage();
     const main = this.mainImage();
     const fallback = this.fallbackImage();
-    
+
     if (this.imageLoadError()) {
       return fallback;
     }
-    
+
     return selected || main || fallback;
   });
 
@@ -97,7 +97,7 @@ export class ProductDetail implements OnInit {
 
   ngOnInit(): void {
     const productId = this.route.snapshot.paramMap.get('id');
-    
+
     if (productId) {
       this.loadProduct(productId);
     } else {
@@ -146,7 +146,7 @@ export class ProductDetail implements OnInit {
   incrementQuantity(): void {
     const currentProduct = this.product();
     if (!currentProduct) return;
-    
+
     const maxQuantity = currentProduct.stock;
     this.quantity.update(q => q < maxQuantity ? q + 1 : q);
   }

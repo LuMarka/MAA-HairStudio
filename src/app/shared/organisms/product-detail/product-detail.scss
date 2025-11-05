@@ -10,12 +10,17 @@
 
 // Bloque principal del componente
 .product-detail {
-  width: 100%;
+  width: 80%;
   max-width: v.$container-max-width;
   margin: 0 auto;
-  padding-top: 80px;
+  padding-top: 100px;;
   // Usamos la fuente secundaria (sans-serif) para toda la UI
   font-family: v.$font-family-secondary;
+
+  @include m.tablet() {
+    width: 90%;
+    padding-top: 100px;
+  }
 }
 
 // Layout principal (Mobile-First: stackeado)
@@ -102,8 +107,8 @@
 .product-detail__brand {
   font-weight: 600;
   color: v.color(primary); // Verde
-  font-size: v.$font-size-sm;
-  text-transform: uppercase;
+  font-size: v.$font-size-subtitle;
+  margin-bottom: 8px;
 }
 
 .product-detail__name {
@@ -116,7 +121,7 @@
 }
 
 .product-detail__volume {
-  font-size: v.$font-size-sm;
+  font-size: v.$font-size-text;
   color: v.color(text-muted);
   margin-bottom: v.$spacing-md; // 16px
 }
@@ -208,7 +213,7 @@
   font-weight: 600;
   cursor: pointer;
   text-transform: uppercase;
-  width: 100%;
+  //width: 100%;
   transition: background-color v.$transitionDuration, transform v.$transitionDuration;
 
   &:hover {
@@ -294,13 +299,14 @@
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   margin-bottom: 1.5rem;
-  background: transparent;
+  background: v.color('green-200');
   border: 1px solid #e0e0e0;
   border-radius: 0.5rem;
   color: #333;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.875rem;
+  font-size: 1rem;
 
   &:hover {
     background: #f5f5f5;
@@ -318,16 +324,16 @@
   }
 
   @media (max-width: 768px) {
-    position: sticky;
+    //position: sticky;
     top: 1rem;
     z-index: 10;
-    background: white;
+    background: v.color('green-200');
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 }
 
 // --- Layout para Desktop (usando tu mixin) ---
-@include m.desktop-up() {
+@include m.tablet-up() {
   .product-detail__layout {
     display: grid;
     // Layout: [Galería (auto)] [Info (1fr)]
@@ -344,7 +350,7 @@
     grid-template-columns: 100px 1fr;
     gap: v.$spacing-md;
     // Hacemos la galería "pegajosa"
-    position: sticky;
+    //position: sticky;
     top: v.$spacing-lg;
     align-self: start; // Necesario para que sticky funcione
   }
@@ -387,6 +393,9 @@
 
   .product-detail__name {
     font-size: 3rem; // 48px
+    @include m.tablet() {
+      font-size: 2.5rem; // 82px
+    }
   }
 
   .product-detail__add-to-cart {

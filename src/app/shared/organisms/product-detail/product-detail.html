@@ -34,8 +34,8 @@
                 (click)="changeImage(image)"
                 [attr.aria-label]="'Ver imagen ' + ($index + 1) + ' de ' + product.name"
               >
-                <img 
-                  [src]="image" 
+                <img
+                  [src]="image"
                   [alt]="'Imagen ' + ($index + 1) + ' de ' + product.name"
                   (error)="onImageError()"
                   (load)="onImageLoad()"
@@ -49,8 +49,8 @@
         <!-- Imagen principal -->
         <div class="product-detail__main-image">
           @if (displayImage()) {
-            <img 
-              [src]="displayImage()" 
+            <img
+              [src]="displayImage()"
               [alt]="product.name"
               (error)="onImageError()"
               (load)="onImageLoad()"
@@ -62,7 +62,7 @@
               <span>Sin imagen disponible</span>
             </div>
           }
-          
+
           @if (imageLoadError()) {
             <div class="product-detail__image-error">
               <span>Error al cargar imagen</span>
@@ -74,9 +74,9 @@
       <!-- 2. INFORMACIÓN Y ACCIONES -->
       <div class="product-detail__info">
         @if (categoryName()) {
-          <span class="product-detail__category">{{ categoryName() }}</span>
+          <!-- <span class="product-detail__category">{{ categoryName() }}</span> -->
         }
-        
+
         <span class="product-detail__brand">{{ product.brand }}</span>
         <h1 class="product-detail__name">{{ product.name }}</h1>
 
