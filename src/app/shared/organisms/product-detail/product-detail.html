@@ -1,1 +1,154 @@
-<p>product-detail works!</p>
+<p>product-detail works!</p><!-- Solo renderiza si el producto existe -->
+@if (product(); as product) {
+<div class="product-detail">
+  <!--
+    LAYOUT PRINCIPAL:
+    En mobile: flex-direction: column (stackeado)
+    En desktop: display: grid (Carrusel | Imagen | Info)
+  -->
+  <div class="product-detail__layout">
+
+    <!-- 1. GALERÍA DE IMÁGENES (Carrusel + Imagen Principal) -->
+    <div class="product-detail__gallery">
+
+      <!-- Carrusel vertical (se muestra vertical en desktop, horizontal en mobile) -->
+      <div class="product-detail__carousel">
+        @for (image of product.images; track $index) {
+        <button
+          type="button"
+          class="product-detail__thumbnail"
+          [class.product-detail__thumbnail--active]="selectedImage() === image"
+          (click)="changeImage(image)"
+          [attr.aria-label]="'Ver imagen ' + ($index + 1) + ' de ' + product.name"
+        >
+          <img [src]="image" [alt]="'Imagen ' + ($index + 1) + ' de ' + product.name" />
+        </button>
+        }
+      </div>
+
+      <!-- Imagen principal -->
+      <div class="product-detail__main-image">
+        <img [src]="selectedImage()" [alt]="product.name" />
+      </div>
+    </div>
+
+    <!-- 2. INFORMACIÓN Y ACCIONES -->
+    <div class="product-detail__info">
+      <!-- Mapeo BBDD: Category.name -->
+      <span class="product-detail__brand">{{ product.category }}</span>
+
+      <!-- Mapeo BBDD: name -->
+      <h1 class="product-detail__name">{{ product.name }}</h1>
+
+      <!-- Mapeo BBDD: volume -->
+      <span class="product-detail__volume">{{ product.volume }} ML</span>
+
+      <!-- Precios -->
+      <div class="product-detail__pricing">
+        <!-- Mapeo BBDD: price (precio final) -->
+        <span class="product-detail__price">{{
+          product.price | currency : "$" : "symbol" : "1.0-0"
+        }}</span>
+
+        <!-- Mapeo BBDD: originalPrice (precio tachado) -->
+        @if(product.originalPrice > product.price) {
+        <span class="product-detail__original-price">{{
+          product.originalPrice | currency : "$" : "symbol" : "1.0-0"
+        }}</span>
+        }
+      </div>
+
+      <!-- Mapeo BBDD: price (calculado) -->
+      <span class="product-detail__tax-note"
+        >Precio sin imp/nacional {{ priceWithoutTax() | currency : "$" }}</span
+      >
+
+      <!-- Contador de Cantidad -->
+      <div class="product-detail__quantity">
+        <label class="product-detail__quantity-label">Cantidad</label>
+        <div class="product-detail__quantity-control">
+          <button
+            type="button"
+            (click)="decrementQuantity()"
+            [disabled]="quantity() === 1"
+            aria-label="Restar uno"
+          >
+            -
+          </button>
+          <span class="product-detail__quantity-value" aria-live="polite">{{
+            quantity()
+          }}</span>
+          <button
+            type="button"
+            (click)="incrementQuantity()"
+            aria-label="Sumar uno"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      <!-- Botón Añadir al Carrito -->
+      <button
+        type="button"
+        class="product-detail__add-to-cart"
+        (click)="addToCart()"
+      >
+        Añadir al carrito
+      </button>
+    </div>
+
+    <!-- 3. DETALLES Y ESPECIFICACIONES (Tabs) -->
+    <div class="product-detail__specs">
+      <!-- Navegación de Tabs -->
+      <nav class="product-detail__tabs-nav">
+        <button
+          type="button"
+          role="tab"
+          class="product-detail__tab-btn"
+          [class.product-detail__tab-btn--active]="activeTab() === 'details'"
+          (click)="selectTab('details')"
+          [attr.aria-selected]="activeTab() === 'details'"
+        >
+          Detalles del Producto
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="product-detail__tab-btn"
+          [class.product-detail__tab-btn--active]="activeTab() === 'specs'"
+          (click)="selectTab('specs')"
+          [attr.aria-selected]="activeTab() === 'specs'"
+        >
+          Especificaciones
+        </button>
+      </nav>
+
+      <!-- Contenido de Tabs -->
+      <div class="product-detail__tabs-content">
+        @if (activeTab() === 'details') {
+        <div class="product-detail__tab-pane" role="tabpanel">
+          <!-- Mapeo BBDD: description -->
+          <p>{{ product.description }}</p>
+        </div>
+        } @if (activeTab() === 'specs') {
+        <div class="product-detail__tab-pane" role="tabpanel">
+          <ul class="product-detail__spec-list">
+            <li>
+              <strong>Resultados</strong>
+              <!-- Mapeo BBDD: desiredResult -->
+              <span>{{ product.desiredResult }}</span>
+            </li>
+            <li>
+              <strong>Tipo de cabello</strong>
+              <!-- Mapeo BBDD: type_hair -->
+              <span>{{ product.type_hair }}</span>
+            </li>
+          </ul>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+}

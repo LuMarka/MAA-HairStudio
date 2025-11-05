@@ -1,1 +1,9 @@
-<app-product-detail></app-product-detail>
+
+ @if (productData(); as product) {
+    <app-product-detail [product]="product" />
+    } @else {
+    <p>Cargando producto...</p>
+    }
+
+
+
