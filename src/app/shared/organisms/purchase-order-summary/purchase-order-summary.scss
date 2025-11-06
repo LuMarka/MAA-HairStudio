@@ -1,0 +1,113 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.purchase-order-summary {
+  background-color: v.color('surface');
+  border-radius: v.$borderRadius-lg;
+  padding: v.$spacing-lg;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: v.$spacing-lg;
+
+  @include m.mobile-only() {
+    position: static;
+    padding: v.$spacing-md;
+  }
+
+  &__header {
+    margin-bottom: v.$spacing-lg;
+    padding-bottom: v.$spacing-md;
+    border-bottom: 2px solid v.color('primary');
+  }
+
+  &__title {
+    font-family: v.$font-family-primary;
+    font-size: 1.5rem;
+    color: v.color('text-darker');
+    margin: 0;
+    font-weight: 600;
+
+    @include m.mobile-only() {
+      font-size: 1.25rem;
+    }
+  }
+
+  &__cart-section {
+    margin-bottom: v.$spacing-lg;
+  }
+
+  &__totals-section {
+    margin-bottom: v.$spacing-lg;
+    padding: v.$spacing-md 0;
+    border-top: 1px solid v.color('gray3');
+  }
+
+  &__line-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: v.$spacing-xs;
+
+    &--total {
+      margin-top: v.$spacing-md;
+      padding-top: v.$spacing-md;
+      border-top: 2px solid v.color('primary');
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+  }
+
+  &__label {
+    color: v.color('text-muted');
+
+    .purchase-order-summary__line-item--total & {
+      color: v.color('text-darker');
+      font-weight: 600;
+    }
+  }
+
+  &__value {
+    color: v.color('text-darker');
+    font-weight: 500;
+
+    .purchase-order-summary__line-item--total & {
+      color: v.color('primary');
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+  }
+
+  &__free {
+    color: v.color('success');
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+
+  &__info-section {
+    padding-top: v.$spacing-md;
+    border-top: 1px solid v.color('gray3');
+  }
+
+  &__delivery-info {
+    display: flex;
+    flex-direction: column;
+    gap: v.$spacing-xs;
+    margin-bottom: v.$spacing-md;
+    padding: v.$spacing-sm;
+    background-color: v.color('green-50');
+    border-radius: v.$borderRadius;
+    border-left: 4px solid v.color('primary');
+  }
+
+  &__delivery-label {
+    font-size: 0.875rem;
+    color: v.color('text-muted');
+    font-weight: 500;
+  }
+
+  &__delivery-value {
+    font-size: 0.875rem;
+    color: v.color('primary');
+    font-weight: 600;
+  }
+}

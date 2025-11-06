@@ -1,0 +1,173 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.payment-method-form {
+  display: flex;
+  flex-direction: column;
+  gap: v.$spacing-lg;
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: v.color('primary');
+    margin: 0 0 v.$spacing-md 0;
+    font-family: v.$font-family-primary;
+    letter-spacing: 0.3px;
+    text-align: center;
+
+    @include m.mobile-only() {
+      font-size: 1.1rem;
+      text-align: left;
+    }
+  }
+
+  &__options {
+    display: flex;
+    flex-direction: column;
+    gap: v.$spacing-md;
+  }
+
+  &__option {
+    display: flex;
+    flex-direction: column;
+    gap: v.$spacing-xs;
+    padding: v.$spacing-lg;
+    border: 2px solid v.color('gray3');
+    border-radius: v.$borderRadius-lg;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: v.color('white1');
+    position: relative;
+
+    @include m.mobile-only() {
+      padding: v.$spacing-md;
+    }
+
+    &:hover {
+      border-color: v.color('green-400');
+      box-shadow: 0 2px 8px rgba(v.color('primary'), 0.1);
+      transform: translateY(-2px);
+    }
+
+    &:has(input:checked) {
+      border-color: v.color('primary');
+      background-color: rgba(v.color('primary'), 0.05);
+      box-shadow: 0 4px 12px rgba(v.color('primary'), 0.15);
+
+      .payment-method-form__label {
+        color: v.color('primary');
+        font-weight: 600;
+      }
+    }
+  }
+
+  &__radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .payment-method-form__label::before {
+      border-color: v.color('primary');
+      background-color: v.color('primary');
+    }
+
+    &:checked + .payment-method-form__label::after {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  &__label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: v.color('text-darker');
+    font-family: v.$font-family-secondary;
+    padding-left: 2rem;
+    position: relative;
+    transition: color 0.3s ease;
+
+    @include m.mobile-only() {
+      font-size: 0.9rem;
+    }
+
+    // Custom radio button
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      border: 2px solid v.color('gray3');
+      border-radius: 50%;
+      background-color: v.color('white1');
+      transition: all 0.3s ease;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 50%;
+      transform: translateY(-50%) scale(0);
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: v.color('white1');
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+
+  &__description {
+    font-size: 0.85rem;
+    color: v.color('text-muted');
+    font-style: italic;
+    padding-left: 2rem;
+
+    @include m.mobile-only() {
+      font-size: 0.75rem;
+    }
+  }
+
+  &__info {
+    background-color: rgba(v.color('info'), 0.08);
+    border-left: 4px solid v.color('info');
+    border-radius: v.$borderRadius;
+    padding: v.$spacing-md;
+    animation: slideDown 0.3s ease-out;
+
+    @include m.mobile-only() {
+      padding: v.$spacing-sm;
+    }
+  }
+
+  &__info-text {
+    margin: 0;
+    font-size: 0.9rem;
+    color: v.color('text-darker');
+    line-height: 1.5;
+
+    strong {
+      color: v.color('info');
+      font-weight: 600;
+    }
+
+    @include m.mobile-only() {
+      font-size: 0.8rem;
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

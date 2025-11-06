@@ -1,0 +1,53 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.cart-summary {
+  h4 {
+    margin-bottom: 1rem;
+    color: v.color('primary');
+    font-family: v.$font-family-primary;
+  }
+
+  .cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid v.color('gray3');
+  }
+
+  .item-info h5 {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.9rem;
+    color: v.color('text-darker');
+  }
+
+  .item-info p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: v.color('text-muted');
+  }
+
+  .item-price {
+    font-weight: 600;
+    color: v.color('primary');
+  }
+
+  .edit-cart-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: transparent;
+    border: 2px solid v.color('primary');
+    color: v.color('primary');
+    border-radius: v.$borderRadius;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+    font-weight: 600;
+
+    &:hover {
+      background: v.color('primary');
+      color: v.color('text-light');
+    }
+  }
+}

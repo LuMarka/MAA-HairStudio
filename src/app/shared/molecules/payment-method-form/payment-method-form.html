@@ -1,0 +1,60 @@
+<div class="payment-method-form" [formGroup]="formGroup()">
+  <h3 class="payment-method-form__title">Método de Pago</h3>
+
+  <div class="payment-method-form__options">
+    <label class="payment-method-form__option">
+      <input 
+        type="radio" 
+        formControlName="paymentMethod" 
+        value="mercadopago-card"
+        class="payment-method-form__radio"
+        (change)="onFormChange()"
+      >
+      <span class="payment-method-form__label">Tarjeta de Crédito/Débito</span>
+      <span class="payment-method-form__description">Mediante Mercado Pago</span>
+    </label>
+
+    <label class="payment-method-form__option">
+      <input 
+        type="radio" 
+        formControlName="paymentMethod" 
+        value="mercadopago"
+        class="payment-method-form__radio"
+        (change)="onFormChange()"
+      >
+      <span class="payment-method-form__label">Mercado Pago</span>
+    </label>
+
+    <label class="payment-method-form__option">
+      <input 
+        type="radio" 
+        formControlName="paymentMethod" 
+        value="transfer"
+        class="payment-method-form__radio"
+        (change)="onFormChange()"
+      >
+      <span class="payment-method-form__label">Transferencia Bancaria</span>
+      <span class="payment-method-form__description">Se te redirigirá a WhatsApp</span>
+    </label>
+
+    <label class="payment-method-form__option">
+      <input 
+        type="radio" 
+        formControlName="paymentMethod" 
+        value="cash"
+        class="payment-method-form__radio"
+        (change)="onFormChange()"
+      >
+      <span class="payment-method-form__label">Pago en efectivo (contra entrega)</span>
+      <span class="payment-method-form__description">Se te redirigirá a WhatsApp</span>
+    </label>
+  </div>
+
+  @if (formGroup().get('paymentMethod')?.value === 'transfer' || formGroup().get('paymentMethod')?.value === 'cash') {
+    <div class="payment-method-form__info">
+      <p class="payment-method-form__info-text">
+        <strong>Nota:</strong> Al continuar serás redirigido a WhatsApp para coordinar los detalles de tu pedido con MAA Hair Studio.
+      </p>
+    </div>
+  }
+</div>

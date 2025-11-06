@@ -1,0 +1,14 @@
+@use '../../../assets/styles/variables' as v;
+@use '../../../assets/styles/mixins' as m;
+
+.purchase-order {
+  &__container {
+    padding: v.$spacing-lg;
+    max-width: v.$container-max-width;
+    margin: 0 auto;
+
+    @include m.mobile-only() {
+      padding: v.$spacing-md;
+    }
+  }
+}

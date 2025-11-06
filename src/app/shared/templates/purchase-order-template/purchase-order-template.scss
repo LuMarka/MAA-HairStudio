@@ -1,0 +1,64 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.purchase-order-template {
+  min-height: 100vh;
+  background-color: v.color('bg-alt');
+  padding-top: 120px; // Base para móvil (32px)
+
+  @include m.tablet-only() {
+    padding-top: 80px; // Espacio para navbar en tablet
+  }
+
+  @media (min-width: 1024px) {
+    padding-top: 100px; // Espacio para navbar en desktop
+  }
+
+  &__container {
+    max-width: v.$container-max-width;
+    margin: 0 auto;
+    padding: v.$spacing-md; // Base para móvil
+
+    @include m.tablet-only() {
+      padding: v.$spacing-lg;
+    }
+
+    @media (min-width: 1024px) {
+      padding: v.$spacing-xl;
+    }
+  }  &__main {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: v.$spacing-xl;
+    margin-top: v.$spacing-lg;
+
+    @include m.tablet-only() {
+      grid-template-columns: 1fr 300px;
+      gap: v.$spacing-lg;
+    }
+
+    @include m.mobile-only() {
+      grid-template-columns: 1fr;
+      gap: v.$spacing-md;
+      margin-top: v.$spacing-md;
+    }
+  }
+
+  &__form-section {
+    background-color: v.color('surface');
+    border-radius: v.$borderRadius-lg;
+    padding: v.$spacing-xl;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    @include m.mobile-only() {
+      padding: v.$spacing-lg;
+      order: 2;
+    }
+  }
+
+  &__summary-section {
+    @include m.mobile-only() {
+      order: 1;
+    }
+  }
+}

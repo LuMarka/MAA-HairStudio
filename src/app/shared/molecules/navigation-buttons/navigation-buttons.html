@@ -1,0 +1,42 @@
+<div class="navigation-buttons">
+
+  <div class="navigation-buttons__container">
+
+    <!-- Botón Anterior -->
+    @if (showPreviousButton) {
+      <button
+        type="button"
+        class="navigation-buttons__button navigation-buttons__button--secondary"
+        (click)="onPrevious()">
+        <svg class="navigation-buttons__icon navigation-buttons__icon--left" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+        </svg>
+        Anterior
+      </button>
+    }
+
+    <!-- Espaciador -->
+    <div class="navigation-buttons__spacer"></div>
+
+    <!-- Botón Siguiente/Finalizar -->
+    <button
+      type="button"
+      class="navigation-buttons__button navigation-buttons__button--primary"
+      [class.navigation-buttons__button--success]="isLastStep"
+      [disabled]="!canProceed()"
+      (click)="onNext()">
+      {{ nextButtonText }}
+      @if (!isLastStep) {
+        <svg class="navigation-buttons__icon navigation-buttons__icon--right" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+        </svg>
+      } @else {
+        <svg class="navigation-buttons__icon navigation-buttons__icon--right" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+      }
+    </button>
+
+  </div>
+
+</div>

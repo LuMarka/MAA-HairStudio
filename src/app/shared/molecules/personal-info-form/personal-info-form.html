@@ -1,0 +1,166 @@
+<div class="personal-info-form" [formGroup]="formGroup()">
+  <h3 class="personal-info-form__title">Información de Contacto</h3>
+
+  <div class="personal-info-form__grid">
+    <!-- Nombre -->
+    <div class="personal-info-form__field">
+      <label class="personal-info-form__label" for="firstName">
+        Nombre *
+      </label>
+      <input
+        id="firstName"
+        type="text"
+        formControlName="firstName"
+        class="personal-info-form__input"
+        [class.personal-info-form__input--invalid]="isFieldInvalid('firstName')"
+        placeholder="Ingresa tu nombre"
+        (input)="onFieldChange()"
+        (blur)="onFieldChange()"
+      />
+      @if (isFieldInvalid('firstName')) {
+        <span class="personal-info-form__error">{{ getFieldError('firstName') }}</span>
+      }
+    </div>
+
+    <!-- Apellidos -->
+    <div class="personal-info-form__field">
+      <label class="personal-info-form__label" for="lastName">
+        Apellidos *
+      </label>
+      <input
+        id="lastName"
+        type="text"
+        formControlName="lastName"
+        class="personal-info-form__input"
+        [class.personal-info-form__input--invalid]="isFieldInvalid('lastName')"
+        placeholder="Ingresa tus apellidos"
+        (input)="onFieldChange()"
+        (blur)="onFieldChange()"
+      />
+      @if (isFieldInvalid('lastName')) {
+        <span class="personal-info-form__error">{{ getFieldError('lastName') }}</span>
+      }
+    </div>
+  </div>
+
+  <!-- Correo Electrónico -->
+  <div class="personal-info-form__field">
+    <label class="personal-info-form__label" for="email">
+      Correo Electrónico *
+    </label>
+    <input
+      id="email"
+      type="email"
+      formControlName="email"
+      class="personal-info-form__input"
+      [class.personal-info-form__input--invalid]="isFieldInvalid('email')"
+      placeholder="ejemplo@correo.com"
+      (input)="onFieldChange()"
+      (blur)="onFieldChange()"
+    />
+    @if (isFieldInvalid('email')) {
+      <span class="personal-info-form__error">{{ getFieldError('email') }}</span>
+    }
+  </div>
+
+  <!-- Teléfono -->
+  <div class="personal-info-form__field">
+    <label class="personal-info-form__label" for="phone">
+      Teléfono *
+    </label>
+    <input
+      id="phone"
+      type="tel"
+      formControlName="phone"
+      class="personal-info-form__input"
+      [class.personal-info-form__input--invalid]="isFieldInvalid('phone')"
+      placeholder="+5491123456789"
+      (input)="onFieldChange()"
+      (blur)="onFieldChange()"
+    />
+    @if (isFieldInvalid('phone')) {
+      <span class="personal-info-form__error">{{ getFieldError('phone') }}</span>
+    }
+  </div>
+
+  <!-- Dirección Completa -->
+  <div class="personal-info-form__field">
+    <label class="personal-info-form__label" for="address">
+      Dirección Completa *
+    </label>
+    <input
+      id="address"
+      type="text"
+      formControlName="address"
+      class="personal-info-form__input"
+      [class.personal-info-form__input--invalid]="isFieldInvalid('address')"
+      placeholder="Calle, número, colonia"
+      (input)="onFieldChange()"
+      (blur)="onFieldChange()"
+    />
+    @if (isFieldInvalid('address')) {
+      <span class="personal-info-form__error">{{ getFieldError('address') }}</span>
+    }
+  </div>
+
+  <div class="personal-info-form__grid">
+    <!-- Ciudad -->
+    <div class="personal-info-form__field">
+      <label class="personal-info-form__label" for="city">
+        Ciudad *
+      </label>
+      <input
+        id="city"
+        type="text"
+        formControlName="city"
+        class="personal-info-form__input"
+        [class.personal-info-form__input--invalid]="isFieldInvalid('city')"
+        placeholder="Tu ciudad"
+        (input)="onFieldChange()"
+        (blur)="onFieldChange()"
+      />
+      @if (isFieldInvalid('city')) {
+        <span class="personal-info-form__error">{{ getFieldError('city') }}</span>
+      }
+    </div>
+
+    <!-- Código Postal -->
+    <div class="personal-info-form__field">
+      <label class="personal-info-form__label" for="postalCode">
+        Código Postal *
+      </label>
+      <input
+        id="postalCode"
+        type="text"
+        formControlName="postalCode"
+        class="personal-info-form__input"
+        [class.personal-info-form__input--invalid]="isFieldInvalid('postalCode')"
+        placeholder="ej: 1234 o C1000AAA"
+        (input)="onFieldChange()"
+        (blur)="onFieldChange()"
+      />
+      @if (isFieldInvalid('postalCode')) {
+        <span class="personal-info-form__error">{{ getFieldError('postalCode') }}</span>
+      }
+    </div>
+  </div>
+
+  <!-- Notas (Opcional) -->
+  <div class="personal-info-form__field personal-info-form__field--full">
+    <label class="personal-info-form__label" for="notes">
+      Notas
+    </label>
+    <textarea
+      id="notes"
+      formControlName="notes"
+      class="personal-info-form__textarea"
+      placeholder="Esta información será utilizada para el envío de tu pedido. Asegúrate de que todos los datos sean correctos."
+      rows="4"
+      (input)="onFieldChange()"
+      (blur)="onFieldChange()"
+    ></textarea>
+    <small class="personal-info-form__help-text">
+      Esta información será utilizada para el envío de tu pedido. Asegúrate de que todos los datos sean correctos.
+    </small>
+  </div>
+</div>

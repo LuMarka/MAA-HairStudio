@@ -1,0 +1,29 @@
+<div class="order-details">
+  @if (orderData()) {
+    <div class="detail-section">
+      <h5>Detalles del Pedido</h5>
+      <div class="detail-item">
+        <span class="label">Nombre:</span>
+        <span class="value">{{ orderData()?.firstName }} {{ orderData()?.lastName }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="label">Email:</span>
+        <span class="value">{{ orderData()?.email }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="label">Teléfono:</span>
+        <span class="value">{{ orderData()?.phone }}</span>
+      </div>
+      @if (orderData()?.paymentMethod) {
+        <div class="detail-item">
+          <span class="label">Pago:</span>
+          <span class="value">{{ getPaymentText() }}</span>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="detail-section detail-section--empty">
+      <p class="empty-message">Completa el formulario para ver los detalles</p>
+    </div>
+  }
+</div>

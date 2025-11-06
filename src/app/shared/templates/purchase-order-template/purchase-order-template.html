@@ -1,0 +1,31 @@
+<div class="purchase-order-template">
+  <div class="purchase-order-template__container">
+
+    <!-- Header con progreso del stepper -->
+    <app-purchase-order-header
+      [currentStep]="currentStep()"
+      [totalSteps]="totalSteps()" />
+
+    <main class="purchase-order-template__main">
+
+      <!-- Formulario principal -->
+      <section class="purchase-order-template__form-section">
+        <app-purchase-order-form
+          [currentStep]="currentStep()"
+          (validationChange)="onFormValidation($event)"
+          (dataChange)="onOrderDataChange($event)"
+          (nextStep)="onNextStep()"
+          (previousStep)="onPreviousStep()" />
+      </section>
+
+      <!-- Resumen lateral -->
+      <aside class="purchase-order-template__summary-section">
+        <app-purchase-order-summary
+          [orderData]="orderData()"
+          [currentStep]="currentStep()" />
+      </aside>
+
+    </main>
+
+  </div>
+</div>

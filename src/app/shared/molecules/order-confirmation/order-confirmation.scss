@@ -1,0 +1,118 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.order-confirmation {
+  display: flex;
+  flex-direction: column;
+  gap: v.$spacing-lg;
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: v.color('primary');
+    margin: 0 0 v.$spacing-md 0;
+    font-family: v.$font-family-primary;
+    letter-spacing: 0.3px;
+    text-align: center;
+
+    @include m.mobile-only() {
+      font-size: 1.1rem;
+      text-align: left;
+    }
+  }
+
+  .confirmation-details {
+    background: v.color('surface');
+    border-radius: v.$borderRadius-lg;
+    padding: v.$spacing-lg;
+    border: 2px solid v.color('gray3');
+    display: flex;
+    flex-direction: column;
+    gap: v.$spacing-lg;
+
+    @include m.mobile-only() {
+      padding: v.$spacing-md;
+      gap: v.$spacing-md;
+    }
+  }
+
+  .section {
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: v.color('primary');
+      margin: 0 0 v.$spacing-sm 0;
+      font-family: v.$font-family-primary;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid v.color('green-100');
+      padding-bottom: v.$spacing-xs;
+
+      @include m.mobile-only() {
+        font-size: 0.85rem;
+      }
+    }
+
+    p {
+      margin: v.$spacing-sm 0;
+      color: v.color('text-darker');
+      font-size: 0.95rem;
+      line-height: 1.6;
+
+      strong {
+        color: v.color('text-darker');
+        font-weight: 600;
+        margin-right: v.$spacing-xs;
+      }
+
+      @include m.mobile-only() {
+        font-size: 0.9rem;
+      }
+    }
+
+    .no-data {
+      color: v.color('text-muted');
+      font-style: italic;
+      text-align: center;
+      padding: v.$spacing-lg;
+    }
+  }
+
+  .confirmation-message {
+    background: linear-gradient(135deg, rgba(v.color('primary'), 0.08) 0%, rgba(v.color('accent'), 0.08) 100%);
+    padding: v.$spacing-lg;
+    border-radius: v.$borderRadius-lg;
+    border-left: 4px solid v.color('primary');
+    box-shadow: 0 2px 8px rgba(v.color('primary'), 0.1);
+
+    @include m.mobile-only() {
+      padding: v.$spacing-md;
+    }
+
+    p {
+      margin: v.$spacing-xs 0;
+      line-height: 1.6;
+
+      &:first-child {
+        color: v.color('primary');
+        font-weight: 600;
+        font-size: 1.05rem;
+        margin-bottom: v.$spacing-sm;
+
+        @include m.mobile-only() {
+          font-size: 1rem;
+        }
+      }
+
+      &:last-child {
+        color: v.color('text-darker');
+        font-size: 0.95rem;
+
+        @include m.mobile-only() {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}

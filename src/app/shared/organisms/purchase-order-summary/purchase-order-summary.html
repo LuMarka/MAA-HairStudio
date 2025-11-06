@@ -1,0 +1,59 @@
+<div class="purchase-order-summary">
+
+  <!-- Título del resumen -->
+  <div class="purchase-order-summary__header">
+    <h3 class="purchase-order-summary__title">
+      Resumen del Pedido
+    </h3>
+  </div>
+
+  <!-- Productos en el carrito -->
+  <div class="purchase-order-summary__cart-section">
+    <app-cart-summary
+      [items]="cartItems()"
+      [showEditButton]="currentStep() === 1" />
+  </div>
+
+  <!-- Desglose de costos -->
+  <div class="purchase-order-summary__totals-section">
+    <div class="purchase-order-summary__line-item">
+      <span class="purchase-order-summary__label">Subtotal:</span>
+      <span class="purchase-order-summary__value">{{ subtotal() | currency:'USD':'symbol':'1.2-2' }}</span>
+    </div>
+
+    <div class="purchase-order-summary__line-item">
+      <span class="purchase-order-summary__label">Envío:</span>
+      <span class="purchase-order-summary__value">
+        @if (shipping() === 0) {
+          <span class="purchase-order-summary__free">¡Gratis!</span>
+        } @else {
+          {{ shipping() | currency:'USD':'symbol':'1.2-2' }}
+        }
+      </span>
+    </div>
+
+    <div class="purchase-order-summary__line-item">
+      <span class="purchase-order-summary__label">IVA (16%):</span>
+      <span class="purchase-order-summary__value">{{ tax() | currency:'USD':'symbol':'1.2-2' }}</span>
+    </div>
+
+    <div class="purchase-order-summary__line-item purchase-order-summary__line-item--total">
+      <span class="purchase-order-summary__label">Total:</span>
+      <span class="purchase-order-summary__value">{{ total() | currency:'USD':'symbol':'1.2-2' }}</span>
+    </div>
+  </div>
+
+  <!-- Información adicional -->
+  <div class="purchase-order-summary__info-section">
+    <div class="purchase-order-summary__delivery-info">
+      <span class="purchase-order-summary__delivery-label">Tiempo estimado de entrega:</span>
+      <span class="purchase-order-summary__delivery-value">{{ estimatedDelivery() }}</span>
+    </div>
+
+    @if (currentStep() > 1) {
+      <app-order-details
+        [orderData]="orderData()" />
+    }
+  </div>
+
+</div>

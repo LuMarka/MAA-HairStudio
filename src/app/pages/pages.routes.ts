@@ -21,6 +21,7 @@ import { Login } from './login/login';
 import { Profile } from './profile/profile';
 import { Gallery } from './gallery/gallery';
 import { Wishlist } from './wishlist/wishlist';
+import { PurchaseOrder } from './purchase-order/purchase-order';
 import { adminGuard } from '../core/guards/admin.guard';
 import { guestGuard } from '../core/guards/guest.guard';
 import { authGuard } from '../core/guards/auth.guard';
@@ -130,6 +131,16 @@ export const pagesRoutes: Routes = [
           title: "Mis Favoritos | MAA Hair Studio",
           description: "Tu lista de productos favoritos.",
           keywords: "wishlist, favorites, productos favoritos",
+        }
+      },
+      {
+        path: 'purchase-order',
+        component: PurchaseOrder,
+        //canActivate: [authGuard],
+        data: {
+          title: "Finalizar Pedido | MAA Hair Studio",
+          description: "Completa tu compra y finaliza tu pedido.",
+          keywords: "purchase order, checkout, finalize, completar compra, finalizar pedido",
         }
       }
     ]
