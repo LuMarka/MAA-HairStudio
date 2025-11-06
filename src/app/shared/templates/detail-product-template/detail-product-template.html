@@ -1,1 +1,9 @@
-<p>detail-product-template works!</p>
+
+ @if (productData(); as product) {
+    <app-product-detail />
+    } @else {
+    <p>Cargando producto...</p>
+    }
+
+
+
