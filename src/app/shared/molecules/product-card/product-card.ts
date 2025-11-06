@@ -1,10 +1,11 @@
 import { Component, Input, computed, inject } from '@angular/core';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { Datum } from '../../../core/models/interfaces/Product.interface';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-product-card',
-  standalone: true,
+  imports: [RouterLink],
   templateUrl: './product-card.html',
   styleUrl: './product-card.scss',
 })

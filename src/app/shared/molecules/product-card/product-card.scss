@@ -258,6 +258,16 @@
       box-shadow: 0 0 0 3px rgba(v.color('accent'), 0.5);
     }
   }
+
+  &__image-link {
+    display: block;
+    text-decoration: none;
+
+    &:hover .product-card__image {
+      transform: scale(1.05);
+      transition: transform 0.3s ease;
+    }
+  }
 }
 
 // Animación para el skeleton

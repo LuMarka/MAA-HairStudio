@@ -1,4 +1,3 @@
-
 <article class="product-card">
   <!-- Wishlist heart button (toggle) -->
     <button class="product-card__wishlist-btn"
@@ -12,7 +11,9 @@
     </button>
   <div class="product-card__image-container">
     <div class="product-card__image-skeleton"></div>
-    <img [src]="product.image" [alt]="product.name" class="product-card__image" loading="lazy" />
+    <a [routerLink]="['/details', product.id]" class="product-card__image-link">
+      <img [src]="product.image" [alt]="product.name" class="product-card__image" loading="lazy" />
+    </a>
     <!-- <div class="product-card__badge">Top</div> -->
   </div>
 
