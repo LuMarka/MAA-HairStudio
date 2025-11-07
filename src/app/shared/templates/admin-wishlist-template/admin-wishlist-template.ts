@@ -9,6 +9,6 @@ import { ProductCard } from '../../molecules/product-card/product-card';
   styleUrl: './admin-wishlist-template.scss'
 })
 export class AdminWishlistTemplate {
-  private readonly wishlist = inject(WishlistService) as WishlistService;
-  readonly products = computed(() => this.wishlist.wishlist());
+  /* private readonly wishlist = inject(WishlistService) as WishlistService;
+  readonly products = computed(() => this.wishlist.wishlist()); */
 }

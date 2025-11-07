@@ -1,60 +1,106 @@
 <section class="wishlist-template">
   <div class="wishlist-template__container">
+    
+    <!-- Header -->
     <div class="wishlist-template__header">
-    <h1 class="wishlist-template__title">
-      <span class="wishlist-template__title-icon">{{ texts.titleIcon }}</span>
-      {{ texts.title }}
-    </h1>
-    @if (itemCount() > 0) {
-      <div class="wishlist-template__actions">
-        <span class="wishlist-template__count">{{ itemCount() }} {{ itemCount() === 1 ? texts.countSingular : texts.countPlural }}</span>
-        <button
-          type="button"
-          class="wishlist-template__clear-btn"
-          (click)="clearWishlist()"
-          [attr.aria-label]="texts.clearButtonAriaLabel"
-        >
-          {{ texts.clearButtonText }}
-        </button>
-      </div>
-    }
-  </div>
-
-  @if (products().length > 0) {
-    <div class="wishlist-template__grid">
-      @for (product of products(); track product.id) {
-        <app-product-card [product]="product"></app-product-card>
+      <h1 class="wishlist-template__title">
+        <span class="wishlist-template__title-icon">{{ texts.titleIcon }}</span>
+        {{ texts.title }}
+      </h1>
+      
+      @if (itemCount() > 0 && !isLoading()) {
+        <div class="wishlist-template__actions">
+          <span class="wishlist-template__count">
+            {{ itemCount() }} {{ itemCount() === 1 ? texts.countSingular : texts.countPlural }}
+          </span>
+          <button
+            type="button"
+            class="wishlist-template__clear-btn"
+            (click)="clearWishlist()"
+            [attr.aria-label]="texts.clearButtonAriaLabel"
+            [disabled]="isLoading()"
+          >
+            {{ isLoading() ? texts.clearingText : texts.clearButtonText }}
+          </button>
+        </div>
       }
     </div>
 
-    <!-- Botón para explorar más productos -->
-    <div class="wishlist-template__explore-more">
-      <p class="wishlist-template__explore-text">{{ texts.exploreText }}</p>
-      <button
-        type="button"
-        class="wishlist-template__explore-btn"
-        (click)="navigateToProducts()"
-      >
-        <span class="wishlist-template__explore-icon">{{ texts.exploreIcon }}</span>
-        {{ texts.exploreButtonText }}
-        <span class="wishlist-template__explore-arrow">{{ texts.exploreArrow }}</span>
-      </button>
-    </div>
-  } @else {
-    <div class="wishlist-template__empty">
-      <div class="wishlist-template__empty-icon">{{ texts.emptyIcon }}</div>
-      <h2 class="wishlist-template__empty-title">{{ texts.emptyTitle }}</h2>
-      <p class="wishlist-template__empty-description">
-        {{ texts.emptyDescription }}
-      </p>
-      <button
-        type="button"
-        class="wishlist-template__shop-btn"
-        (click)="navigateToProducts()"
-      >
-        {{ texts.emptyButtonText }}
-      </button>
-    </div>
-  }
+    <!-- Loading State -->
+    @if (isLoading() || isLoadingProducts()) {
+      <div class="wishlist-template__loading">
+        <div class="wishlist-template__spinner" aria-hidden="true"></div>
+        <p class="wishlist-template__loading-text">{{ texts.loadingText }}</p>
+      </div>
+    }
+
+    <!-- Error State -->
+    @else if (error()) {
+      <div class="wishlist-template__error">
+        <div class="wishlist-template__error-icon">⚠️</div>
+        <h2 class="wishlist-template__error-title">{{ texts.errorTitle }}</h2>
+        <p class="wishlist-template__error-message">{{ error() }}</p>
+        <button
+          type="button"
+          class="wishlist-template__retry-btn"
+          (click)="retryLoad()"
+        >
+          {{ texts.retryButtonText }}
+        </button>
+      </div>
+    }
+
+    <!-- Content -->
+    @else {
+      @if (products().length > 0) {
+        <!-- Products Grid -->
+        <div class="wishlist-template__grid">
+          @for (product of products(); track product.id) {
+            <!-- <app-product-card 
+              [product]="product"
+              [context]="'wishlist'"
+              (removeFromWishlist)="onProductRemove($event)"
+              (addToCart)="onAddToCart($event)"
+            /> -->
+            <app-product-card 
+              [product]="product"
+            />
+          }
+        </div>
+
+        <!-- Explore More Section -->
+        <div class="wishlist-template__explore-more">
+          <p class="wishlist-template__explore-text">{{ texts.exploreText }}</p>
+          <button
+            type="button"
+            class="wishlist-template__explore-btn"
+            (click)="navigateToProducts()"
+          >
+            <span class="wishlist-template__explore-icon">{{ texts.exploreIcon }}</span>
+            {{ texts.exploreButtonText }}
+            <span class="wishlist-template__explore-arrow">{{ texts.exploreArrow }}</span>
+          </button>
+        </div>
+      } 
+
+      <!-- Empty State -->
+      @else {
+        <div class="wishlist-template__empty">
+          <div class="wishlist-template__empty-icon">{{ texts.emptyIcon }}</div>
+          <h2 class="wishlist-template__empty-title">{{ texts.emptyTitle }}</h2>
+          <p class="wishlist-template__empty-description">
+            {{ texts.emptyDescription }}
+          </p>
+          <button
+            type="button"
+            class="wishlist-template__shop-btn"
+            (click)="navigateToProducts()"
+          >
+            {{ texts.emptyButtonText }}
+          </button>
+        </div>
+      }
+    }
+    
   </div>
 </section>
