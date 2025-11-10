@@ -46,7 +46,8 @@ export class PurchaseOrderTemplate {
   readonly orderData = signal<OrderData | null>(null);
   readonly selectedPaymentMethod = signal<OrderData['paymentMethod'] | null>(null);
 
-  private readonly WHATSAPP_NUMBER = '5493534015655';
+  /* private readonly WHATSAPP_NUMBER = '5493534015655'; */
+  private readonly WHATSAPP_NUMBER = '5492616984285';
 
   readonly cartItems = computed(() => this.cartService.items());
   readonly cartTotal = computed(() => this.cartService.total());
@@ -110,8 +111,8 @@ export class PurchaseOrderTemplate {
   }
 
   onEditCart(): void {
-    console.log('Navigating to cart for editing');
-    this.router.navigate(['/tienda']);
+    console.log('Navigating to products for editing cart');
+    this.router.navigate(['/products']);
   }
 
   onFinalizeOrder(): void {
@@ -155,20 +156,26 @@ export class PurchaseOrderTemplate {
     const message = this.buildWhatsAppMessage(orderData, cartItems, total);
 
     console.log('=== WhatsApp Message ===');
-    console.log('Message:', message);
+    console.log('Message (raw):', message);
 
     try {
+      // Codificar el mensaje correctamente
       const encodedMessage = encodeURIComponent(message);
       const whatsappUrl = `https://wa.me/${this.WHATSAPP_NUMBER}?text=${encodedMessage}`;
 
       console.log('WhatsApp URL:', whatsappUrl);
+      console.log('URL Length:', whatsappUrl.length);
 
+      // WhatsApp tiene un límite de ~2000 caracteres en la URL
       if (whatsappUrl.length > 2000) {
+        console.warn('Message too long, copying to clipboard');
         this.copyToClipboard(message);
+        alert('El mensaje es muy largo. Se ha copiado al portapapeles. Por favor, pégalo en WhatsApp.');
         window.open(`https://wa.me/${this.WHATSAPP_NUMBER}`, '_blank');
         return;
       }
 
+      // Abrir WhatsApp con el mensaje
       window.open(whatsappUrl, '_blank');
 
       // Mostrar mensaje de confirmación y limpiar carrito después de un delay
@@ -181,11 +188,10 @@ export class PurchaseOrderTemplate {
     } catch (error) {
       console.error('Error sending to WhatsApp:', error);
       this.copyToClipboard(message);
+      alert('Hubo un error al abrir WhatsApp. El mensaje se ha copiado al portapapeles.');
       window.open(`https://wa.me/${this.WHATSAPP_NUMBER}`, '_blank');
     }
-  }
-
-  private copyToClipboard(message: string): void {
+  }  private copyToClipboard(message: string): void {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(message).then(() => {
         alert('Mensaje copiado al portapapeles. Pégalo en WhatsApp.');
@@ -196,42 +202,36 @@ export class PurchaseOrderTemplate {
   }
 
   private buildWhatsAppMessage(data: OrderData, items: CartItem[], total: number): string {
-    const lines = [
-      '🛍️ NUEVO PEDIDO - MAA Hair Studio',
-      '',
-      '📋 PRODUCTOS:'
-    ];
+    let message = 'NUEVO PEDIDO - MAA Hair Studio\n\n';
 
+    message += 'PRODUCTOS:\n';
     items.forEach((item, index) => {
       const itemTotal = item.price * item.quantity;
       const brand = item.brand ? ` (${item.brand})` : '';
-      lines.push(`${index + 1}. ${item.name}${brand} x${item.quantity} - $${itemTotal.toFixed(2)}`);
+      message += `${index + 1}. ${item.name}${brand} x${item.quantity} - $${itemTotal.toFixed(2)}\n`;
     });
 
-    lines.push('');
-    lines.push(`💰 TOTAL: $${total.toFixed(2)}`);
-    lines.push('');
-    lines.push('👤 DATOS DEL CLIENTE:');
-    lines.push(`Nombre: ${data.firstName} ${data.lastName}`);
-    lines.push(`Email: ${data.email}`);
-    lines.push(`Teléfono: ${data.phone}`);
-    lines.push('');
-    lines.push('🚚 DIRECCIÓN DE ENTREGA:');
-    lines.push(`Dirección: ${data.address}`);
-    lines.push(`Ciudad: ${data.city}`);
-    lines.push(`Código Postal: ${data.postalCode}`);
-    lines.push('');
-    lines.push(`💳 MÉTODO DE PAGO: ${this.getPaymentMethodText(data.paymentMethod)}`);
+    message += `\nTOTAL: $${total.toFixed(2)}\n\n`;
+
+    message += 'DATOS DEL CLIENTE:\n';
+    message += `Nombre: ${data.firstName} ${data.lastName}\n`;
+    message += `Email: ${data.email}\n`;
+    message += `Telefono: ${data.phone}\n\n`;
+
+    message += 'DIRECCION DE ENTREGA:\n';
+    message += `Direccion: ${data.address}\n`;
+    message += `Ciudad: ${data.city}\n`;
+    message += `Codigo Postal: ${data.postalCode}\n\n`;
+
+    message += `METODO DE PAGO: ${this.getPaymentMethodText(data.paymentMethod)}\n`;
 
     if (data.notes?.trim()) {
-      lines.push('');
-      lines.push(`📝 Notas: ${data.notes}`);
+      message += `\nNotas: ${data.notes}\n`;
     }
 
-    lines.push('');
-    lines.push('¡Gracias por tu pedido! 🎉');
+    message += '\nGracias por tu pedido!';
 
-    return lines.join('\n');
+    return message;
   }
 
   private getPaymentMethodText(method: OrderData['paymentMethod']): string {
