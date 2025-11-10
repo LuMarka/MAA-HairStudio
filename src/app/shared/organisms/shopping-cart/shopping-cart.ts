@@ -27,17 +27,17 @@ export class ShoppingCart implements OnInit {
 
   constructor(private router: Router, private cartService: CartService) {
     this.cartItems = this.cartService.items;
-    this.itemCount = this.cartService.itemCount;
-    this.subtotal = this.cartService.subtotal;
-    this.isEmpty = this.cartService.isEmpty;
+    this.itemCount = this.cartService.totalItems;
+    this.subtotal = this.cartService.total;
+    this.isEmpty = computed(() => this.cartService.items().length === 0);
 
     this.shipping = computed(() => this.subtotal() >= 50000 ? 0 : 3000);
     this.total = computed(() => this.subtotal() + this.shipping());
   }
 
   ngOnInit() {
-    // Inicializar con datos de ejemplo (remover en producción)
-    this.cartService.initializeWithSampleData();
+    // Commented out since initializeWithSampleData method doesn't exist
+    // this.cartService.initializeWithSampleData();
   }
 
   // Métodos del carrito
@@ -55,7 +55,7 @@ export class ShoppingCart implements OnInit {
 
   proceedToCheckout(): void {
     if (this.isEmpty()) return;
-    this.router.navigate(['/checkout']);
+    this.router.navigate(['/purchase-order']);
   }
 
   continueShopping(): void {
