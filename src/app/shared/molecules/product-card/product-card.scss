@@ -125,6 +125,7 @@
     width: 100%;
     overflow: hidden;
     aspect-ratio: 1/1;
+    cursor: pointer; // Agregar cursor pointer para indicar clickeable
   }
 
   &__image-skeleton {
@@ -182,6 +183,11 @@
     color: v.color('gray6');
     margin-bottom: v.$spacing-xs;
     transition: color 0.3s ease;
+    cursor: pointer; // Agregar cursor pointer para indicar clickeable
+
+    &:hover {
+      color: v.color('accent'); // Cambiar color en hover
+    }
   }
 
   &__description {

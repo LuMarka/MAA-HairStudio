@@ -1,73 +1,85 @@
-import { Component, input, computed, signal, OnInit } from '@angular/core';
-import { CartSummary } from '../../molecules/cart-summary/cart-summary';
-import { OrderDetails } from '../../molecules/order-details/order-details';
-import { CurrencyPipe } from '@angular/common';
+import { Component, input, output, ChangeDetectionStrategy, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { CartService } from '../../../core/services/cart.service';
+import { inject } from '@angular/core';
+
+interface OrderData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  notes?: string;
+  paymentMethod: 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
+}
 
 @Component({
   selector: 'app-purchase-order-summary',
-  imports: [CartSummary, OrderDetails, CurrencyPipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule],
   templateUrl: './purchase-order-summary.html',
   styleUrl: './purchase-order-summary.scss'
 })
-export class PurchaseOrderSummary implements OnInit {
+export class PurchaseOrderSummary {
   // Inputs
-  orderData = input<any>(null);
-  currentStep = input.required<number>();
+  readonly currentStep = input<number>(1);
+  readonly orderData = input<OrderData | null>(null);
+  readonly paymentMethod = input<OrderData['paymentMethod'] | null>(null);
 
-  // Señales para datos simulados del carrito
-  cartItems = signal([
-    {
-      id: 1,
-      name: 'Shampoo Reparador Premium',
-      price: 45.99,
-      quantity: 2,
-      image: '/assets/images/products/shampoo-premium.jpg'
-    },
-    {
-      id: 2,
-      name: 'Acondicionador Hidratante',
-      price: 38.50,
-      quantity: 1,
-      image: '/assets/images/products/acondicionador.jpg'
-    },
-    {
-      id: 3,
-      name: 'Mascarilla Nutritiva',
-      price: 62.00,
-      quantity: 1,
-      image: '/assets/images/products/mascarilla.jpg'
-    }
-  ]);
+  // Outputs
+  readonly editCart = output<void>();
+  readonly previousStep = output<void>();
+  readonly finalizeOrder = output<void>();
 
-  // Computed para cálculos
-  subtotal = computed(() =>
-    this.cartItems().reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  );
+  // Services
+  private readonly cartService = inject(CartService);
 
-  shipping = computed(() => {
+  // Computed signals
+  readonly cartItems = computed(() => this.cartService.items());
+  readonly cartTotal = computed(() => this.cartService.total());
+
+  // Additional computed properties for the summary
+  readonly subtotal = computed(() => this.cartTotal());
+  readonly shipping = computed(() => {
     const subtotal = this.subtotal();
-    return subtotal > 100 ? 0 : 15.99; // Envío gratis por compras mayores a $100
+    return subtotal > 100 ? 0 : 15.99; // Free shipping over $100
+  });
+  readonly tax = computed(() => this.subtotal() * 0.16); // 16% tax
+  readonly total = computed(() => this.subtotal() + this.shipping() + this.tax());
+  readonly estimatedDelivery = computed(() => '3-5 días hábiles');
+
+  readonly paymentMethodText = computed(() => {
+    const method = this.paymentMethod();
+    if (!method) return 'No seleccionado';
+
+    const paymentMethods: Record<OrderData['paymentMethod'], string> = {
+      'mercadopago-card': 'Tarjeta de Crédito/Débito (Mercado Pago)',
+      'mercadopago': 'Mercado Pago',
+      'transfer': 'Transferencia Bancaria',
+      'cash': 'Efectivo en la entrega'
+    };
+
+    return paymentMethods[method] || 'No especificado';
   });
 
-  tax = computed(() =>
-    this.subtotal() * 0.16 // 16% IVA
-  );
+  readonly isOrderValid = computed(() => {
+    const data = this.orderData();
+    const method = this.paymentMethod();
+    const items = this.cartItems();
+    return data && method && items.length > 0;
+  });
 
-  total = computed(() =>
-    this.subtotal() + this.shipping() + this.tax()
-  );
-
-  // Información adicional
-  estimatedDelivery = signal('3-5 días hábiles');
-
-  ngOnInit() {
-    // Aquí podrías cargar los datos reales del carrito desde un servicio
-    this.loadCartData();
+  onEditCart(): void {
+    this.editCart.emit();
   }
 
-  private loadCartData() {
-    // Simulación de carga de datos del carrito
-    // En un caso real, esto vendría de un servicio
-    console.log('Cargando datos del carrito...');
+  onPreviousStep(): void {
+    this.previousStep.emit();
+  }
+
+  onFinalizeOrder(): void {
+    this.finalizeOrder.emit();
   }
 }

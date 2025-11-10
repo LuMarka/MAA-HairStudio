@@ -7,57 +7,85 @@
   gap: v.$spacing-lg;
 
   &__title {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 600;
-    color: v.color('primary');
-    margin: 0 0 v.$spacing-md 0;
+    color: v.color('text-darker');
+    margin: 0 0 v.$spacing-lg 0;
     font-family: v.$font-family-primary;
     letter-spacing: 0.3px;
-    text-align: center;
+    text-align: left;
 
     @include m.mobile-only() {
-      font-size: 1.1rem;
-      text-align: left;
+      font-size: 1.25rem;
     }
   }
 
   &__options {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: v.$spacing-md;
+
+    @include m.mobile-only() {
+      grid-template-columns: 1fr;
+    }
   }
 
   &__option {
     display: flex;
-    flex-direction: column;
-    gap: v.$spacing-xs;
-    padding: v.$spacing-lg;
     border: 2px solid v.color('gray3');
     border-radius: v.$borderRadius-lg;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background-color: v.color('white1');
     position: relative;
-
-    @include m.mobile-only() {
-      padding: v.$spacing-md;
-    }
+    overflow: hidden;
+    min-height: 80px;
 
     &:hover {
-      border-color: v.color('green-400');
-      box-shadow: 0 2px 8px rgba(v.color('primary'), 0.1);
+      border-color: v.color('primary');
+      box-shadow: 0 4px 12px rgba(v.color('primary'), 0.1);
       transform: translateY(-2px);
     }
 
     &:has(input:checked) {
       border-color: v.color('primary');
-      background-color: rgba(v.color('primary'), 0.05);
-      box-shadow: 0 4px 12px rgba(v.color('primary'), 0.15);
+      background: linear-gradient(135deg, rgba(v.color('primary'), 0.08) 0%, rgba(v.color('primary'), 0.05) 100%);
+      box-shadow: 0 6px 20px rgba(v.color('primary'), 0.2);
 
       .payment-method-form__label {
         color: v.color('primary');
         font-weight: 600;
       }
+
+      &::after {
+        content: '✓';
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 24px;
+        height: 24px;
+        background-color: v.color('primary');
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        animation: checkmarkPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      }
+    }
+  }
+
+  &__option-content {
+    display: flex;
+    align-items: center;
+    gap: v.$spacing-md;
+    padding: v.$spacing-lg;
+    width: 100%;
+
+    @include m.mobile-only() {
+      padding: v.$spacing-md;
     }
   }
 
@@ -66,16 +94,32 @@
     opacity: 0;
     width: 0;
     height: 0;
+  }
 
-    &:checked + .payment-method-form__label::before {
-      border-color: v.color('primary');
-      background-color: v.color('primary');
-    }
+  &__icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(v.color('gray3'), 0.2);
+    border-radius: v.$borderRadius;
+    transition: all 0.3s ease;
 
-    &:checked + .payment-method-form__label::after {
-      opacity: 1;
-      transform: scale(1);
+    @include m.mobile-only() {
+      font-size: 1.5rem;
+      width: 40px;
+      height: 40px;
     }
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: v.$spacing-xs;
+    flex: 1;
   }
 
   &__label {
@@ -83,49 +127,19 @@
     font-weight: 500;
     color: v.color('text-darker');
     font-family: v.$font-family-secondary;
-    padding-left: 2rem;
-    position: relative;
     transition: color 0.3s ease;
+    line-height: 1.2;
 
     @include m.mobile-only() {
       font-size: 0.9rem;
     }
-
-    // Custom radio button
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 20px;
-      height: 20px;
-      border: 2px solid v.color('gray3');
-      border-radius: 50%;
-      background-color: v.color('white1');
-      transition: all 0.3s ease;
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      left: 5px;
-      top: 50%;
-      transform: translateY(-50%) scale(0);
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background-color: v.color('white1');
-      opacity: 0;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
   }
 
   &__description {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: v.color('text-muted');
-    font-style: italic;
-    padding-left: 2rem;
+    line-height: 1.2;
+    margin: 0;
 
     @include m.mobile-only() {
       font-size: 0.75rem;
@@ -133,15 +147,24 @@
   }
 
   &__info {
-    background-color: rgba(v.color('info'), 0.08);
-    border-left: 4px solid v.color('info');
-    border-radius: v.$borderRadius;
-    padding: v.$spacing-md;
+    background: linear-gradient(135deg, rgba(v.color('info'), 0.08) 0%, rgba(v.color('info'), 0.05) 100%);
+    border: 1px solid rgba(v.color('info'), 0.2);
+    border-radius: v.$borderRadius-lg;
+    padding: v.$spacing-lg;
     animation: slideDown 0.3s ease-out;
+    display: flex;
+    align-items: flex-start;
+    gap: v.$spacing-md;
 
     @include m.mobile-only() {
-      padding: v.$spacing-sm;
+      padding: v.$spacing-md;
     }
+  }
+
+  &__info-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    margin-top: 2px;
   }
 
   &__info-text {
@@ -149,6 +172,7 @@
     font-size: 0.9rem;
     color: v.color('text-darker');
     line-height: 1.5;
+    flex: 1;
 
     strong {
       color: v.color('info');
@@ -169,5 +193,20 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes checkmarkPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }

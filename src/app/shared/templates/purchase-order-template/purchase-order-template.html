@@ -10,20 +10,139 @@
 
       <!-- Formulario principal -->
       <section class="purchase-order-template__form-section">
-        <app-purchase-order-form
-          [currentStep]="currentStep()"
-          (validationChange)="onFormValidation($event)"
-          (dataChange)="onOrderDataChange($event)"
-          (nextStep)="onNextStep()"
-          (previousStep)="onPreviousStep()" />
+        @if (currentStep() === 1) {
+          <app-purchase-order-form
+            [currentStep]="currentStep()"
+            (validationChange)="onValidationChange($event)"
+            (dataChange)="onDataChange($event)"
+            (nextStep)="onNextStep()" />
+        }
+
+        @if (currentStep() === 2) {
+          <div class="payment-method-selection">
+            <h3>Selecciona tu método de pago</h3>
+
+            <div class="payment-options">
+              <label class="payment-option">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="cash"
+                  [checked]="selectedPaymentMethod() === 'cash'"
+                  (change)="onPaymentMethodChange('cash')">
+                <span class="payment-option__text">
+                  <span class="payment-option__icon">💵</span>
+                  Efectivo en la entrega
+                </span>
+              </label>
+
+              <label class="payment-option">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="transfer"
+                  [checked]="selectedPaymentMethod() === 'transfer'"
+                  (change)="onPaymentMethodChange('transfer')">
+                <span class="payment-option__text">
+                  <span class="payment-option__icon">🏦</span>
+                  Transferencia bancaria
+                </span>
+              </label>
+
+              <label class="payment-option">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="mercadopago"
+                  [checked]="selectedPaymentMethod() === 'mercadopago'"
+                  (change)="onPaymentMethodChange('mercadopago')">
+                <span class="payment-option__text">
+                  <span class="payment-option__icon">💳</span>
+                  Mercado Pago
+                </span>
+              </label>
+
+              <label class="payment-option">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="mercadopago-card"
+                  [checked]="selectedPaymentMethod() === 'mercadopago-card'"
+                  (change)="onPaymentMethodChange('mercadopago-card')">
+                <span class="payment-option__text">
+                  <span class="payment-option__icon">💳</span>
+                  Tarjeta (Mercado Pago)
+                </span>
+              </label>
+            </div>
+
+            <div class="navigation-buttons">
+              <button
+                type="button"
+                class="btn btn--secondary"
+                (click)="onPreviousStep()">
+                ← Volver
+              </button>
+
+              <button
+                type="button"
+                class="btn btn--primary"
+                [disabled]="!selectedPaymentMethod()"
+                (click)="onNextStep()">
+                Continuar →
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (currentStep() === 3) {
+          <app-purchase-order-summary
+            [currentStep]="currentStep()"
+            [orderData]="orderData()"
+            [paymentMethod]="selectedPaymentMethod()"
+            (editCart)="onEditCart()"
+            (previousStep)="onPreviousStep()"
+            (finalizeOrder)="onFinalizeOrder()" />
+        }
       </section>
 
-      <!-- Resumen lateral -->
-      <aside class="purchase-order-template__summary-section">
-        <app-purchase-order-summary
-          [orderData]="orderData()"
-          [currentStep]="currentStep()" />
-      </aside>
+      <!-- Resumen lateral para pasos 1 y 2 -->
+      @if (currentStep() < 3) {
+        <aside class="purchase-order-template__summary-section">
+          <div class="cart-preview">
+            <h3 class="cart-preview__title">Resumen del carrito</h3>
+            @if (cartItems().length > 0) {
+              <div class="cart-preview__items">
+                @for (item of cartItems(); track item.id) {
+                  <div class="cart-preview__item">
+                    <div class="cart-preview__item-info">
+                      <span class="cart-preview__item-name">{{ item.name }}</span>
+                      @if (item.brand) {
+                        <span class="cart-preview__item-brand">{{ item.brand }}</span>
+                      }
+                    </div>
+                    <div class="cart-preview__item-details">
+                      <span class="cart-preview__item-quantity">x{{ item.quantity }}</span>
+                      <span class="cart-preview__item-price">${{ (item.price * item.quantity).toFixed(2) }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="cart-preview__total">
+                <strong>Total: ${{ cartTotal().toFixed(2) }}</strong>
+              </div>
+              <button
+                type="button"
+                class="cart-preview__edit-btn"
+                (click)="onEditCart()">
+                Editar carrito
+              </button>
+            } @else {
+              <p class="cart-preview__empty">Tu carrito está vacío</p>
+            }
+          </div>
+        </aside>
+      }
 
     </main>
 

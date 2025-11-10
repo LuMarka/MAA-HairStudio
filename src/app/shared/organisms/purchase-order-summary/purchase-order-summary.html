@@ -1,5 +1,5 @@
+<!-- Resumen del Pedido -->
 <div class="purchase-order-summary">
-
   <!-- Título del resumen -->
   <div class="purchase-order-summary__header">
     <h3 class="purchase-order-summary__title">
@@ -8,17 +8,51 @@
   </div>
 
   <!-- Productos en el carrito -->
-  <div class="purchase-order-summary__cart-section">
-    <app-cart-summary
-      [items]="cartItems()"
-      [showEditButton]="currentStep() === 1" />
-  </div>
+  @if (cartItems().length > 0) {
+    <div class="purchase-order-summary__cart-section">
+      <h4 class="purchase-order-summary__section-title">Productos</h4>
+      <div class="cart-items">
+        @for (item of cartItems(); track item.id) {
+          <div class="cart-item">
+            @if (item.image) {
+              <div class="cart-item__image">
+                <img
+                  [src]="item.image"
+                  [alt]="item.name"
+                  loading="lazy">
+              </div>
+            }
+            <div class="cart-item__details">
+              <h5 class="cart-item__name">{{ item.name }}</h5>
+              @if (item.brand) {
+                <p class="cart-item__brand">{{ item.brand }}</p>
+              }
+              @if (item.description) {
+                <p class="cart-item__description">{{ item.description }}</p>
+              }
+              <div class="cart-item__meta">
+                <div class="cart-item__price-info">
+                  <span class="cart-item__unit-price">Precio unitario: ${{ item.price.toFixed(2) }}</span>
+                  <span class="cart-item__quantity">Cantidad: {{ item.quantity }}</span>
+                </div>
+                <span class="cart-item__total">Subtotal: ${{ (item.price * item.quantity).toFixed(2) }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="purchase-order-summary__empty">
+      <p>Tu carrito está vacío</p>
+    </div>
+  }
 
   <!-- Desglose de costos -->
   <div class="purchase-order-summary__totals-section">
     <div class="purchase-order-summary__line-item">
       <span class="purchase-order-summary__label">Subtotal:</span>
-      <span class="purchase-order-summary__value">{{ subtotal() | currency:'USD':'symbol':'1.2-2' }}</span>
+      <span class="purchase-order-summary__value">${{ subtotal().toFixed(2) }}</span>
     </div>
 
     <div class="purchase-order-summary__line-item">
@@ -27,33 +61,93 @@
         @if (shipping() === 0) {
           <span class="purchase-order-summary__free">¡Gratis!</span>
         } @else {
-          {{ shipping() | currency:'USD':'symbol':'1.2-2' }}
+          ${{ shipping().toFixed(2) }}
         }
       </span>
     </div>
 
     <div class="purchase-order-summary__line-item">
       <span class="purchase-order-summary__label">IVA (16%):</span>
-      <span class="purchase-order-summary__value">{{ tax() | currency:'USD':'symbol':'1.2-2' }}</span>
+      <span class="purchase-order-summary__value">${{ tax().toFixed(2) }}</span>
     </div>
 
     <div class="purchase-order-summary__line-item purchase-order-summary__line-item--total">
       <span class="purchase-order-summary__label">Total:</span>
-      <span class="purchase-order-summary__value">{{ total() | currency:'USD':'symbol':'1.2-2' }}</span>
+      <span class="purchase-order-summary__value">${{ total().toFixed(2) }}</span>
     </div>
   </div>
 
-  <!-- Información adicional -->
+  <!-- Información del pedido -->
   <div class="purchase-order-summary__info-section">
     <div class="purchase-order-summary__delivery-info">
       <span class="purchase-order-summary__delivery-label">Tiempo estimado de entrega:</span>
       <span class="purchase-order-summary__delivery-value">{{ estimatedDelivery() }}</span>
     </div>
 
-    @if (currentStep() > 1) {
-      <app-order-details
-        [orderData]="orderData()" />
+    <!-- Datos del cliente -->
+    @if (orderData()) {
+      <div class="purchase-order-summary__order-details">
+        <h4 class="purchase-order-summary__section-title">Datos de Entrega</h4>
+        <div class="customer-info">
+          <p><strong>Nombre:</strong> {{ orderData()?.firstName ?? '' }} {{ orderData()?.lastName ?? '' }}</p>
+          <p><strong>Teléfono:</strong> {{ orderData()?.phone ?? '' }}</p>
+          <p><strong>Email:</strong> {{ orderData()?.email ?? '' }}</p>
+
+          <div class="address-info">
+            <p><strong>Dirección:</strong> {{ orderData()?.address ?? '' }}</p>
+            <p><strong>Ciudad:</strong> {{ orderData()?.city ?? '' }}</p>
+            <p><strong>Código Postal:</strong> {{ orderData()?.postalCode ?? '' }}</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Método de pago -->
+    @if (paymentMethod()) {
+      <div class="purchase-order-summary__payment-method">
+        <h4 class="purchase-order-summary__section-title">Método de Pago</h4>
+        <p class="payment-method">{{ paymentMethodText() }}</p>
+      </div>
     }
   </div>
 
+  <!-- Estado del pedido -->
+  <div class="purchase-order-summary__status">
+    @if (isOrderValid()) {
+      <div class="order-status__valid">
+        ✅ Tu pedido está listo para ser procesado
+      </div>
+    } @else {
+      <div class="order-status__invalid">
+        ⚠️ Completa todos los datos para continuar
+      </div>
+    }
+  </div>
+
+  <!-- Botones de navegación -->
+  <div class="purchase-order-summary__actions">
+    <div class="navigation-buttons">
+      <button
+        type="button"
+        class="btn btn--secondary"
+        (click)="onEditCart()">
+        Editar carrito
+      </button>
+
+      <button
+        type="button"
+        class="btn btn--secondary"
+        (click)="onPreviousStep()">
+        ← Volver
+      </button>
+
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="!isOrderValid()"
+        (click)="onFinalizeOrder()">
+        Finalizar Pedido
+      </button>
+    </div>
+  </div>
 </div>

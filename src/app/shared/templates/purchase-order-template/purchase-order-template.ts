@@ -1,12 +1,33 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, ChangeDetectionStrategy, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { PurchaseOrderHeader } from '../../organisms/purchase-order-header/purchase-order-header';
 import { PurchaseOrderForm } from '../../organisms/purchase-order-form/purchase-order-form';
 import { PurchaseOrderSummary } from '../../organisms/purchase-order-summary/purchase-order-summary';
 import { CartService } from '../../../core/services/cart.service';
 
+interface OrderData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  notes?: string;
+  paymentMethod: 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
+}
+
+interface CartItem {
+  id: string;
+  name: string;
+  brand?: string;
+  quantity: number;
+  price: number;
+}
+
 @Component({
   selector: 'app-purchase-order-template',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     PurchaseOrderHeader,
     PurchaseOrderForm,
@@ -16,222 +37,211 @@ import { CartService } from '../../../core/services/cart.service';
   styleUrl: './purchase-order-template.scss'
 })
 export class PurchaseOrderTemplate {
-  private cartService = inject(CartService);
-  private router = inject(Router);
+  private readonly cartService = inject(CartService);
+  private readonly router = inject(Router);
 
-  // Señales para el estado del formulario
-  currentStep = signal(1);
-  totalSteps = signal(3);
-  isFormValid = signal(false);
-  orderData = signal<any>(null);
+  readonly currentStep = signal(1);
+  readonly totalSteps = signal(3);
+  readonly isFormValid = signal(false);
+  readonly orderData = signal<OrderData | null>(null);
+  readonly selectedPaymentMethod = signal<OrderData['paymentMethod'] | null>(null);
 
-  // WhatsApp de MAA Hair Studio (sin el símbolo +)
   private readonly WHATSAPP_NUMBER = '5493534015655';
 
-  // Métodos para manejar la navegación del stepper
-  onNextStep() {
-    const currentStepValue = this.currentStep();
+  readonly cartItems = computed(() => this.cartService.items());
+  readonly cartTotal = computed(() => this.cartService.total());
+
+  readonly isOrderComplete = computed(() => {
     const data = this.orderData();
+    const paymentMethod = this.selectedPaymentMethod();
+    return data !== null && paymentMethod !== null && this.isFormValid();
+  });
 
-    console.log('=== onNextStep ===');
-    console.log('Current step:', currentStepValue);
-    console.log('Order data:', data);
+  onNextStep(): void {
+    const currentStepValue = this.currentStep();
 
-    // PASO 2: Al terminar de seleccionar método de pago
-    if (currentStepValue === 2) {
-      // Si es transferencia o efectivo, ir al paso 3 (confirmación)
-      if (data?.paymentMethod === 'transfer' || data?.paymentMethod === 'cash') {
-        this.currentStep.update(step => step + 1);
-        return;
-      }
-
-      // Si es Mercado Pago, también ir al paso 3
-      if (data?.paymentMethod === 'mercadopago' || data?.paymentMethod === 'mercadopago-card') {
-        this.currentStep.update(step => step + 1);
-        return;
-      }
-    }
-
-    // PASO 3: Botón "Finalizar Pedido"
-    if (currentStepValue === 3) {
-      this.finalizeOrder(data);
-      return;
-    }
-
-    // Avanzar al siguiente paso normalmente
     if (currentStepValue < this.totalSteps()) {
-      this.currentStep.update(step => step + 1);
+      // Para el paso 1, verificar que el formulario sea válido
+      if (currentStepValue === 1 && !this.isFormValid()) {
+        return;
+      }
+
+      // Para el paso 2, verificar que hay método de pago seleccionado
+      if (currentStepValue === 2 && !this.selectedPaymentMethod()) {
+        return;
+      }
+
+      this.currentStep.set(currentStepValue + 1);
     }
   }
 
-  onPreviousStep() {
-    if (this.currentStep() > 1) {
-      this.currentStep.update(step => step - 1);
+  onPreviousStep(): void {
+    const currentStepValue = this.currentStep();
+    if (currentStepValue > 1) {
+      this.currentStep.set(currentStepValue - 1);
     }
   }
 
-  onFormValidation(isValid: boolean) {
+  onValidationChange(isValid: boolean): void {
     this.isFormValid.set(isValid);
+    console.log('Form validation changed:', isValid);
   }
 
-  onOrderDataChange(data: any) {
+  onDataChange(data: OrderData): void {
     this.orderData.set(data);
+    if (data.paymentMethod) {
+      this.selectedPaymentMethod.set(data.paymentMethod);
+    }
+    console.log('Order data changed:', data);
   }
 
-  /**
-   * Finalizar el pedido según el método de pago seleccionado
-   */
-  private finalizeOrder(data: any) {
-    console.log('=== Finalizing Order ===');
-    console.log('Payment method:', data?.paymentMethod);
+  onPaymentMethodChange(method: OrderData['paymentMethod']): void {
+    this.selectedPaymentMethod.set(method);
 
-    const paymentMethod = data?.paymentMethod;
+    const currentData = this.orderData();
+    if (currentData) {
+      this.orderData.set({
+        ...currentData,
+        paymentMethod: method
+      });
+    }
 
-    // Transferencia o Efectivo: Redirigir a WhatsApp
-    if (paymentMethod === 'transfer' || paymentMethod === 'cash') {
-      this.redirectToWhatsApp(data);
+    console.log('Payment method changed:', method);
+  }
+
+  onEditCart(): void {
+    console.log('Navigating to cart for editing');
+    this.router.navigate(['/tienda']);
+  }
+
+  onFinalizeOrder(): void {
+    const data = this.orderData();
+    const paymentMethod = this.selectedPaymentMethod();
+    const cartItems = this.cartItems();
+    const total = this.cartTotal();
+
+    console.log('=== Finalizing Order (Guest User) ===');
+    console.log('Order data:', data);
+    console.log('Payment method:', paymentMethod);
+    console.log('Cart items:', cartItems);
+    console.log('Cart total:', total);
+
+    // Validaciones
+    if (!data || !paymentMethod) {
+      alert('Por favor complete todos los datos requeridos');
       return;
     }
 
-    // Mercado Pago: Iniciar flujo de pago
-    if (paymentMethod === 'mercadopago' || paymentMethod === 'mercadopago-card') {
-      this.initializeMercadoPago(data);
+    if (cartItems.length === 0) {
+      alert('El carrito está vacío');
+      this.router.navigate(['/tienda']);
       return;
     }
 
-    // Fallback: si no se reconoce el método, ir a WhatsApp
-    console.warn('Payment method not recognized, redirecting to WhatsApp');
-    this.redirectToWhatsApp(data);
-  }
+    if (total <= 0) {
+      alert('Total inválido');
+      return;
+    }
 
-  /**
-   * Redirigir a WhatsApp con los detalles del pedido
-   */
-  private redirectToWhatsApp(data: any) {
-    const cartItems = this.cartService.items();
-    const subtotal = this.cartService.subtotal();
-
-    // Construir mensaje ultra-simple que funcione
-    let message = 'Hola! Me gustaria realizar un pedido:%0A%0A';
-
-    // Productos
-    message += `PRODUCTOS (${cartItems.length}):%0A`;
-    cartItems.forEach((item, index) => {
-      message += `${index + 1}. ${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}%0A`;
-    });
-
-    message += `%0ATOTAL: $${subtotal.toFixed(2)}%0A%0A`;
-
-    // Datos del cliente
-    message += `DATOS:%0A`;
-    message += `${data.firstName || ''} ${data.lastName || ''}%0A`;
-    message += `${data.email || ''}%0A`;
-    message += `${data.phone || ''}%0A%0A`;
-
-    // Dirección
-    message += `DIRECCION:%0A`;
-    message += `${data.address || ''}%0A`;
-    message += `${data.city || ''} - CP: ${data.postalCode || ''}%0A%0A`;
-
-    // Método de pago
-    const paymentText = data.paymentMethod === 'transfer' ? 'Transferencia'
-      : data.paymentMethod === 'cash' ? 'Efectivo (Contra Entrega)'
-      : 'Mercado Pago';
-    message += `PAGO: ${paymentText}`;
-
-    const whatsappUrl = `https://wa.me/${this.WHATSAPP_NUMBER}?text=${message}`;
-
-    console.log('Redirecting to WhatsApp');
-    console.log('URL length:', whatsappUrl.length);
-
-    // Abrir WhatsApp
-    window.open(whatsappUrl, '_blank');
-
-    // Limpiar carrito después de 2 segundos
-    setTimeout(() => {
-      this.cartService.clearCart();
-      this.router.navigate(['/']);
-    }, 2000);
-  }
-
-  /**
-   * Inicializar el flujo de pago con Mercado Pago
-   * TODO: Implementar integración completa con Mercado Pago SDK
-   */
-  private initializeMercadoPago(data: any) {
-    console.log('=== Initializing Mercado Pago ===');
-
-    const cartItems = this.cartService.items();
-    const subtotal = this.cartService.subtotal();
-
-    // PASO 1: Crear la preferencia de pago
-    const orderData = {
-      items: cartItems.map(item => ({
-        id: item.id,
-        title: item.name,
-        description: item.description || item.brand,
-        quantity: item.quantity,
-        unit_price: item.price,
-        currency_id: 'ARS' // Peso argentino
-      })),
-      payer: {
-        name: data.firstName,
-        surname: data.lastName,
-        email: data.email,
-        phone: {
-          number: data.phone
-        },
-        address: {
-          street_name: data.address,
-          zip_code: data.postalCode,
-          city_name: data.city
-        }
-      },
-      back_urls: {
-        success: `${window.location.origin}/checkout/success`,
-        failure: `${window.location.origin}/checkout/failure`,
-        pending: `${window.location.origin}/checkout/pending`
-      },
-      auto_return: 'approved',
-      notification_url: 'YOUR_BACKEND_WEBHOOK_URL' // URL de tu backend para recibir notificaciones
+    const completeOrderData: OrderData = {
+      ...data,
+      paymentMethod
     };
 
-    console.log('Order data for Mercado Pago:', orderData);
+    this.sendToWhatsApp(completeOrderData, cartItems, total);
+  }
 
-    // PASO 2: Llamar a tu backend para crear la preferencia
-    // Por ahora, redirigir a WhatsApp como fallback
-    alert(`
-      🔧 Integración de Mercado Pago pendiente
+  private sendToWhatsApp(orderData: OrderData, cartItems: CartItem[], total: number): void {
+    const message = this.buildWhatsAppMessage(orderData, cartItems, total);
 
-      Para implementar Mercado Pago necesitas:
+    console.log('=== WhatsApp Message ===');
+    console.log('Message:', message);
 
-      1. Crear cuenta en Mercado Pago Developers
-      2. Obtener tus credenciales (Public Key y Access Token)
-      3. Implementar endpoint en tu backend para crear preferencias
-      4. Integrar el SDK de Mercado Pago
+    try {
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/${this.WHATSAPP_NUMBER}?text=${encodedMessage}`;
 
-      Por ahora, te redirigiremos a WhatsApp para completar la compra.
-    `);
+      console.log('WhatsApp URL:', whatsappUrl);
 
-    this.redirectToWhatsApp(data);
+      if (whatsappUrl.length > 2000) {
+        this.copyToClipboard(message);
+        window.open(`https://wa.me/${this.WHATSAPP_NUMBER}`, '_blank');
+        return;
+      }
 
-    /*
-    // EJEMPLO de implementación futura:
+      window.open(whatsappUrl, '_blank');
 
-    fetch('YOUR_BACKEND_URL/api/create-preference', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderData)
-    })
-    .then(response => response.json())
-    .then(preference => {
-      // Redirigir a Mercado Pago
-      window.location.href = preference.init_point;
-    })
-    .catch(error => {
-      console.error('Error creating Mercado Pago preference:', error);
-      alert('Error al procesar el pago. Por favor, intenta nuevamente.');
+      // Mostrar mensaje de confirmación y limpiar carrito después de un delay
+      setTimeout(() => {
+        alert('¡Pedido enviado! Te contactaremos pronto por WhatsApp.');
+        this.cartService.clearCart();
+        this.router.navigate(['/']);
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error sending to WhatsApp:', error);
+      this.copyToClipboard(message);
+      window.open(`https://wa.me/${this.WHATSAPP_NUMBER}`, '_blank');
+    }
+  }
+
+  private copyToClipboard(message: string): void {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(message).then(() => {
+        alert('Mensaje copiado al portapapeles. Pégalo en WhatsApp.');
+      }).catch(err => {
+        console.error('Failed to copy message:', err);
+      });
+    }
+  }
+
+  private buildWhatsAppMessage(data: OrderData, items: CartItem[], total: number): string {
+    const lines = [
+      '🛍️ NUEVO PEDIDO - MAA Hair Studio',
+      '',
+      '📋 PRODUCTOS:'
+    ];
+
+    items.forEach((item, index) => {
+      const itemTotal = item.price * item.quantity;
+      const brand = item.brand ? ` (${item.brand})` : '';
+      lines.push(`${index + 1}. ${item.name}${brand} x${item.quantity} - $${itemTotal.toFixed(2)}`);
     });
-    */
+
+    lines.push('');
+    lines.push(`💰 TOTAL: $${total.toFixed(2)}`);
+    lines.push('');
+    lines.push('👤 DATOS DEL CLIENTE:');
+    lines.push(`Nombre: ${data.firstName} ${data.lastName}`);
+    lines.push(`Email: ${data.email}`);
+    lines.push(`Teléfono: ${data.phone}`);
+    lines.push('');
+    lines.push('🚚 DIRECCIÓN DE ENTREGA:');
+    lines.push(`Dirección: ${data.address}`);
+    lines.push(`Ciudad: ${data.city}`);
+    lines.push(`Código Postal: ${data.postalCode}`);
+    lines.push('');
+    lines.push(`💳 MÉTODO DE PAGO: ${this.getPaymentMethodText(data.paymentMethod)}`);
+
+    if (data.notes?.trim()) {
+      lines.push('');
+      lines.push(`📝 Notas: ${data.notes}`);
+    }
+
+    lines.push('');
+    lines.push('¡Gracias por tu pedido! 🎉');
+
+    return lines.join('\n');
+  }
+
+  private getPaymentMethodText(method: OrderData['paymentMethod']): string {
+    const paymentMethods: Record<OrderData['paymentMethod'], string> = {
+      'mercadopago-card': 'Tarjeta de Crédito/Débito (Mercado Pago)',
+      'mercadopago': 'Mercado Pago',
+      'transfer': 'Transferencia Bancaria',
+      'cash': 'Efectivo en la entrega'
+    };
+
+    return paymentMethods[method] || 'No especificado';
   }
 }
