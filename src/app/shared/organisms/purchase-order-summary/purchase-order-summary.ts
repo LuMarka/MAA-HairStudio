@@ -46,7 +46,7 @@ export class PurchaseOrderSummary {
     const subtotal = this.subtotal();
     return subtotal > 100 ? 0 : 15.99; // Free shipping over $100
   });
-  readonly tax = computed(() => this.subtotal() * 0.16); // 16% tax
+  readonly tax = computed(() => this.subtotal() * 0.21); // 21% tax
   readonly total = computed(() => this.subtotal() + this.shipping() + this.tax());
   readonly estimatedDelivery = computed(() => '3-5 días hábiles');
 
