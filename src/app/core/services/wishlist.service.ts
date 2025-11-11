@@ -1,13 +1,11 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, throwError, combineLatest } from 'rxjs';
-import { catchError, tap, finalize, switchMap, map } from 'rxjs/operators';
+import { Injectable, inject, signal, computed, effect, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, tap, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ProductsService, Product } from './products.service';
-import {
+import { AuthService } from './auth.service';
+import type {
   DataWishlist,
-  DatumWishlist,
-  SummaryWishlist,
   AddToWishlistRequest,
   MoveToCartRequest,
   WishlistQueryParams,
@@ -18,301 +16,352 @@ import {
   ViewProductResponse,
   WishlistDebugResponse,
   WishlistAnalyticsResponse,
-  WishlistClearResponse
+  WishlistClearResponse,
 } from '../models/interfaces/wishlist.interface';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WishlistService {
   private readonly http = inject(HttpClient);
-  private readonly productsService = inject(ProductsService);
-  
-  // URLs de la API
-  private readonly wishlistUrl = `${environment.apiUrl}wishlist`;
-  
+  private readonly authService = inject(AuthService);
+  private readonly platformId = inject(PLATFORM_ID); // ✅ Inyectar PLATFORM_ID
+  private readonly baseUrl = `${environment.apiUrl}wishlist`;
+
+  // Keys para localStorage
+  private readonly WISHLIST_IDS_KEY = 'maa_wishlist_ids';
+  private readonly WISHLIST_DATA_KEY = 'maa_wishlist_data';
+
+  // ✅ Verificar si estamos en el navegador
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
   // Signals para estado reactivo
-  private readonly wishlistDataSignal = signal<DataWishlist | null>(null);
-  private readonly isLoadingSignal = signal(false);
-  private readonly errorSignal = signal<string | null>(null);
-  private readonly quickCountSignal = signal<WishlistCountResponse['data'] | null>(null);
-  
-  // NUEVO: Signal para productos completos obtenidos por IDs
-  private readonly fullProductsSignal = signal<Product[]>([]);
-  private readonly isLoadingProductsSignal = signal(false);
+  private readonly wishlistData = signal<DataWishlist | null>(null);
+  private readonly isLoadingSignal = signal<boolean>(false);
+  private readonly error = signal<string | null>(null);
+  private readonly wishlistedProductIds = signal<Set<string>>(new Set());
 
-  // Computed values públicos existentes
-  readonly wishlistData = this.wishlistDataSignal.asReadonly();
+  // Computed signals públicos
+  readonly wishlist = this.wishlistData.asReadonly();
   readonly isLoading = this.isLoadingSignal.asReadonly();
-  readonly error = this.errorSignal.asReadonly();
-  readonly quickCount = this.quickCountSignal.asReadonly();
-  
-  // Computed para datos derivados existentes
-  readonly items = computed(() => this.wishlistDataSignal()?.data ?? []);
-  readonly summary = computed(() => this.wishlistDataSignal()?.summary ?? null);
-  readonly meta = computed(() => this.wishlistDataSignal()?.meta ?? null);
-  readonly totalItems = computed(() => this.summary()?.totalItems ?? 0);
-  readonly totalValue = computed(() => this.summary()?.totalValue ?? 0);
-  readonly availableItems = computed(() => this.summary()?.availableItems ?? 0);
-  readonly isEmpty = computed(() => this.totalItems() === 0);
-  readonly hasItems = computed(() => this.totalItems() > 0);
+  readonly errorMessage = this.error.asReadonly();
 
-  // NUEVOS: Computed para productos completos
-  readonly fullProducts = this.fullProductsSignal.asReadonly();
-  readonly isLoadingProducts = this.isLoadingProductsSignal.asReadonly();
-  readonly productIds = computed(() => 
-    this.items().map(item => item.product.id)
-  );
+  readonly totalItems = computed(() => this.wishlistData()?.summary.totalItems ?? 0);
+  readonly totalValue = computed(() => this.wishlistData()?.summary.totalValue ?? 0);
+  readonly availableItems = computed(() => this.wishlistData()?.summary.availableItems ?? 0);
+  readonly itemsOnSale = computed(() => this.wishlistData()?.summary.itemsOnSale ?? 0);
 
-  // ========== MÉTODOS EXISTENTES (mantengo los principales) ==========
+  constructor() {
+    // ✅ Solo restaurar en el navegador
+    if (this.isBrowser) {
+      this.restoreStateFromStorage();
+    }
 
-  /**
-   * 1. Obtener Wishlist con Paginación - GET /api/v1/wishlist
-   */
-  getWishlist(params: WishlistQueryParams = {}): Observable<DataWishlist> {
-    this.isLoadingSignal.set(true);
-    this.clearError();
+    // ✅ Sincronizar con servidor cuando el usuario esté autenticado
+    effect(() => {
+      if (this.authService.isAuthenticated() && this.isBrowser) {
+        this.syncWithServer();
+      } else {
+        this.resetState();
+      }
+    });
 
-    let httpParams = new HttpParams();
-    if (params.page) httpParams = httpParams.set('page', params.page.toString());
-    if (params.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    // ✅ Persistir cambios en localStorage (solo en navegador)
+    effect(() => {
+      const ids = this.wishlistedProductIds();
+      const data = this.wishlistData();
 
-    return this.http.get<DataWishlist>(this.wishlistUrl, { params: httpParams }).pipe(
-      tap(response => {
-        this.wishlistDataSignal.set(response);
-        this.syncQuickCount(response.summary);
-      }),
-      catchError(error => this.handleError(error)),
-      finalize(() => this.isLoadingSignal.set(false))
-    );
+      if ((ids.size > 0 || data) && this.isBrowser) {
+        this.saveStateToStorage();
+      }
+    });
   }
 
-  /**
-   * NUEVO: Obtener wishlist con productos completos usando getProductsByIds
-   */
-  getWishlistWithFullProducts(params: WishlistQueryParams = {}): Observable<Product[]> {
-    return this.getWishlist(params).pipe(
-      switchMap(wishlistData => {
-        const productIds = wishlistData.data.map(item => item.product.id);
-        
-        if (productIds.length === 0) {
-          this.fullProductsSignal.set([]);
-          return [];
-        }
+  isProductInWishlist(productId: string): boolean {
+    return this.wishlistedProductIds().has(productId);
+  }
 
-        return this.getFullProductsByIds(productIds);
+  private syncWithServer(): void {
+    if (!this.authService.hasValidToken()) {
+      return;
+    }
+
+    this.getWishlist().subscribe({
+      next: () => {
+        console.log('✅ Wishlist sincronizada con servidor');
+      },
+      error: (err) => {
+        console.error('❌ Error al sincronizar wishlist:', err);
+      }
+    });
+  }
+
+  getWishlist(params?: WishlistQueryParams): Observable<DataWishlist> {
+    this.isLoadingSignal.set(true);
+    this.error.set(null);
+
+    let httpParams = new HttpParams();
+    if (params?.page) {
+      httpParams = httpParams.set('page', params.page.toString());
+    }
+    if (params?.limit) {
+      httpParams = httpParams.set('limit', params.limit.toString());
+    }
+
+    return this.http.get<DataWishlist>(this.baseUrl, { params: httpParams }).pipe(
+      tap((data) => {
+        this.wishlistData.set(data);
+        this.updateWishlistedProductIds(data);
+        this.isLoadingSignal.set(false);
+      }),
+      catchError((err) => {
+        this.handleError(err);
+        return throwError(() => err);
       })
     );
   }
 
-  /**
-   * NUEVO: Obtener productos completos por IDs de la wishlist
-   */
-  getFullProductsByIds(productIds: string[]): Observable<Product[]> {
-    if (productIds.length === 0) {
-      this.fullProductsSignal.set([]);
-      return new Observable(observer => {
-        observer.next([]);
-        observer.complete();
-      });
-    }
-
-    this.isLoadingProductsSignal.set(true);
-    
-    return this.productsService.getProductsByIds(productIds).pipe(
-      map(response => response.data),
-      tap(products => {
-        this.fullProductsSignal.set(products);
-      }),
-      catchError(error => {
-        console.error('Error al obtener productos completos:', error);
-        this.fullProductsSignal.set([]);
-        return throwError(() => error);
-      }),
-      finalize(() => this.isLoadingProductsSignal.set(false))
-    );
-  }
-
-  /**
-   * NUEVO: Refrescar productos completos de la wishlist actual
-   */
-  refreshFullProducts(): Observable<Product[]> {
-    const currentIds = this.productIds();
-    return this.getFullProductsByIds(currentIds);
-  }
-
-  // ========== MÉTODOS DE ACCIÓN ACTUALIZADOS ==========
-
-  /**
-   * 2. Agregar Producto a la Wishlist - POST /api/v1/wishlist/add
-   */
   addToWishlist(request: AddToWishlistRequest): Observable<WishlistActionResponse> {
-    this.isLoadingSignal.set(true);
-    this.clearError();
-
-    return this.http.post<WishlistActionResponse>(`${this.wishlistUrl}/add`, request).pipe(
-      tap(response => {
-        this.wishlistDataSignal.set(response.wishlist);
-        this.syncQuickCount(response.wishlist.summary);
-        // Refrescar productos completos automáticamente
-        this.refreshFullProducts().subscribe();
-      }),
-      catchError(error => this.handleError(error)),
-      finalize(() => this.isLoadingSignal.set(false))
-    );
-  }
-
-  /**
-   * 3. Eliminar Producto de la Wishlist - DELETE /api/v1/wishlist/remove/{productId}
-   */
-  removeFromWishlist(productId: string): Observable<WishlistActionResponse> {
-    this.isLoadingSignal.set(true);
-    this.clearError();
-
-    return this.http.delete<WishlistActionResponse>(`${this.wishlistUrl}/remove/${productId}`).pipe(
-      tap(response => {
-        this.wishlistDataSignal.set(response.wishlist);
-        this.syncQuickCount(response.wishlist.summary);
-        // Actualizar productos completos removiendo el eliminado
-        const currentProducts = this.fullProductsSignal();
-        const updatedProducts = currentProducts.filter(product => product.id !== productId);
-        this.fullProductsSignal.set(updatedProducts);
-      }),
-      catchError(error => this.handleError(error)),
-      finalize(() => this.isLoadingSignal.set(false))
-    );
-  }
-
-  /**
-   * 4. Mover Producto al Carrito - POST /api/v1/wishlist/move-to-cart
-   */
-  moveToCart(request: MoveToCartRequest): Observable<WishlistActionResponse> {
-    this.isLoadingSignal.set(true);
-    this.clearError();
-
-    return this.http.post<WishlistActionResponse>(`${this.wishlistUrl}/move-to-cart`, request).pipe(
-      tap(response => {
-        this.wishlistDataSignal.set(response.wishlist);
-        this.syncQuickCount(response.wishlist.summary);
-        
-        if (request.removeFromWishlist) {
-          const currentProducts = this.fullProductsSignal();
-          const updatedProducts = currentProducts.filter(product => product.id !== request.productId);
-          this.fullProductsSignal.set(updatedProducts);
-        }
-      }),
-      catchError(error => this.handleError(error)),
-      finalize(() => this.isLoadingSignal.set(false))
-    );
-  }
-
-  /**
-   * 5. Limpiar Toda la Wishlist - DELETE /api/v1/wishlist/clear
-   */
-  clearWishlist(): Observable<WishlistClearResponse> {
-    this.isLoadingSignal.set(true);
-    this.clearError();
-
-    return this.http.delete<WishlistClearResponse>(`${this.wishlistUrl}/clear`).pipe(
-      tap(response => {
-        this.wishlistDataSignal.set(response.wishlist);
-        this.quickCountSignal.set({
-          totalItems: 0,
-          totalValue: 0,
-          availableItems: 0,
-          unavailableItems: 0
-        });
-        // Limpiar productos completos
-        this.fullProductsSignal.set([]);
-      }),
-      catchError(error => this.handleError(error)),
-      finalize(() => this.isLoadingSignal.set(false))
-    );
-  }
-
-  // ========== MÉTODOS UTILITARIOS ACTUALIZADOS ==========
-
-  /**
-   * Resetea todo el estado del servicio
-   */
-  resetState(): void {
-    this.wishlistDataSignal.set(null);
-    this.quickCountSignal.set(null);
-    this.fullProductsSignal.set([]);
-    this.clearError();
-  }
-
-  // ========== MÉTODOS PRIVADOS ==========
-
-  private syncQuickCount(summary: SummaryWishlist): void {
-    this.quickCountSignal.set({
-      totalItems: summary.totalItems,
-      totalValue: summary.totalValue,
-      availableItems: summary.availableItems,
-      unavailableItems: summary.unavailableItems
-    });
-  }
-
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'Ha ocurrido un error inesperado';
-
-    if (error.error instanceof ErrorEvent) {
-      errorMessage = error.error.message;
-    } else {
-      const apiError = error.error;
-      
-      switch (error.status) {
-        case 400:
-          errorMessage = apiError?.message || 'Datos inválidos';
-          break;
-        case 401:
-          errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
-          break;
-        case 403:
-          errorMessage = 'No tienes permisos para realizar esta acción';
-          break;
-        case 404:
-          errorMessage = 'Producto no encontrado';
-          break;
-        case 409:
-          errorMessage = apiError?.message || 'El producto ya está en tu lista de deseos';
-          break;
-        case 422:
-          errorMessage = apiError?.message || 'Datos de validación incorrectos';
-          break;
-        case 500:
-          errorMessage = 'Error interno del servidor. Intenta nuevamente más tarde.';
-          break;
-        default:
-          errorMessage = apiError?.message || `Error ${error.status}: ${error.statusText}`;
-      }
+    if (this.isProductInWishlist(request.productId)) {
+      console.warn('⚠️ El producto ya está en la wishlist');
+      return throwError(() => new Error('El producto ya está en tu wishlist'));
     }
 
-    this.errorSignal.set(errorMessage);
-    return throwError(() => new Error(errorMessage));
+    this.isLoadingSignal.set(true);
+    this.error.set(null);
+
+    return this.http.post<WishlistActionResponse>(`${this.baseUrl}/add`, request).pipe(
+      tap((response) => {
+        this.wishlistData.set(response.wishlist);
+        this.updateWishlistedProductIds(response.wishlist);
+        this.isLoadingSignal.set(false);
+      }),
+      catchError((err) => {
+        if (err.status === 409) {
+          this.wishlistedProductIds.update(ids => {
+            const newIds = new Set(ids);
+            newIds.add(request.productId);
+            return newIds;
+          });
+        }
+        this.handleError(err);
+        return throwError(() => err);
+      })
+    );
   }
 
-  clearError(): void {
-    this.errorSignal.set(null);
-  }
+  removeFromWishlist(productId: string): Observable<WishlistActionResponse> {
+    if (!this.isProductInWishlist(productId)) {
+      console.warn('⚠️ El producto no está en la wishlist');
+      return throwError(() => new Error('El producto no está en tu wishlist'));
+    }
 
-  // ========== MÉTODOS ADICIONALES PARA MANTENER COMPATIBILIDAD ==========
+    this.isLoadingSignal.set(true);
+    this.error.set(null);
+
+    return this.http.delete<WishlistActionResponse>(`${this.baseUrl}/remove/${productId}`).pipe(
+      tap((response) => {
+        this.wishlistData.set(response.wishlist);
+        this.updateWishlistedProductIds(response.wishlist);
+        this.isLoadingSignal.set(false);
+      }),
+      catchError((err) => {
+        this.handleError(err);
+        return throwError(() => err);
+      })
+    );
+  }
 
   checkProductInWishlist(productId: string): Observable<WishlistCheckResponse> {
-    return this.http.get<WishlistCheckResponse>(`${this.wishlistUrl}/check/${productId}`);
+    return this.http.get<WishlistCheckResponse>(`${this.baseUrl}/check/${productId}`).pipe(
+      tap((response) => {
+        if (response.data.inWishlist) {
+          this.wishlistedProductIds.update(ids => {
+            const newIds = new Set(ids);
+            newIds.add(productId);
+            return newIds;
+          });
+        } else {
+          this.wishlistedProductIds.update(ids => {
+            const newIds = new Set(ids);
+            newIds.delete(productId);
+            return newIds;
+          });
+        }
+      }),
+      catchError((err) => {
+        this.handleError(err);
+        return throwError(() => err);
+      })
+    );
   }
 
   getWishlistCount(): Observable<WishlistCountResponse> {
-    return this.http.get<WishlistCountResponse>(`${this.wishlistUrl}/count`).pipe(
-      tap(response => this.quickCountSignal.set(response.data))
+    return this.http.get<WishlistCountResponse>(`${this.baseUrl}/count`).pipe(
+      tap((response) => {
+        const currentData = this.wishlistData();
+        if (currentData) {
+          this.wishlistData.update((data) => {
+            if (!data) return null;
+            return {
+              ...data,
+              summary: {
+                ...data.summary,
+                totalItems: response.data.totalItems,
+                totalValue: response.data.totalValue,
+                availableItems: response.data.availableItems,
+                unavailableItems: response.data.unavailableItems,
+              },
+            };
+          });
+        }
+      }),
+      catchError((err) => {
+        this.handleError(err);
+        return throwError(() => err);
+      })
     );
   }
 
-  incrementViewCount(productId: string): Observable<ViewProductResponse> {
-    return this.http.post<ViewProductResponse>(`${this.wishlistUrl}/view/${productId}`, {});
+  getPriceChanges(): Observable<PriceChangesResponse> {
+    return this.http.get<PriceChangesResponse>(`${this.baseUrl}/price-changes`).pipe(
+      catchError((err) => {
+        this.handleError(err);
+        return throwError(() => err);
+      })
+    );
   }
 
-  isProductInWishlist(productId: string): boolean {
-    return this.items().some(item => item.product.id === productId);
+  moveToCart(request: MoveToCartRequest): Observable<WishlistActionResponse> {
+    this.isLoadingSignal.set(true);
+    this.error.set(null);
+
+    return this.http.post<WishlistActionResponse>(`${this.baseUrl}/move-to-cart`, request).pipe(
+      tap((response) => {
+        this.wishlistData.set(response.wishlist);
+        this.updateWishlistedProductIds(response.wishlist);
+        this.isLoadingSignal.set(false);
+      }),
+      catchError((err) => {
+        this.handleError(err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  viewProduct(productId: string): Observable<ViewProductResponse> {
+    return this.http.post<ViewProductResponse>(`${this.baseUrl}/view/${productId}`, {}).pipe(
+      catchError((err) => {
+        this.handleError(err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  clearWishlist(): Observable<WishlistClearResponse> {
+    this.isLoadingSignal.set(true);
+    this.error.set(null);
+
+    return this.http.delete<WishlistClearResponse>(`${this.baseUrl}/clear`).pipe(
+      tap((response) => {
+        this.wishlistData.set(response.wishlist);
+        this.wishlistedProductIds.set(new Set());
+        this.isLoadingSignal.set(false);
+      }),
+      catchError((err) => {
+        this.handleError(err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  getDebugInfo(): Observable<WishlistDebugResponse> {
+    return this.http.get<WishlistDebugResponse>(`${this.baseUrl}/debug/states`).pipe(
+      catchError((err) => {
+        this.handleError(err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  getAnalytics(): Observable<WishlistAnalyticsResponse> {
+    return this.http.get<WishlistAnalyticsResponse>(`${this.baseUrl}/analytics`).pipe(
+      catchError((err) => {
+        this.handleError(err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  private updateWishlistedProductIds(wishlist: DataWishlist): void {
+    const productIds = new Set(wishlist.data.map(item => item.product.id));
+    this.wishlistedProductIds.set(productIds);
+  }
+
+  // ✅ Solo guarda si estamos en el navegador
+  private saveStateToStorage(): void {
+    if (!this.isBrowser) return;
+
+    try {
+      const ids = Array.from(this.wishlistedProductIds());
+      localStorage.setItem(this.WISHLIST_IDS_KEY, JSON.stringify(ids));
+
+      const data = this.wishlistData();
+      if (data) {
+        localStorage.setItem(this.WISHLIST_DATA_KEY, JSON.stringify(data));
+      }
+    } catch (error) {
+      console.error('Error al guardar wishlist en localStorage:', error);
+    }
+  }
+
+  // ✅ Solo restaura si estamos en el navegador
+  private restoreStateFromStorage(): void {
+    if (!this.isBrowser) return;
+
+    try {
+      const idsJson = localStorage.getItem(this.WISHLIST_IDS_KEY);
+      if (idsJson) {
+        const ids = JSON.parse(idsJson) as string[];
+        this.wishlistedProductIds.set(new Set(ids));
+      }
+
+      const dataJson = localStorage.getItem(this.WISHLIST_DATA_KEY);
+      if (dataJson) {
+        const data = JSON.parse(dataJson) as DataWishlist;
+        this.wishlistData.set(data);
+      }
+    } catch (error) {
+      console.error('Error al restaurar wishlist desde localStorage:', error);
+      this.clearStorage();
+    }
+  }
+
+  // ✅ Solo limpia si estamos en el navegador
+  private clearStorage(): void {
+    if (!this.isBrowser) return;
+
+    try {
+      localStorage.removeItem(this.WISHLIST_IDS_KEY);
+      localStorage.removeItem(this.WISHLIST_DATA_KEY);
+    } catch (error) {
+      console.error('Error al limpiar localStorage:', error);
+    }
+  }
+
+  resetState(): void {
+    this.wishlistData.set(null);
+    this.wishlistedProductIds.set(new Set());
+    this.isLoadingSignal.set(false);
+    this.error.set(null);
+    this.clearStorage();
+  }
+
+  private handleError(error: unknown): void {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Ha ocurrido un error desconocido';
+    this.error.set(errorMessage);
+    this.isLoadingSignal.set(false);
+    console.error('Error en WishlistService:', error);
   }
 }

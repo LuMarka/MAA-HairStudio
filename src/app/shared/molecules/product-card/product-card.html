@@ -1,16 +1,16 @@
 <article class="product-card" [class.product-card--wishlist]="isWishlistContext()">
   
-  <!-- Wishlist Toggle Button (solo en contexto catálogo) -->
+  <!-- Botón Wishlist (solo en contexto catálogo) -->
   @if (showWishlistButton() && isCatalogContext()) {
     <button 
       type="button"
       class="product-card__wishlist-btn"
-      [class.product-card__wishlist-btn--active]="isWishlisted()"
+      [class.product-card__wishlist-btn--active]="isInWishlist()"
       [class.product-card__wishlist-btn--loading]="isWishlistLoading()"
-      [attr.aria-label]="isWishlisted() ? texts.removeFromWishlistAriaLabel : texts.addToWishlistAriaLabel"
-      [attr.aria-pressed]="isWishlisted()"
+      [attr.aria-label]="isInWishlist() ? texts.removeFromWishlistAriaLabel : texts.addToWishlistAriaLabel"
+      [attr.aria-pressed]="isInWishlist()"
       [disabled]="isWishlistLoading()"
-      (click)="toggleWishlist()"
+      (click)="onToggleWishlist()"
     >
       @if (isWishlistLoading()) {
         <div class="product-card__spinner" aria-hidden="true"></div>
@@ -20,8 +20,8 @@
           width="24" 
           height="24" 
           viewBox="0 0 24 24" 
-          [attr.fill]="isWishlisted() ? '#e53935' : 'none'" 
-          [attr.stroke]="isWishlisted() ? '#e53935' : 'currentColor'" 
+          [attr.fill]="isInWishlist() ? '#e53935' : 'none'" 
+          [attr.stroke]="isInWishlist() ? '#e53935' : 'currentColor'" 
           stroke-width="2" 
           stroke-linecap="round" 
           stroke-linejoin="round"
@@ -56,14 +56,12 @@
     <div class="product-card__footer">
       <span class="product-card__price">${{ product().price }}</span>
       
-      <!-- Botones según contexto -->
       <div class="product-card__actions">
         @if (isWishlistContext()) {
-          <!-- Botones para contexto wishlist -->
           <button 
             type="button"
             class="product-card__button product-card__button--secondary"
-            (click)="removeFromWishlist()"
+            (click)="onRemoveFromWishlist()"
             [disabled]="isWishlistLoading()"
           >
             {{ texts.removeFromWishlistText }}
@@ -71,13 +69,12 @@
           <button 
             type="button"
             class="product-card__button product-card__button--primary"
-            (click)="moveToCartAndRemove()"
+            (click)="onMoveToCart()"
             [disabled]="isWishlistLoading()"
           >
             {{ texts.moveToCartText }}
           </button>
         } @else {
-          <!-- Botón para contexto catálogo -->
           <button 
             type="button"
             class="product-card__button product-card__button--primary"

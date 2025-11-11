@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { WishlistService } from '../../../core/services/wishlist.service';
+import { WishlistService } from '../../../core/services/wishlistOld.service';
 import { ProductCard } from '../../molecules/product-card/product-card';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -21,7 +21,7 @@ export class WishlistTemplate implements OnInit {
   // ACTUALIZADO: Usar productos completos en lugar de items de wishlist
   readonly products = computed(() => this.wishlistService.fullProducts());
   readonly isLoadingProducts = computed(() => this.wishlistService.isLoadingProducts());
-  
+
   // Mantener computed values existentes para compatibilidad
   readonly itemCount = computed(() => this.wishlistService.totalItems());
   readonly isLoading = computed(() => this.wishlistService.isLoading());
