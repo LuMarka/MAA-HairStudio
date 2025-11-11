@@ -50,7 +50,7 @@ export class PurchaseOrderTemplate implements OnInit {
   readonly orderSent = signal(false);
   readonly isProcessing = signal(false);
 
-private readonly WHATSAPP_NUMBER = '5492616984285'; 
+private readonly WHATSAPP_NUMBER = '5492616984285';
 /*    private readonly WHATSAPP_NUMBER = '5493534015655'; */
 
   readonly cartItems = computed(() => this.cartService.items());
@@ -334,7 +334,7 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
     // Auto redirect after 5 seconds
     setTimeout(() => {
       this.router.navigate(['/']);
-    }, 5000);
+    }, 15000);
   }
 
   onBackToHome(): void {
