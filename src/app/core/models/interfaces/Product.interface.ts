@@ -11,7 +11,8 @@ export interface Datum {
   name:               string;
   slug:               string;
   description:        string;
-  shortDescription:   string;
+  Description:   string;
+  shortDescription:   string;//lalalala
   type_hair:          string;
   desired_result:     string;
   type_product:       null;

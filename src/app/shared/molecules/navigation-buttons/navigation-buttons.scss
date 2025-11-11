@@ -1,0 +1,113 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.navigation-buttons {
+
+  &__container {
+    display: flex;
+    align-items: center;
+    gap: v.$spacing-md;
+
+    @include m.mobile-only() {
+      flex-direction: column-reverse;
+      gap: v.$spacing-sm;
+    }
+  }
+
+  &__spacer {
+    flex: 1;
+
+    @include m.mobile-only() {
+      display: none;
+    }
+  }
+
+  &__button {
+    display: flex;
+    align-items: center;
+    gap: v.$spacing-xs;
+    padding: v.$spacing-sm v.$spacing-lg;
+    border: 2px solid transparent;
+    border-radius: v.$borderRadius;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all v.$transitionDuration v.$transitionEasing;
+    text-decoration: none;
+    min-width: 140px;
+    justify-content: center;
+
+    @include m.mobile-only() {
+      width: 100%;
+      padding: v.$spacing-md;
+    }
+
+    &:focus {
+      @include m.focused();
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+
+      &:hover {
+        transform: none;
+      }
+    }
+
+    &:not(:disabled):hover {
+      transform: translateY(-2px);
+    }
+
+    &--secondary {
+      background-color: transparent;
+      color: v.color('text-muted');
+      border-color: v.color('gray3');
+
+      &:not(:disabled):hover {
+        background-color: v.color('bg-alt');
+        color: v.color('text-darker');
+        border-color: v.color('accent');
+      }
+    }
+
+    &--primary {
+      background-color: v.color('primary');
+      color: v.color('text-light');
+      border-color: v.color('primary');
+
+      &:not(:disabled):hover {
+        background-color: v.color('green-600');
+        border-color: v.color('green-600');
+        box-shadow: 0 4px 12px rgba(114, 143, 112, 0.3);
+      }
+    }
+
+    &--success {
+      background-color: v.color('success');
+      border-color: v.color('success');
+
+      &:not(:disabled):hover {
+        background-color: #1ea832;
+        border-color: #1ea832;
+        box-shadow: 0 4px 12px rgba(33, 184, 54, 0.3);
+      }
+    }
+  }
+
+  &__icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+
+    &--left {
+      margin-right: v.$spacing-xs;
+      margin-left: -#{v.$spacing-xs};
+    }
+
+    &--right {
+      margin-left: v.$spacing-xs;
+      margin-right: -#{v.$spacing-xs};
+    }
+  }
+}

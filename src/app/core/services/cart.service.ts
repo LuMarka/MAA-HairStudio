@@ -1,92 +1,117 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { CartItem } from '../models/interfaces/cart.interface';
 
-@Injectable({ providedIn: 'root' })
+export interface CartItem {
+  id: string;
+  name: string;
+  brand?: string;
+  price: number;
+  originalPrice?: number;
+  quantity: number;
+  image?: string;
+  description?: string;
+  inStock?: boolean;
+  maxQuantity?: number;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
 export class CartService {
-  // Estado del carrito
-  private cartItems = signal<CartItem[]>([]);
+  private readonly _items = signal<CartItem[]>([]);
 
-  // Getters reactivos
-  items = this.cartItems.asReadonly();
-
-  itemCount = computed(() =>
-    this.cartItems().reduce((count, item) => count + item.quantity, 0)
+  readonly items = computed(() => this._items());
+  readonly totalItems = computed(() =>
+    this._items().reduce((total, item) => total + item.quantity, 0)
+  );
+  readonly total = computed(() =>
+    this._items().reduce((total, item) => total + (item.price * item.quantity), 0)
   );
 
-  subtotal = computed(() =>
-    this.cartItems().reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  );
+  addItem(item: CartItem): void {
+    const currentItems = this._items();
+    const existingItemIndex = currentItems.findIndex(existing => existing.id === item.id);
 
-  isEmpty = computed(() => this.cartItems().length === 0);
-
-  // Métodos del carrito
-  addItem(item: Omit<CartItem, 'quantity'>): void {
-    const existingItemIndex = this.cartItems().findIndex(cartItem => cartItem.id === item.id);
-
-    if (existingItemIndex >= 0) {
-      // Si el item ya existe, incrementar cantidad
-      this.updateQuantity(item.id, this.cartItems()[existingItemIndex].quantity + 1);
+    if (existingItemIndex > -1) {
+      const updatedItems = [...currentItems];
+      updatedItems[existingItemIndex] = {
+        ...updatedItems[existingItemIndex],
+        quantity: updatedItems[existingItemIndex].quantity + item.quantity
+      };
+      this._items.set(updatedItems);
     } else {
-      // Si es nuevo, agregarlo con cantidad 1
-      this.cartItems.update(items => [...items, { ...item, quantity: 1 }]);
+      this._items.set([...currentItems, item]);
     }
+
+    console.log('Item added to cart:', item);
+    console.log('Current cart items:', this._items());
   }
 
-  updateQuantity(itemId: string, newQuantity: number): void {
-    if (newQuantity <= 0) {
+  removeItem(itemId: string): void {
+    const currentItems = this._items();
+    const updatedItems = currentItems.filter(item => item.id !== itemId);
+    this._items.set(updatedItems);
+
+    console.log('Item removed from cart:', itemId);
+    console.log('Current cart items:', this._items());
+  }
+
+  updateQuantity(itemId: string, quantity: number): void {
+    if (quantity <= 0) {
       this.removeItem(itemId);
       return;
     }
 
-    this.cartItems.update(items =>
-      items.map(item => {
-        if (item.id === itemId) {
-          const validQuantity = Math.min(newQuantity, item.maxQuantity);
-          return { ...item, quantity: validQuantity };
-        }
-        return item;
-      })
+    const currentItems = this._items();
+    const updatedItems = currentItems.map(item =>
+      item.id === itemId ? { ...item, quantity } : item
     );
-  }
+    this._items.set(updatedItems);
 
-  removeItem(itemId: string): void {
-    this.cartItems.update(items =>
-      items.filter(item => item.id !== itemId)
-    );
+    console.log('Item quantity updated:', { itemId, quantity });
+    console.log('Current cart items:', this._items());
   }
 
   clearCart(): void {
-    this.cartItems.set([]);
+    this._items.set([]);
+    console.log('Cart cleared');
   }
 
-  // Inicializar con datos de ejemplo (remover en producción)
-  initializeWithSampleData(): void {
-    if (this.cartItems().length === 0) {
-      this.cartItems.set([
-        {
-          id: '1',
-          name: 'Shampoo Nutritive Bain Satin 1',
-          brand: 'Kérastase',
-          price: 8500,
-          originalPrice: 9500,
-          quantity: 1,
-          image: '/images/ker_nutritive.jpg',
-          description: 'Para cabello normal a ligeramente seco',
-          inStock: true,
-          maxQuantity: 10
-        },
-        {
-          id: '2',
-          name: 'Mascarilla Absolut Repair Molecular',
-          brand: "L'Oréal Professionnel",
-          price: 12000,
-          quantity: 2,
-          image: '/images/kerastase.png',
-          description: 'Reparación molecular intensa',
-          inStock: true,
-          maxQuantity: 10
-        }
-      ]);
-    }
+  getItemCount(): number {
+    return this.totalItems();
+  }
+
+  getCartTotal(): number {
+    return this.total();
+  }
+
+  // Método de prueba para agregar datos de ejemplo
+  addSampleItems(): void {
+    const sampleItems: CartItem[] = [
+      {
+        id: '1',
+        name: 'Champú Profesional Hidratante',
+        brand: 'L\'Oréal Professional',
+        price: 2500,
+        quantity: 1,
+        image: '/images/products/shampoo-1.jpg',
+        description: 'Champú hidratante para cabello seco y dañado',
+        inStock: true,
+        maxQuantity: 10
+      },
+      {
+        id: '2',
+        name: 'Mascarilla Reparadora',
+        brand: 'Kerastase',
+        price: 4200,
+        quantity: 2,
+        image: '/images/products/mask-1.jpg',
+        description: 'Mascarilla intensiva para la reparación del cabello',
+        inStock: true,
+        maxQuantity: 5
+      }
+    ];
+
+    this._items.set(sampleItems);
+    console.log('Sample items added to cart');
   }
 }

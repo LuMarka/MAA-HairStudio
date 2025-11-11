@@ -1,0 +1,91 @@
+<div class="payment-method-form" [formGroup]="formGroup()">
+  <h3 class="payment-method-form__title">Selecciona tu método de pago</h3>
+
+  <div class="payment-method-form__options">
+    <!-- Efectivo en la entrega -->
+    <label class="payment-method-form__option">
+      <input
+        type="radio"
+        formControlName="paymentMethod"
+        value="cash"
+        class="payment-method-form__radio"
+        (change)="onFormChange()"
+      >
+      <div class="payment-method-form__option-content">
+        <div class="payment-method-form__icon">
+          💵
+        </div>
+        <div class="payment-method-form__text">
+          <span class="payment-method-form__label">Efectivo en la entrega</span>
+        </div>
+      </div>
+    </label>
+
+    <!-- Transferencia Bancaria -->
+    <label class="payment-method-form__option">
+      <input
+        type="radio"
+        formControlName="paymentMethod"
+        value="transfer"
+        class="payment-method-form__radio"
+        (change)="onFormChange()"
+      >
+      <div class="payment-method-form__option-content">
+        <div class="payment-method-form__icon">
+          🏦
+        </div>
+        <div class="payment-method-form__text">
+          <span class="payment-method-form__label">Transferencia bancaria</span>
+        </div>
+      </div>
+    </label>
+
+    <!-- Mercado Pago -->
+    <label class="payment-method-form__option">
+      <input
+        type="radio"
+        formControlName="paymentMethod"
+        value="mercadopago"
+        class="payment-method-form__radio"
+        (change)="onFormChange()"
+      >
+      <div class="payment-method-form__option-content">
+        <div class="payment-method-form__icon">
+          💳
+        </div>
+        <div class="payment-method-form__text">
+          <span class="payment-method-form__label">Mercado Pago</span>
+        </div>
+      </div>
+    </label>
+
+    <!-- Tarjeta de Crédito/Débito -->
+    <label class="payment-method-form__option">
+      <input
+        type="radio"
+        formControlName="paymentMethod"
+        value="mercadopago-card"
+        class="payment-method-form__radio"
+        (change)="onFormChange()"
+      >
+      <div class="payment-method-form__option-content">
+        <div class="payment-method-form__icon">
+          💳
+        </div>
+        <div class="payment-method-form__text">
+          <span class="payment-method-form__label">Tarjeta (Mercado Pago)</span>
+          <span class="payment-method-form__description">Visa, Mastercard, etc.</span>
+        </div>
+      </div>
+    </label>
+  </div>
+
+  @if (formGroup().get('paymentMethod')?.value === 'transfer' || formGroup().get('paymentMethod')?.value === 'cash') {
+    <div class="payment-method-form__info">
+      <div class="payment-method-form__info-icon">ℹ️</div>
+      <p class="payment-method-form__info-text">
+        <strong>Importante:</strong> Al continuar serás redirigido a WhatsApp para coordinar los detalles de tu pedido con MAA Hair Studio.
+      </p>
+    </div>
+  }
+</div>

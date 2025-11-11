@@ -23,7 +23,7 @@ export class Search {
   private readonly whatsappMessage = 'Hola! Quisiera agendar un turno';
 
   // Contador del carrito
-  cartItemCount = this.cartService.itemCount;
+  cartItemCount = this.cartService.totalItems;
 
   searchSuggestions = signal<SearchSuggestion[]>([]);
   isLoading = signal<boolean>(false);

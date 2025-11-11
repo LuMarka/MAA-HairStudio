@@ -12,7 +12,20 @@ import { RouterModule } from '@angular/router';
 export class BrandCards {
   // Datos minimalistas para las dos tarjetas
   cards = [
-    { id: 'c1', img: '/images/loreal-professionnel-logo-png_seeklogo-81124.png', alt: 'Ir a la Tienda - Productos', route: '/products' },
-    { id: 'c2', img: '/images/Kerastase-logo.png', alt: 'Ir a la Tienda - Ofertas', route: '/products' }
+    {
+      id: 'c1',
+      img: '/images/loreal-professionnel-logo-png_seeklogo-81124.png',
+      alt: 'Ir a la Tienda - Productos L\'Oréal',
+      route: '/products',
+      queryParams: { brand: 'L\`ORÉAL' }
+    },
+    {
+      id: 'c2',
+      img: '/images/Kerastase-logo.png',
+      alt: 'Ir a la Tienda - Productos Kérastase',
+      route: '/products',
+      queryParams: { brand: 'Kérastase' }
+     /* queryParams: { brand: 'KÉRASTASE' }*/
+    }
   ];
 }
