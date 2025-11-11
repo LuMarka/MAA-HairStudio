@@ -3,6 +3,7 @@ interface ProductosDestacados {
   name: string;
   brand: string;
   description: string;
+  shortDescription: string;
   price: number;
   image: string;
 }

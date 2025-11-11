@@ -42,6 +42,7 @@ export class ProductCard {
       quantity: 1,
       image: this.product.image,
       description: this.product.description,
+      shortDescription: this.product.shortDescription,
       inStock: true,
       maxQuantity: 10
     };

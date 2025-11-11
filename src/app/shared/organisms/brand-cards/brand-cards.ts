@@ -17,7 +17,7 @@ export class BrandCards {
       img: '/images/loreal-professionnel-logo-png_seeklogo-81124.png',
       alt: 'Ir a la Tienda - Productos L\'Oréal',
       route: '/products',
-      /* queryParams: { brand: 'L\'Oréal Professionnel' } */
+      queryParams: { brand: 'L\`ORÉAL' }
     },
     {
       id: 'c2',
@@ -25,6 +25,7 @@ export class BrandCards {
       alt: 'Ir a la Tienda - Productos Kérastase',
       route: '/products',
       queryParams: { brand: 'Kérastase' }
+     /* queryParams: { brand: 'KÉRASTASE' }*/
     }
   ];
 }
