@@ -3,14 +3,23 @@ import { CommonModule } from '@angular/common';
 import { CartService } from '../../../core/services/cart.service';
 import { inject } from '@angular/core';
 
+interface CartItem {
+  id: string;
+  name: string;
+  brand?: string;
+  quantity: number;
+  price: number;
+}
+
 interface OrderData {
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
-  address: string;
-  city: string;
-  postalCode: string;
+  deliveryOption: 'pickup' | 'delivery';
+  address?: string;
+  city?: string;
+  postalCode?: string;
   notes?: string;
   paymentMethod: 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
 }
@@ -40,15 +49,53 @@ export class PurchaseOrderSummary {
   readonly cartItems = computed(() => this.cartService.items());
   readonly cartTotal = computed(() => this.cartService.total());
 
-  // Additional computed properties for the summary
   readonly subtotal = computed(() => this.cartTotal());
+
   readonly shipping = computed(() => {
-    const subtotal = this.subtotal();
-    return subtotal > 100 ? 0 : 15.99; // Free shipping over $100
+    const data = this.orderData();
+    if (!data) return null;
+
+    return data.deliveryOption === 'pickup' ? 0 : null; // null = "a convenir"
   });
-  readonly tax = computed(() => this.subtotal() * 0.21); // 21% tax
-  readonly total = computed(() => this.subtotal() + this.shipping() + this.tax());
-  readonly estimatedDelivery = computed(() => '3-5 días hábiles');
+
+  readonly shippingText = computed(() => {
+    const data = this.orderData();
+    if (!data) return 'A convenir';
+
+    return data.deliveryOption === 'pickup' ? 'Retiro en tienda (gratis)' : 'A convenir';
+  });
+
+  readonly tax = computed(() => this.subtotal() * 0.21);
+
+  readonly total = computed(() => {
+    const shipping = this.shipping();
+    const subtotal = this.subtotal();
+    const tax = this.tax();
+
+    if (shipping === null) {
+      return subtotal + tax;
+    }
+
+    return subtotal + shipping + tax;
+  });
+
+  readonly estimatedDelivery = computed(() => {
+    const data = this.orderData();
+    if (!data) return '3-5 días hábiles';
+
+    return data.deliveryOption === 'pickup'
+      ? 'Disponible para retiro'
+      : '3-5 días hábiles';
+  });
+
+  readonly deliveryOptionText = computed(() => {
+    const data = this.orderData();
+    if (!data) return 'No especificado';
+
+    return data.deliveryOption === 'pickup'
+      ? 'Retiro en tienda'
+      : 'Envío a domicilio';
+  });
 
   readonly paymentMethodText = computed(() => {
     const method = this.paymentMethod();
@@ -68,7 +115,7 @@ export class PurchaseOrderSummary {
     const data = this.orderData();
     const method = this.paymentMethod();
     const items = this.cartItems();
-    return data && method && items.length > 0;
+    return !!(data && method && items.length > 0);
   });
 
   onEditCart(): void {
