@@ -1,41 +1,36 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
-export const guestGuard: CanActivateFn = (): Observable<boolean> => {
+export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
-
-  // Si ya está autenticado, redirigir según el rol
-  if (authService.isAuthenticated()) {
+  
+  // Si está autenticado, redirigir según el rol
+  if (authService.isCurrentlyAuthenticated()) {
     const user = authService.currentUser();
     const redirectPath = user?.role === 'admin' ? '/admin' : '/';
     router.navigate([redirectPath]);
-    return of(false);
+    return false;
   }
 
-  // Si hay un token, verificar su validez
-  if (authService.hasValidToken()) {
+  // Si hay token pero no usuario cargado, verificar con servidor
+  if (authService.hasValidToken() && !authService.currentUser()) {
     return authService.verifyToken().pipe(
-      map(response => {
-        if (response.valid) {
-          // Token válido, redirigir según rol
-          const redirectPath = response.user.role === 'admin' ? '/admin' : '/';
+      map(() => {
+        const user = authService.currentUser();
+        if (user) {
+          const redirectPath = user.role === 'admin' ? '/admin' : '/';
           router.navigate([redirectPath]);
           return false;
         }
-        // Token inválido, permitir acceso a login
         return true;
       }),
-      catchError(() => {
-        // Error en verificación, permitir acceso a login
-        return of(true);
-      })
+      catchError(() => of(true))
     );
   }
 
-  // No hay token, permitir acceso a login
-  return of(true);
+  return true;
 };

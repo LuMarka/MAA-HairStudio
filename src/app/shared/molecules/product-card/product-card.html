@@ -1,30 +1,90 @@
-<article class="product-card">
-  <!-- Wishlist heart button (toggle) -->
-    <button class="product-card__wishlist-btn"
-      type="button"
-      [attr.aria-label]="texts.wishlistButtonAriaLabel"
-      [attr.aria-pressed]="isWishlisted()"
-      (click)="toggleWishlist()">
-      <svg class="product-card__wishlist-icon" width="26" height="26" viewBox="0 0 24 24" [attr.fill]="isWishlisted() ? '#e53935' : 'none'" [attr.stroke]="isWishlisted() ? '#e53935' : 'currentColor'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 21s-6.2-5.3-8.5-8.1C1.7 10.2 2.1 7.1 4.6 5.4c2.1-1.4 4.9-0.6 6.4 1.3C12.5 4.8 15.3 4 17.4 5.4c2.5 1.7 2.9 4.8 1.1 7.5C18.2 15.7 12 21 12 21z"/>
-      </svg>
-    </button>
-  <div class="product-card__image-container" (click)="goToProductDetail()">
+<article class="product-card" [class.product-card--wishlist]="isWishlistContext()">
+
+  <!-- Botón Wishlist (solo en contexto catálogo) -->
+  @if (showWishlistButton() && isCatalogContext()) {
+  <button 
+    type="button" 
+    class="product-card__wishlist-btn" 
+    [class.product-card__wishlist-btn--active]="isInWishlist()"
+    [class.product-card__wishlist-btn--loading]="isWishlistLoading()"
+    [attr.aria-label]="isInWishlist() ? texts.removeFromWishlistAriaLabel : texts.addToWishlistAriaLabel"
+    [attr.aria-pressed]="isInWishlist()" 
+    [disabled]="isWishlistLoading()" 
+    (click)="onToggleWishlist()"
+  >
+    @if (isWishlistLoading()) {
+    <div class="product-card__spinner" aria-hidden="true"></div>
+    } @else {
+    <svg 
+      class="product-card__wishlist-icon" 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24"
+      [attr.fill]="isInWishlist() ? '#e53935' : 'none'" 
+      [attr.stroke]="isInWishlist() ? '#e53935' : 'currentColor'"
+      stroke-width="2" 
+      stroke-linecap="round" 
+      stroke-linejoin="round"
+    >
+      <path d="M12 21s-6.2-5.3-8.5-8.1C1.7 10.2 2.1 7.1 4.6 5.4c2.1-1.4 4.9-0.6 6.4 1.3C12.5 4.8 15.3 4 17.4 5.4c2.5 1.7 2.9 4.8 1.1 7.5C18.2 15.7 12 21 12 21z"/>
+    </svg>
+    }
+  </button>
+  }
+
+  <div class="product-card__image-container">
     <div class="product-card__image-skeleton"></div>
-    <img [src]="product.image" [alt]="product.name" class="product-card__image" loading="lazy" />
-    <!-- <div class="product-card__badge">Top</div> -->
+    <a 
+      [routerLink]="['/details', product().id]" 
+      class="product-card__image-link"
+      [attr.aria-label]="texts.viewProductDetails + ': ' + product().name"
+    >
+      <img 
+        [src]="product().image" 
+        [alt]="texts.productImageAlt + ': ' + product().name" 
+        class="product-card__image"
+        loading="lazy" 
+      />
+    </a>
   </div>
 
   <div class="product-card__content">
-    <p class="product-card__brand">{{ product.brand }}</p>
-    <h3 class="product-card__name" (click)="goToProductDetail()">{{ product.name }}</h3>
-    <p class="product-card__description">{{ product.shortDescription }}</p>
-    <!-- <p class="product-card__description">{{ product.description }}</p> -->
+    <p class="product-card__brand">{{ product().brand }}</p>
+    <h3 class="product-card__name">{{ product().name }}</h3>
+    <p class="product-card__description">{{ product().description }}</p>
+
     <div class="product-card__footer">
-      <span class="product-card__price">${{ product.price }}</span>
-      <button class="product-card__button" (click)="addToCart()">
-        <span class="product-card__button-text">{{ texts.buyButtonText }}</span>
-      </button>
+      <span class="product-card__price">${{ product().price }}</span>
+
+      <div class="product-card__actions">
+        @if (isWishlistContext()) {
+        <button 
+          type="button" 
+          class="product-card__button product-card__button--secondary"
+          (click)="onRemoveFromWishlist()" 
+          [disabled]="isWishlistLoading()"
+        >
+          {{ texts.removeFromWishlistText }}
+        </button>
+        <button 
+          type="button" 
+          class="product-card__button product-card__button--primary" 
+          (click)="onMoveToCart()"
+          [disabled]="isWishlistLoading()"
+        >
+          {{ texts.moveToCartText }}
+        </button>
+        } @else {
+        <!-- ✅ BOTÓN CRÍTICO - Agregar al carrito -->
+        <button 
+          type="button" 
+          class="product-card__button product-card__button--primary" 
+          (click)="onAddToCart()"
+        >
+          {{ texts.addToCartText }}
+        </button>
+        }
+      </div>
     </div>
   </div>
 </article>

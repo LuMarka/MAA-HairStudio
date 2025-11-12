@@ -1,51 +1,68 @@
-import { Component, Input, computed, inject, ChangeDetectionStrategy } from '@angular/core';
-import { Router } from '@angular/router';
-import { WishlistService } from '../../../core/services/wishlist.service';
-import { CartService } from '../../../core/services/cart.service';
-import { Datum } from '../../../core/models/interfaces/Product.interface';
+import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import type { Datum } from '../../../core/models/interfaces/Product.interface';
+
+type ProductCardContext = 'catalog' | 'wishlist';
 
 @Component({
   selector: 'app-product-card',
+  imports: [RouterLink],
   templateUrl: './product-card.html',
   styleUrl: './product-card.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductCard {
-  @Input() product!: Datum;
-  private readonly wishlist = inject(WishlistService) as WishlistService;
-  private readonly cartService = inject(CartService);
-  private readonly router = inject(Router);
+  // ========== INPUTS ==========
+  readonly product = input.required<Datum>();
+  readonly context = input<ProductCardContext>('catalog');
+  readonly showWishlistButton = input(true);
+  readonly isInWishlist = input<boolean>(false);
+  readonly isWishlistLoading = input<boolean>(false);
 
-  readonly isWishlisted = computed(() => this.wishlist.isInWishlist(this.product));
+  // ========== OUTPUTS ==========
+  readonly toggleWishlist = output<string>();
+  readonly addToCart = output<string>();
+  readonly removeFromWishlist = output<string>();
+  readonly moveToCart = output<{ productId: string; quantity: number }>();
 
-  // Textos reutilizables
+  // ========== COMPUTED ==========
+  readonly isWishlistContext = computed(() => this.context() === 'wishlist');
+  readonly isCatalogContext = computed(() => this.context() === 'catalog');
+
+  // ========== TEXTOS ==========
   readonly texts = {
-    wishlistButtonAriaLabel: 'Agregar a favoritos',
-    buyButtonText: 'Comprar'
+    addToWishlistAriaLabel: 'Agregar a lista de favoritos',
+    removeFromWishlistAriaLabel: 'Eliminar de lista de favoritos',
+    addToCartText: 'Agregar al carrito',
+    moveToCartText: 'Mover al carrito',
+    viewProductDetails: 'Ver detalles del producto',
+    productImageAlt: 'Imagen del producto',
+    removeFromWishlistText: 'Eliminar'
   };
 
-  toggleWishlist() {
-    this.wishlist.toggle(this.product);
+  // ========== MÉTODOS - SOLO EMITEN ==========
+
+  onToggleWishlist(): void {
+    console.log('🔵 ProductCard - onToggleWishlist:', this.product().id);
+    this.toggleWishlist.emit(this.product().id);
   }
 
-  goToProductDetail() {
-    this.router.navigate(['/details', this.product.id]);
+  onRemoveFromWishlist(): void {
+    console.log('🔵 ProductCard - onRemoveFromWishlist:', this.product().id);
+    this.removeFromWishlist.emit(this.product().id);
   }
 
-  addToCart() {
-    const cartItem = {
-      id: this.product.id.toString(),
-      name: this.product.name,
-      brand: this.product.brand,
-      price: this.product.price,
-      quantity: 1,
-      image: this.product.image,
-      description: this.product.description,
-      shortDescription: this.product.shortDescription,
-      inStock: true,
-      maxQuantity: 10
-    };
+  onAddToCart(): void {
+    console.log('🔵 ProductCard - onAddToCart llamado para:', this.product().id);
+    console.log('🔵 ProductCard - Producto:', this.product().name);
+    this.addToCart.emit(this.product().id);
+  }
 
-    this.cartService.addItem(cartItem);
+  onMoveToCart(): void {
+    console.log('🔵 ProductCard - onMoveToCart:', this.product().id);
+    this.moveToCart.emit({
+      productId: this.product().id,
+      quantity: 1
+    });
   }
 }
