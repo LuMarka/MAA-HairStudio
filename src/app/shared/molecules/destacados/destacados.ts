@@ -11,26 +11,31 @@ import {
   DestroyRef,
   effect,
   PLATFORM_ID,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  OnInit
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { ProductsService, Product } from '../../../core/services/products.service';
+import { ProductCard } from '../product-card/product-card';
 
 interface ProductosDestacados {
   id: string;
   name: string;
   brand: string;
   description: string;
+  shortDescription?: string;
   price: number;
   image: string;
 }
 
 @Component({
   selector: 'app-destacados',
-  standalone: true,
+  imports: [ProductCard],
   templateUrl: './destacados.html',
   styleUrls: ['./destacados.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,113 +49,19 @@ interface ProductosDestacados {
     }
   ]
 })
-export class Destacados implements AfterViewInit {
+export class Destacados implements AfterViewInit, OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly productsService = inject(ProductsService);
 
   @ViewChild('productGrid') productGrid?: ElementRef<HTMLElement>;
   @ViewChildren('productCard') productCards!: QueryList<ElementRef<HTMLElement>>;
 
-  // Products data
-  private readonly allProducts = signal<ProductosDestacados[]>([
-    {
-      id: 'prod-1',
-      name: 'Elixir Ultime',
-      brand: 'Kérastase',
-      description: 'Aceite sublime para todo tipo de cabello. Nutrición e hidratación intensa.',
-      price: 9500,
-      image: '/images/ker_nutritive.jpg'
-    },
-    {
-      id: 'prod-2',
-      name: 'Blond Absolu',
-      brand: 'Kérastase',
-      description: 'Tratamiento para cabello rubio, neutraliza tonos amarillos y repara.',
-      price: 8900,
-      image: '/images/kerastase.png'
-    },
-    {
-      id: 'prod-3',
-      name: 'Sérum Absolut Repair',
-      brand: "L'Oréal",
-      description: 'Sérum reparador intensivo para cabellos dañados y quebradizos.',
-      price: 7500,
-      image: '/images/kerastase.png'
-    },
-    {
-      id: 'prod-4',
-      name: 'Mythic Oil',
-      brand: "L'Oréal",
-      description: 'Aceite nutritivo que aporta brillo y suavidad sin apelmazar.',
-      price: 8200,
-      image: '/images/kerastase.png'
-    },
-    {
-      id: 'prod-5',
-      name: 'Genesis Sérum',
-      brand: 'Kérastase',
-      description: 'Sérum anti-caída que fortalece el folículo y previene la rotura.',
-      price: 9800,
-      image: '/images/kerastase.png'
-    },
-    {
-      id: 'prod-6',
-      name: 'Chronologiste',
-      brand: 'Kérastase',
-      description: 'Revitalizante y rejuvenecedor para cuero cabelludo y cabello.',
-      price: 10500,
-      image: '/images/kerastase.png'
-    },
-    {
-      id: 'prod-7',
-      name: 'Serie Expert',
-      brand: "L'Oréal",
-      description: 'Mascarilla profesional para cabello muy dañado con pro-keratina.',
-      price: 6800,
-      image: '/images/kerastase.png'
-    },
-    {
-      id: 'prod-8',
-      name: 'Steampod',
-      brand: "L'Oréal",
-      description: 'Sérum protector térmico para uso con planchas y herramientas calientes.',
-      price: 5900,
-      image: '/images/kerastase.png',
-    },
-    {
-      id: 'prod-9',
-      name: 'Blond Absolu',
-      brand: 'Kérastase',
-      description: 'Tratamiento para cabello rubio, neutraliza tonos amarillos y repara.',
-      price: 8900,
-      image: '/images/kerastase.png',
-    },
-    {
-      id: 'prod-10',
-      name: 'Blond Absolu',
-      brand: 'Kérastase',
-      description: 'Tratamiento para cabello rubio, neutraliza tonos amarillos y repara.',
-      price: 8900,
-      image: '/images/kerastase.png',
-    },
-    {
-      id: 'prod-11',
-      name: 'Blond Absolu',
-      brand: 'Kérastase',
-      description: 'Tratamiento para cabello rubio, neutraliza tonos amarillos y repara.',
-      price: 8900,
-      image: '/images/kerastase.png',
-    },
-    {
-      id: 'prod-12',
-      name: 'Blond Absolu',
-      brand: 'Kérastase',
-      description: 'Tratamiento para cabello rubio, neutraliza tonos amarillos y repara.',
-      price: 8900,
-      image: '/images/ker_nutritive.jpg',
-    }
-  ]);
+  // Products data - Now using signals for real data
+  private readonly allProducts = signal<Product[]>([]);
+  private readonly isLoading = signal<boolean>(true);
+  private readonly error = signal<string | null>(null);
 
   // Carousel control
   private readonly itemsPerPageSignal = signal(1); // Default for mobile/SSR
@@ -171,6 +82,11 @@ export class Destacados implements AfterViewInit {
     const endIdx = startIdx + this.itemsPerPageSignal();
     return this.allProducts().slice(startIdx, endIdx);
   });
+
+  // Public getters
+  readonly products = this.allProducts.asReadonly();
+  readonly loading = this.isLoading.asReadonly();
+  readonly errorMessage = this.error.asReadonly();
 
   // Tracking loaded images and visible items
   private readonly loadedImages = signal<Set<string>>(new Set());
@@ -193,6 +109,42 @@ export class Destacados implements AfterViewInit {
         });
       }, 100);
     });
+  }
+
+  ngOnInit(): void {
+    this.loadFeaturedProducts();
+  }
+
+  loadFeaturedProducts(): void {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    this.productsService.getFeaturedProducts(12)
+      .pipe(
+        catchError(error => {
+          console.error('Error loading featured products:', error);
+          this.error.set('Error al cargar los productos destacados');
+          this.isLoading.set(false);
+          return of({ success: false, data: [], message: 'Error', meta: null, filters: null });
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.allProducts.set(response.data);
+            this.isLoading.set(false);
+          } else {
+            this.error.set('No se pudieron cargar los productos destacados');
+            this.isLoading.set(false);
+          }
+        },
+        error: (error) => {
+          console.error('Subscription error:', error);
+          this.error.set('Error al cargar los productos destacados');
+          this.isLoading.set(false);
+        }
+      });
   }
 
   ngAfterViewInit(): void {

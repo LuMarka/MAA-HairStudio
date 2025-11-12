@@ -1,0 +1,153 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.stepper-progress {
+
+  &__progress-bar {
+    height: 4px;
+    background-color: v.color('gray3');
+    border-radius: 2px;
+    margin-bottom: v.$spacing-lg;
+    overflow: hidden;
+
+    @include m.mobile-only() {
+      margin-bottom: v.$spacing-md;
+    }
+  }
+
+  &__progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, v.color('primary'), v.color('accent'));
+    border-radius: 2px;
+    transition: width 0.3s ease-in-out;
+  }
+
+  &__steps {
+    display: flex;
+    gap: v.$spacing-lg;
+
+    @include m.mobile-only() {
+      flex-direction: column;
+      gap: v.$spacing-md;
+    }
+  }
+
+  &__step {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: v.$spacing-sm;
+    position: relative;
+
+    @include m.mobile-only() {
+      align-items: center;
+    }
+
+    // Línea conectora entre pasos (desktop only)
+    &:not(:last-child)::after {
+      @include m.tablet-up() {
+        content: '';
+        position: absolute;
+        top: 16px;
+        right: calc(-1 * v.$spacing-lg / 2);
+        width: v.$spacing-lg;
+        height: 2px;
+        background-color: v.color('gray3');
+        z-index: 0;
+      }
+    }
+
+    &--completed {
+      &:not(:last-child)::after {
+        @include m.tablet-up() {
+          background-color: v.color('primary');
+        }
+      }
+    }
+  }
+
+  &__step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    z-index: 1;
+    position: relative;
+    flex-shrink: 0;
+
+    .stepper-progress__step--pending & {
+      background-color: v.color('gray3');
+      color: v.color('text-muted');
+    }
+
+    .stepper-progress__step--current & {
+      background-color: v.color('primary');
+      color: v.color('text-light');
+      box-shadow: 0 0 0 4px rgba(114, 143, 112, 0.2);
+    }
+
+    .stepper-progress__step--completed & {
+      background-color: v.color('primary');
+      color: v.color('text-light');
+    }
+  }
+
+  &__check-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  &__step-number {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  &__step-content {
+    flex: 1;
+    padding-top: 2px;
+
+    @include m.mobile-only() {
+      padding-top: 0;
+    }
+  }
+
+  &__step-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0 0 v.$spacing-xs 0;
+    transition: color 0.3s ease;
+
+    @include m.mobile-only() {
+      font-size: 1rem;
+    }
+
+    .stepper-progress__step--pending & {
+      color: v.color('text-muted');
+    }
+
+    .stepper-progress__step--current & {
+      color: v.color('primary');
+    }
+
+    .stepper-progress__step--completed & {
+      color: v.color('text-darker');
+    }
+  }
+
+  &__step-description {
+    font-size: 0.75rem;
+    color: v.color('text-muted');
+    margin: 0;
+    line-height: 1.3;
+
+    @include m.mobile-only() {
+      font-size: 0.875rem;
+      display: none; // Ocultar descripción en móvil para ahorrar espacio
+    }
+  }
+}

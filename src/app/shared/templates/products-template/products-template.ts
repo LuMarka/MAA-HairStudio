@@ -83,11 +83,14 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
     this.route.queryParams
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
+        console.log('=== Products Query Params ===', params);
         const searchParam = params['search'] || '';
+        const brandParam = params['brand'] || '';
+        console.log('Brand filter:', brandParam);
         this._searchQuery.set(searchParam);
 
-        // Inicializar filtros con búsqueda si existe
-        this.initializeFilters(searchParam);
+        // Inicializar filtros con búsqueda y marca si existen
+        this.initializeFilters(searchParam, brandParam);
         this.loadProducts();
       });
   }
@@ -209,7 +212,7 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
   }
 
   // Métodos privados - lógica interna
-  private initializeFilters(searchQuery?: string): void {
+  private initializeFilters(searchQuery?: string, brandQuery?: string): void {
     const baseFilters: Partial<ProductFilters> = {
       limit: this.limit(),
       page: 1
@@ -219,6 +222,12 @@ export class ProductsTemplate implements AfterViewInit, OnDestroy, OnInit {
       baseFilters.search = searchQuery;
     }
 
+    if (brandQuery) {
+      baseFilters.brand = brandQuery;
+      console.log('Setting brand filter:', brandQuery);
+    }
+
+    console.log('Final filters:', baseFilters);
     this._currentFilters.set(baseFilters);
   }
 

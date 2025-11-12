@@ -212,7 +212,7 @@ export class Products implements OnInit {
   }
 
   // ========== MÉTODOS PÚBLICOS - WISHLIST ==========
-  
+
   /**
    * ✅ Verifica si un producto está en wishlist
    */
@@ -361,6 +361,26 @@ export class Products implements OnInit {
       this.loadSubCategoriesByCategory(categoryId);
     }
   }
+
+  handleAddToCart(productId: string): void {
+  console.log('Agregar al carrito:', productId);
+  
+  // Verificar autenticación primero
+  if (!this.authService.isAuthenticated() || !this.authService.hasValidToken()) {
+    console.warn('❌ Usuario NO autenticado');
+    this.router.navigate(['/login']);
+    return;
+  }
+
+  // TODO: Implementar lógica del carrito
+  const products = this.dataApi()?.data || [];
+  const product = products.find(p => p.id === productId);
+  
+  if (product) {
+    console.log('✅ Producto a agregar al carrito:', product.name, product.price);
+    // Aquí irá la llamada al servicio del carrito
+  }
+}
 
   // ========== MÉTODOS PRIVADOS ==========
 

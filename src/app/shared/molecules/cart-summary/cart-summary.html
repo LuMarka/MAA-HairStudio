@@ -1,0 +1,21 @@
+<div class="cart-summary">
+  <h4>Productos ({{ items().length }})</h4>
+
+  @for (item of items(); track item.id) {
+    <div class="cart-item">
+      <div class="item-info">
+        <h5>{{ item.name }}</h5>
+        <p>Cantidad: {{ item.quantity }}</p>
+      </div>
+      <div class="item-price">
+        {{ item.price | currency:'USD':'symbol':'1.2-2' }}
+      </div>
+    </div>
+  }
+
+  @if (showEditButton()) {
+    <button type="button" class="edit-cart-btn">
+      Editar Carrito
+    </button>
+  }
+</div>

@@ -20,7 +20,6 @@ export class NavMenu {
     this.linkClicked.emit(item);
   }
 
-  showMegaMenu = signal(false);
 
   // Solo mostrar el mega menú si la ruta es '/products'
   private router = inject(Router);

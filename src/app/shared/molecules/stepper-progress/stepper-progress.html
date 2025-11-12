@@ -1,0 +1,41 @@
+<div class="stepper-progress">
+
+  <!-- Barra de progreso visual -->
+  <div class="stepper-progress__progress-bar">
+    <div
+      class="stepper-progress__progress-fill"
+      [style.width.%]="progressPercentage()">
+    </div>
+  </div>
+
+  <!-- Pasos del stepper -->
+  <div class="stepper-progress__steps">
+    @for (step of steps(); track step.id) {
+      <div
+        class="stepper-progress__step"
+        [class.stepper-progress__step--completed]="getStepStatus()(step.id) === 'completed'"
+        [class.stepper-progress__step--current]="getStepStatus()(step.id) === 'current'"
+        [class.stepper-progress__step--pending]="getStepStatus()(step.id) === 'pending'">
+
+        <!-- Círculo del paso -->
+        <div class="stepper-progress__step-circle">
+          @if (getStepStatus()(step.id) === 'completed') {
+            <svg class="stepper-progress__check-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+          } @else {
+            <span class="stepper-progress__step-number">{{ step.id }}</span>
+          }
+        </div>
+
+        <!-- Contenido del paso -->
+        <div class="stepper-progress__step-content">
+          <h4 class="stepper-progress__step-title">{{ step.title }}</h4>
+          <p class="stepper-progress__step-description">{{ step.description }}</p>
+        </div>
+
+      </div>
+    }
+  </div>
+
+</div>

@@ -1,0 +1,90 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.order-details {
+  background: linear-gradient(135deg, rgba(v.color('primary'), 0.03) 0%, rgba(v.color('accent'), 0.03) 100%);
+  border-radius: v.$borderRadius-lg;
+  padding: v.$spacing-lg;
+  margin-top: v.$spacing-md;
+  border: 2px solid v.color('green-100');
+  border-left: 4px solid v.color('primary');
+
+  @include m.mobile-only() {
+    padding: v.$spacing-md;
+  }
+}
+
+.detail-section {
+  h5 {
+    margin: 0 0 v.$spacing-md 0;
+    color: v.color('primary');
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: v.$font-family-primary;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid v.color('green-100');
+    padding-bottom: v.$spacing-xs;
+
+    @include m.mobile-only() {
+      font-size: 0.85rem;
+    }
+  }
+
+  &--empty {
+    text-align: center;
+    padding: v.$spacing-lg;
+
+    .empty-message {
+      color: v.color('text-muted');
+      font-style: italic;
+      font-size: 0.9rem;
+      margin: 0;
+    }
+  }
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: v.$spacing-sm;
+  padding: v.$spacing-xs 0;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(v.color('primary'), 0.05);
+    padding-left: v.$spacing-xs;
+    padding-right: v.$spacing-xs;
+    border-radius: v.$borderRadius;
+  }
+
+  @include m.mobile-only() {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: v.$spacing-xxs;
+  }
+
+  .label {
+    font-size: 0.85rem;
+    color: v.color('text-darker');
+    font-weight: 600;
+
+    @include m.mobile-only() {
+      font-size: 0.8rem;
+    }
+  }
+
+  .value {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: v.color('primary');
+    text-align: right;
+
+    @include m.mobile-only() {
+      text-align: left;
+      font-size: 0.85rem;
+      padding-left: v.$spacing-md;
+    }
+  }
+}

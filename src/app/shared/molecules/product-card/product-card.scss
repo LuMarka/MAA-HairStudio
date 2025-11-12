@@ -125,6 +125,7 @@
     width: 100%;
     overflow: hidden;
     aspect-ratio: 1/1;
+    cursor: pointer; // Agregar cursor pointer para indicar clickeable
   }
 
   &__image-skeleton {
@@ -182,6 +183,11 @@
     color: v.color('gray6');
     margin-bottom: v.$spacing-xs;
     transition: color 0.3s ease;
+    cursor: pointer; // Agregar cursor pointer para indicar clickeable
+
+    &:hover {
+      color: v.color('accent'); // Cambiar color en hover
+    }
   }
 
   &__description {
@@ -190,11 +196,20 @@
     color: v.color('gray4');
     margin-bottom: v.$spacing-sm;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
+    -webkit-line-clamp: 2;
+    line-clamp: 2; // Standard property for compatibility
     -webkit-box-orient: vertical;
     overflow: hidden;
-    line-height: 1.5;
+    text-overflow: ellipsis;
+    transition: all 0.3s ease;
+    max-height: 3em;
+
+    .product-card:hover & {
+      -webkit-line-clamp: unset;
+      line-clamp: unset; // Standard property for compatibility
+      overflow: visible;
+      max-height: none;
+    }
   }
 
   &__footer {
