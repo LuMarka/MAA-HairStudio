@@ -87,45 +87,39 @@ export class WishlistTemplate implements OnInit {
     }
   }
 
+  handleRemove(productId: string): void {
+    this.wishlistService.removeFromWishlist(productId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Producto removido:', response.message);
+        },
+        error: (error) => {
+          console.error('❌ Error:', error);
+        }
+      });
+  }
+
   retryLoad(): void {
     this.wishlistService.clearError();
     this.loadWishlistWithProducts();
   }
 
-  onProductRemove(productId: string): void {
-    this.wishlistService.removeFromWishlist(productId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          console.log('Producto eliminado de wishlist');
-        },
-        error: () => {
-          console.error('Error al eliminar producto');
-        }
-      });
-  }
 
-  onProductMoveToCart(productId: string): void {
+  handleMoveToCart(data: { productId: string; quantity: number }): void {
     this.wishlistService.moveToCart({
-      productId,
-      quantity: 1,
+      productId: data.productId,
+      quantity: data.quantity,
       removeFromWishlist: true
     })
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe({
-      next: () => {
-        console.log('Producto movido al carrito');
-      },
-      error: () => {
-        console.error('Error al mover producto al carrito');
-      }
-    });
-  }
-
-  // NUEVO: Método para agregar a carrito sin remover de wishlist
-  onAddToCart(productId: string): void {
-    // Aquí puedes implementar la lógica para agregar al carrito
-    // sin usar el servicio de wishlist
-    console.log('Agregando producto al carrito:', productId);
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Movido al carrito:', response.message);
+        },
+        error: (error) => {
+          console.error('❌ Error:', error);
+        }
+      });
   }
 }

@@ -1,13 +1,13 @@
 <section class="wishlist-template">
   <div class="wishlist-template__container">
-    
+
     <!-- Header -->
     <div class="wishlist-template__header">
       <h1 class="wishlist-template__title">
         <span class="wishlist-template__title-icon">{{ texts.titleIcon }}</span>
         {{ texts.title }}
       </h1>
-      
+
       @if (itemCount() > 0 && !isLoading()) {
         <div class="wishlist-template__actions">
           <span class="wishlist-template__count">
@@ -56,14 +56,13 @@
         <!-- Products Grid -->
         <div class="wishlist-template__grid">
           @for (product of products(); track product.id) {
-            <!-- <app-product-card 
+            <app-product-card
               [product]="product"
               [context]="'wishlist'"
-              (removeFromWishlist)="onProductRemove($event)"
-              (addToCart)="onAddToCart($event)"
-            /> -->
-            <app-product-card 
-              [product]="product"
+              [isInWishlist]="true"
+              [isWishlistLoading]="isLoading()"
+              (removeFromWishlist)="handleRemove($event)"
+              (moveToCart)="handleMoveToCart({ productId: $event.productId, quantity: 1 })"
             />
           }
         </div>
@@ -81,7 +80,7 @@
             <span class="wishlist-template__explore-arrow">{{ texts.exploreArrow }}</span>
           </button>
         </div>
-      } 
+      }
 
       <!-- Empty State -->
       @else {
@@ -101,6 +100,6 @@
         </div>
       }
     }
-    
+
   </div>
 </section>
