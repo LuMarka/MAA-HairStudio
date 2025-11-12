@@ -1,6 +1,110 @@
 @use '../../../../assets/styles/variables' as v;
 @use '../../../../assets/styles/mixins' as m;
 
+/* ================================================
+   MAIN NAVIGATION STYLES (ACTIVE)
+   ================================================ */
+
+
+.nav-menu {
+  &__list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: v.$spacing-md;
+
+    @include m.mobile-only() {
+      flex-direction: column;
+      gap: v.$spacing-md;
+      width: 100%;
+    }
+  }
+
+  &__item {
+    display: flex;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.1);
+  }
+
+  &__link {
+    display: block;
+    padding: v.$spacing-sm v.$spacing-md;
+    text-decoration: none;
+    color: v.color(text-light);
+    font-weight: 900;
+    font-size: v.$font-size-text-mobile;
+    border-radius: v.$borderRadius-sm;
+    transition: all v.$transitionDuration v.$transitionEasing;
+    position: relative;
+
+    @include m.tablet-up() {
+      font-size: v.$font-size-text;
+      padding: v.$spacing-sm;
+    }
+
+    // Estados hover y focus
+    &:hover,
+    &:focus {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+
+      @include m.focused();
+    }
+
+    // Estado activo
+    &--active {
+      background-color: v.color(accent);
+      color: v.color(text-darker);
+      font-weight: 900;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        height: 2px;
+        //background-color: vars.color(text-light);
+        border-radius: 1px;
+
+  @include m.mobile-only() {
+          display: none;
+        }
+      }
+    }
+  }
+
+  // Modificador para móvil
+  &--mobile {
+    .nav-menu__list {
+      padding: v.$spacing-lg;
+      background-color: rgba(v.color(primary), 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: v.$borderRadius;
+      margin-top: v.$spacing-md;
+    }
+
+    .nav-menu__link {
+      padding: v.$spacing-md;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+
+/* ================================================
+   MEGA MENU STYLES - COMMENTED FOR FUTURE USE
+   ===============================================
+   Uncomment the styles below when mega menu functionality is restored
+   and routes are properly configured for collections/brands
+   ================================================ */
+
+/*
 .nav-menu__item--has-mega-menu {
   position: relative;
 }
@@ -141,16 +245,16 @@
 }
 
 @keyframes fadeInMegaMenu {
-  from { 
-    opacity: 0; 
+  from {
+    opacity: 0;
     transform: translateX(-50%) translateY(10px);
 
     @include m.tablet-up() {
       transform: translateY(10px);
     }
   }
-  to { 
-    opacity: 1; 
+  to {
+    opacity: 1;
     transform: translateX(-50%) translateY(0);
 
     @include m.tablet-up() {
@@ -198,96 +302,6 @@
     animation: none;
   }
 }
+*/
 
-// Resto del código existente se mantiene igual...
-.nav-menu {
-  &__list {
-    display: flex;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    gap: v.$spacing-md;
-
-    @include m.mobile-only() {
-      flex-direction: column;
-      gap: v.$spacing-md;
-      width: 100%;
-    }
-  }
-
-  &__item {
-    display: flex;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.1);
-  }
-
-  &__link {
-    display: block;
-    padding: v.$spacing-sm v.$spacing-md;
-    text-decoration: none;
-    color: v.color(text-light);
-    font-weight: 900;
-    font-size: v.$font-size-text-mobile;
-    border-radius: v.$borderRadius-sm;
-    transition: all v.$transitionDuration v.$transitionEasing;
-    position: relative;
-
-    @include m.tablet-up() {
-      font-size: v.$font-size-text;
-      padding: v.$spacing-sm;
-    }
-
-    // Estados hover y focus
-    &:hover,
-    &:focus {
-      background-color: rgba(255, 255, 255, 0.1);
-      transform: translateY(-2px);
-
-      @include m.focused();
-    }
-
-    // Estado activo
-    &--active {
-      background-color: v.color(accent);
-      color: v.color(text-darker);
-      font-weight: 900;
-
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: -4px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 80%;
-        height: 2px;
-        //background-color: vars.color(text-light);
-        border-radius: 1px;
-
-  @include m.mobile-only() {
-          display: none;
-        }
-      }
-    }
-  }
-
-  // Modificador para móvil
-  &--mobile {
-    .nav-menu__list {
-      padding: v.$spacing-lg;
-      background-color: rgba(v.color(primary), 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: v.$borderRadius;
-      margin-top: v.$spacing-md;
-    }
-
-    .nav-menu__link {
-      padding: v.$spacing-md;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-  }
 }

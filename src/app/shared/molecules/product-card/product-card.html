@@ -11,9 +11,7 @@
     </button>
   <div class="product-card__image-container" (click)="goToProductDetail()">
     <div class="product-card__image-skeleton"></div>
-    <a [routerLink]="['/details', product.id]" class="product-card__image-link">
-      <img [src]="product.image" [alt]="product.name" class="product-card__image" loading="lazy" />
-    </a>
+    <img [src]="product.image" [alt]="product.name" class="product-card__image" loading="lazy" />
     <!-- <div class="product-card__badge">Top</div> -->
   </div>
 

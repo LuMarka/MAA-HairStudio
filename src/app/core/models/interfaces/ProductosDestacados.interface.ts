@@ -7,3 +7,4 @@ interface ProductosDestacados {
   price: number;
   image: string;
 }
+

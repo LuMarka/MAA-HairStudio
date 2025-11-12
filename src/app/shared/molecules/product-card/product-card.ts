@@ -3,11 +3,9 @@ import { Router } from '@angular/router';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { CartService } from '../../../core/services/cart.service';
 import { Datum } from '../../../core/models/interfaces/Product.interface';
-import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-product-card',
-  imports: [RouterLink],
   templateUrl: './product-card.html',
   styleUrl: './product-card.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -548,3 +548,98 @@
   }
 }
 
+// ================================================================
+// Estados de Carga, Error y Vacío
+// ================================================================
+
+.featured {
+  // Estado de carga
+  &__loading {
+    text-align: center;
+    padding: v.$spacing-xl 0;
+    color: v.color('white1');
+
+    p {
+      margin-top: v.$spacing-md;
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+  }
+
+  &__spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid v.color('white1');
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+  }
+
+  // Estado de error
+  &__error {
+    text-align: center;
+    padding: v.$spacing-xl 0;
+    color: v.color('white1');
+
+    p {
+      margin-bottom: v.$spacing-md;
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+  }
+
+  &__retry-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: v.color('white1');
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: v.$spacing-sm v.$spacing-md;
+    border-radius: v.$borderRadius;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: translateY(-2px);
+    }
+
+    &:focus {
+      outline: 2px solid v.color('white1');
+      outline-offset: 2px;
+    }
+  }
+
+  // Estado vacío
+  &__empty {
+    text-align: center;
+    padding: v.$spacing-xl 0;
+    color: v.color('white1');
+
+    p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+  }
+
+  // Wrapper para product-card
+  &__product-wrapper {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeIn 0.6s ease-out forwards;
+
+    &--visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+// Animación para el spinner
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
