@@ -88,7 +88,7 @@ export const pagesRoutes: Routes = [
       {
         path: 'cart',
         component: Cart,
-        /* canActivate: [authGuard], */
+        canActivate: [authGuard],
         data: {
           title: "Carrito | MAA Hair Studio",
           description: "Tu carrito de compras.",
