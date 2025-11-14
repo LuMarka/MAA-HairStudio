@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { SearchBar } from '../search-bar/search-bar';
 import { SearchResult } from '../../../core/models/interfaces/SearchResult.interface';
 import { SearchSuggestion } from '../../../core/models/interfaces/SearchSuggestion.interface';
-import { CartService } from '../../../core/services/cart.service';
+import { CartService } from '../../../core/services/cartOld.service';
 
 
 @Component({

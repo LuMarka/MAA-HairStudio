@@ -1,12 +1,13 @@
 <!-- Carrito de Compras -->
 <div class="cart">
   <div class="cart__header">
-    <h1 class="cart__title">Datos de contacto y entrega</h1>
-    @if (!isEmpty()) {
+    <h1 class="cart__title">Carrito de Compras</h1>
+    @if (hasItems()) {
       <span class="cart__count">{{ totalItems() }} producto(s)</span>
     }
   </div>
 
+  <!-- Empty State -->
   @if (isEmpty()) {
     <div class="cart--empty">
       <div class="cart__empty">
@@ -23,71 +24,107 @@
         </button>
       </div>
     </div>
-  } @else {
+  }
+
+  <!-- Cart Content -->
+  @if (hasItems()) {
     <div class="cart__content">
       <!-- Lista de productos -->
       <div class="cart__items">
         @for (item of items(); track item.id) {
-          <div class="cart-item">
-            @if (item.image) {
-              <div class="cart-item__image-container">
-                <img
-                  [src]="item.image"
-                  [alt]="item.name"
-                  class="cart-item__image">
-              </div>
-            }
+          <article 
+            class="cart-item" 
+            [class.cart-item--unavailable]="!isAvailable(item)">
+            
+            <div class="cart-item__image-container">
+              <img
+                [src]="item.product.image"
+                [alt]="item.product.name"
+                loading="lazy"
+                class="cart-item__image">
+
+              @if (!isAvailable(item)) {
+                <div class="cart-item__unavailable-badge">
+                  No disponible
+                </div>
+              }
+            </div>
 
             <div class="cart-item__info">
               <div class="cart-item__details">
-                <h3 class="cart-item__name">{{ item.name }}</h3>
-                @if (item.brand) {
-                  <p class="cart-item__brand">{{ item.brand }}</p>
+                <h3 class="cart-item__name">{{ item.product.name }}</h3>
+
+                <div class="cart-item__meta">
+                  <span class="cart-item__brand">{{ item.product.brand }}</span>
+                  @if (item.product.volume) {
+                    <span class="cart-item__volume">{{ item.product.volume }}</span>
+                  }
+                </div>
+
+                @if (item.product.subcategory) {
+                  <p class="cart-item__category">{{ item.product.subcategory }}</p>
                 }
-                @if (item.description) {
-                  <p class="cart-item__description">{{ item.description }}</p>
+
+                @if (item.note) {
+                  <p class="cart-item__note">
+                    <span class="cart-item__note-label">Nota:</span>
+                    {{ item.note }}
+                  </p>
+                }
+
+                @if (item.product.stock <= 5 && item.product.stock > 0) {
+                  <p class="cart-item__stock-warning">
+                    ⚠️ Solo quedan {{ item.product.stock }} unidades
+                  </p>
                 }
               </div>
 
               <div class="cart-item__controls">
                 <div class="cart-item__bottom-row">
-                  <!-- Precio unitario -->
                   <div class="cart-item__price-mobile">
-                    @if (item.originalPrice && item.originalPrice > item.price) {
+                    @if (hasDiscount(item)) {
                       <span class="cart-item__original-price">
-                        ${{ item.originalPrice.toFixed(2) }}
+                        ${{ formatPrice(item.product.originalPrice) }}
+                      </span>
+                      <span class="cart-item__discount-badge">
+                        -{{ getDiscountPercentage(item) }}%
                       </span>
                     }
                     <span class="cart-item__price">
-                      ${{ item.price.toFixed(2) }}
+                      ${{ formatPrice(item.product.finalPrice) }}
                     </span>
                   </div>
 
-                  <!-- Controles de cantidad -->
                   <div class="cart-item__quantity">
                     <button
                       type="button"
                       class="cart-item__qty-btn"
-                      (click)="decreaseQuantity(item.id)"
-                      [disabled]="item.quantity <= 1">
+                      (click)="decreaseQuantity(item)"
+                      [disabled]="!isAvailable(item)"
+                      [attr.aria-label]="'Disminuir cantidad de ' + item.product.name">
                       -
                     </button>
                     <span class="cart-item__qty-display">{{ item.quantity }}</span>
                     <button
                       type="button"
                       class="cart-item__qty-btn"
-                      (click)="increaseQuantity(item.id)"
-                      [disabled]="item.maxQuantity && item.quantity >= item.maxQuantity">
+                      (click)="increaseQuantity(item)"
+                      [disabled]="item.quantity >= item.product.stock || !isAvailable(item)"
+                      [attr.aria-label]="'Aumentar cantidad de ' + item.product.name">
                       +
                     </button>
                   </div>
 
-                  <!-- Subtotal -->
                   <div class="cart-item__subtotal-wrapper">
                     <span class="cart-item__subtotal-label">Subtotal</span>
                     <span class="cart-item__subtotal">
-                      ${{ (item.price * item.quantity).toFixed(2) }}
+                      ${{ formatPrice(item.subtotal) }}
                     </span>
+                    @if (item.totalDiscount > 0) {
+                      <span class="cart-item__discount-amount">
+                        Ahorro: ${{ formatPrice(item.totalDiscount) }}
+                      </span>
+                    }
                   </div>
                 </div>
               </div>
@@ -96,149 +133,69 @@
             <button
               type="button"
               class="cart-item__remove"
-              (click)="removeItem(item.id)"
-              aria-label="Eliminar producto">
+              (click)="removeItem(item)"
+              [attr.aria-label]="'Eliminar ' + item.product.name">
               ×
             </button>
-          </div>
+          </article>
         }
       </div>
 
       <!-- Resumen del carrito -->
-      <div class="cart__summary">
+      <aside class="cart__summary">
         <div class="cart-summary">
           <h3 class="cart-summary__title">Resumen del pedido</h3>
 
           <div class="cart-summary__line">
-            <span class="cart-summary__label">Subtotal:</span>
-            <span class="cart-summary__value">${{ cartTotal().toFixed(2) }}</span>
+            <span class="cart-summary__label">Subtotal ({{ totalItems() }} productos):</span>
+            <span class="cart-summary__value">${{ formatPrice(subtotal()) }}</span>
+          </div>
+
+          @if (totalDiscount() > 0) {
+            <div class="cart-summary__line cart-summary__line--discount">
+              <span class="cart-summary__label">Descuentos:</span>
+              <span class="cart-summary__value cart-summary__value--discount">
+                -${{ formatPrice(totalDiscount()) }}
+              </span>
+            </div>
+          }
+
+          <div class="cart-summary__line">
+            <span class="cart-summary__label">Subtotal con descuentos:</span>
+            <span class="cart-summary__value">${{ formatPrice(totalAmount()) }}</span>
           </div>
 
           <div class="cart-summary__line">
             <span class="cart-summary__label">IVA (21%):</span>
-            <span class="cart-summary__value">${{ tax().toFixed(2) }}</span>
+            <span class="cart-summary__value">${{ formatPrice(estimatedTax()) }}</span>
           </div>
+
+          @if (estimatedShipping() > 0) {
+            <div class="cart-summary__line">
+              <span class="cart-summary__label">Envío estimado:</span>
+              <span class="cart-summary__value">${{ formatPrice(estimatedShipping()) }}</span>
+            </div>
+          }
 
           <hr class="cart-summary__divider">
 
           <div class="cart-summary__line cart-summary__line--total">
-            <span class="cart-summary__label">Total:</span>
+            <span class="cart-summary__label">Total estimado:</span>
             <span class="cart-summary__value cart-summary__value--total">
-              ${{ totalWithTax().toFixed(2) }}
+              ${{ formatPrice(estimatedTotal()) }}
             </span>
           </div>
 
-          <!-- Sección de checkout -->
-          <div class="cart-summary__checkout">
-            @if (!showDeliveryOptions()) {
-              <!-- Botón inicial de finalizar compra -->
-              <button
-                type="button"
-                class="cart__btn cart__btn--primary cart__btn--full-width"
-                (click)="onStartCheckout()">
-                <span class="cart__btn-text">Finalizar compra</span>
-                <span class="cart__btn-icon">→</span>
-              </button>
-            } @else {
-              <!-- Opciones de entrega -->
-              <div class="delivery-selection">
-                <div class="delivery-selection__header">
-                  <h4 class="delivery-selection__title">¿Cómo quieres recibir tu pedido?</h4>
-                  <p class="delivery-selection__subtitle">Selecciona una opción para continuar</p>
-                </div>
+          <div class="cart-summary__actions">
+            <button
+              type="button"
+              class="cart__btn cart__btn--primary cart__btn--full-width"
+              (click)="proceedToCheckout()"
+              [disabled]="isEmpty()">
+              <span class="cart__btn-text">Finalizar compra</span>
+              <span class="cart__btn-icon">→</span>
+            </button>
 
-                <div class="delivery-selection__options">
-                  <!-- Opción: Envío a domicilio -->
-                  <label
-                    class="delivery-option"
-                    [class.delivery-option--selected]="selectedDeliveryOption() === 'delivery'">
-                    <input
-                      type="radio"
-                      name="deliveryOption"
-                      value="delivery"
-                      [checked]="selectedDeliveryOption() === 'delivery'"
-                      (change)="onSelectDeliveryOption('delivery')"
-                      class="delivery-option__input">
-
-                    <div class="delivery-option__content">
-                      <div class="delivery-option__icon">🚚</div>
-                      <div class="delivery-option__text">
-                        <span class="delivery-option__title">Envío a domicilio</span>
-                        <span class="delivery-option__subtitle">Costo a convenir</span>
-                        <span class="delivery-option__description">Entrega en 3-5 días hábiles</span>
-                      </div>
-                    </div>
-
-                    <div class="delivery-option__check">
-                      @if (selectedDeliveryOption() === 'delivery') {
-                        ✓
-                      }
-                    </div>
-                  </label>
-
-                  <!-- Opción: Retiro en tienda -->
-                  <label
-                    class="delivery-option"
-                    [class.delivery-option--selected]="selectedDeliveryOption() === 'pickup'">
-                    <input
-                      type="radio"
-                      name="deliveryOption"
-                      value="pickup"
-                      [checked]="selectedDeliveryOption() === 'pickup'"
-                      (change)="onSelectDeliveryOption('pickup')"
-                      class="delivery-option__input">
-
-                    <div class="delivery-option__content">
-                      <div class="delivery-option__icon">🏪</div>
-                      <div class="delivery-option__text">
-                        <span class="delivery-option__title">Retiro en tienda</span>
-                        <span class="delivery-option__subtitle">Gratis</span>
-                        <span class="delivery-option__description">Disponible en nuestro local</span>
-                      </div>
-                    </div>
-
-                    <div class="delivery-option__check">
-                      @if (selectedDeliveryOption() === 'pickup') {
-                        ✓
-                      }
-                    </div>
-                  </label>
-                </div>
-
-                <!-- Confirmación de selección -->
-                @if (selectedDeliveryOption()) {
-                  <div class="delivery-confirmation">
-                    <div class="delivery-confirmation__content">
-                      <span class="delivery-confirmation__icon">✅</span>
-                      <div class="delivery-confirmation__text">
-                        <strong>{{ deliveryText() }}</strong>
-                        <span class="delivery-confirmation__detail">{{ deliverySubtext() }}</span>
-                      </div>
-                    </div>
-                  </div>
-                }
-
-                <!-- Botones de acción -->
-                <div class="delivery-selection__actions">
-                  <button
-                    type="button"
-                    class="cart__btn cart__btn--secondary"
-                    (click)="onCancelDeliverySelection()">
-                    ← Volver
-                  </button>
-
-                  <button
-                    type="button"
-                    class="cart__btn cart__btn--primary"
-                    [disabled]="!selectedDeliveryOption()"
-                    (click)="onProceedToCheckout()">
-                    Continuar →
-                  </button>
-                </div>
-              </div>
-            }
-
-            <!-- Botón secundario -->
             <button
               type="button"
               class="cart__btn cart__btn--ghost cart__btn--full-width"
@@ -247,10 +204,22 @@
             </button>
           </div>
         </div>
-      </div>
+      </aside>
     </div>
 
-    <!-- Footer -->
+    <!-- Paginador -->
+
+      <div class="cart__pagination">
+        <app-paginator
+          [meta]="meta()!"
+          [entityName]="'productos'"
+          [showPageSizeSelector]="true"
+          [pageSizeOptions]="[1, 2, 5]"
+          [maxVisiblePages]="5"
+          (pageChange)="onPageChange($event)"
+        />
+      </div>
+
     <div class="cart__footer">
       <button
         type="button"

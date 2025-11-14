@@ -1,7 +1,7 @@
 import { Component, signal, inject, ChangeDetectionStrategy, computed, OnInit, effect } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { CartService } from '../../../core/services/cart.service';
+import { CartService } from '../../../core/services/cartOld.service';
 import { CommonModule } from '@angular/common';
 
 interface CartItem {

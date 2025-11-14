@@ -1,2 +1,40 @@
-<p>cart-template works!</p>
-<app-shopping-cart></app-shopping-cart>
+<main class="cart-template">
+  <div class="cart-template__container">
+    <!-- Loading State -->
+    @if (isLoading() && isEmpty()) {
+      <div class="cart-template__loading">
+        <div class="cart-template__spinner"></div>
+        <p class="cart-template__loading-text">Cargando carrito...</p>
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (error() && !isLoading()) {
+      <div class="cart-template__error">
+        <div class="cart-template__error-icon">⚠️</div>
+        <h2 class="cart-template__error-title">Error al cargar el carrito</h2>
+        <p class="cart-template__error-message">{{ error() }}</p>
+        <button
+          type="button"
+          class="cart-template__error-btn"
+          (click)="onRetry()">
+          Reintentar
+        </button>
+      </div>
+    }
+
+    <!-- Cart Content -->
+    @if (!isLoading() || hasItems()) {
+      <app-shopping-cart
+        [dataApi]="cartData()"
+        (paginated)="onPageChange($event)"
+        (itemRemoved)="onItemRemoved($event)"
+        (quantityIncreased)="onQuantityIncreased($event)"
+        (quantityDecreased)="onQuantityDecreased($event)"
+        (cartCleared)="onCartCleared()"
+        (checkoutInitiated)="onCheckoutInitiated()"
+        (continueShopping)="onContinueShopping()"
+      />
+    }
+  </div>
+</main>
