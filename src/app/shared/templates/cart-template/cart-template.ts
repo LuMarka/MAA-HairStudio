@@ -267,7 +267,7 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
   private initializeParams(): void {
     const baseParams: CartQueryParams = {
       page: 1,
-      limit: 1
+      limit: 10
     };
     this._currentParams.set(baseParams);
   }

@@ -37,8 +37,7 @@ export class ProductCard {
     const product = this.product();
     return !product.isAvailable || 
            product.stock <= 0 || 
-           this.isCartLoading() ||
-           this.isInCart();
+           this.isCartLoading();
   });
 
   readonly showCartButton = computed(() => {
