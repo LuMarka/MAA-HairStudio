@@ -469,6 +469,11 @@
       background: v.color('gray2');
     }
 
+    &--loading {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
     &:disabled {
       opacity: 0.4;
       cursor: not-allowed;
@@ -1233,5 +1238,36 @@
     &:hover {
       transform: translateY(-3px);
     }
+  }
+}
+
+.cart-item__qty-btn {
+  // ...existing code...
+
+  &--loading {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.cart-item__btn-spinner,
+.cart-item__qty-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }

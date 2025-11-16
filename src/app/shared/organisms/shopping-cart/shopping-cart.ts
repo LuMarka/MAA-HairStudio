@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy, inject, input, output, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
+import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { Paginator, PaginationEvent } from '../../molecules/paginator/paginator';
@@ -17,12 +18,14 @@ export class ShoppingCart {
 
   // ========== INPUTS ==========
   readonly dataApi = input<CartInterface | null>();
+  readonly isProcessing = input<boolean>(false);
+  readonly processingItemId = input<string | null>(null); // ✅ NUEVO: ID del item siendo procesado
 
   // ========== OUTPUTS ==========
   readonly paginated = output<PaginationEvent>();
-  readonly itemRemoved = output<string>(); // productId
-  readonly quantityIncreased = output<string>(); // productId
-  readonly quantityDecreased = output<string>(); // productId
+  readonly itemRemoved = output<string>();
+  readonly quantityIncreased = output<string>();
+  readonly quantityDecreased = output<string>();
   readonly cartCleared = output<void>();
   readonly checkoutInitiated = output<void>();
   readonly shoppingContinued = output<void>();
@@ -36,7 +39,6 @@ export class ShoppingCart {
   // ========== COMPUTED - Estado ==========
   readonly isEmpty = computed(() => this.items().length === 0);
   readonly hasItems = computed(() => this.items().length > 0);
-  readonly isLoading = computed(() => false); // Controlado por el padre
 
   // ========== COMPUTED - Resumen ==========
   readonly totalItems = computed(() => this.summary()?.totalItems ?? 0);
@@ -69,6 +71,7 @@ export class ShoppingCart {
    */
   removeItem(item: Datum): void {
     if (!this.verifyAuthentication()) return;
+    if (this.isProcessing()) return;
     this.itemRemoved.emit(item.product.id);
   }
 
@@ -77,6 +80,7 @@ export class ShoppingCart {
    */
   increaseQuantity(item: Datum): void {
     if (!this.verifyAuthentication()) return;
+    if (this.isProcessingItem(item.product.id)) return;
 
     if (item.quantity >= item.product.stock) {
       alert(`Stock máximo disponible: ${item.product.stock}`);
@@ -91,9 +95,10 @@ export class ShoppingCart {
    */
   decreaseQuantity(item: Datum): void {
     if (!this.verifyAuthentication()) return;
+    if (this.isProcessingItem(item.product.id)) return;
 
     if (item.quantity <= 1) {
-      this.removeItem(item);
+      console.warn('⚠️ Cantidad mínima alcanzada (1)');
       return;
     }
 
@@ -106,6 +111,7 @@ export class ShoppingCart {
   clearCart(): void {
     if (this.isEmpty()) return;
     if (!this.verifyAuthentication()) return;
+    if (this.isProcessing()) return;
 
     if (!confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
       return;
@@ -122,6 +128,7 @@ export class ShoppingCart {
   proceedToCheckout(): void {
     if (this.isEmpty()) return;
     if (!this.verifyAuthentication()) return;
+    if (this.isProcessing()) return;
 
     this.checkoutInitiated.emit();
   }
@@ -149,6 +156,23 @@ export class ShoppingCart {
 
   isAvailable(item: Datum): boolean {
     return item.product.isAvailable && item.product.stock > 0;
+  }
+
+  // ✅ NUEVO: Verifica si se puede disminuir
+  canDecrease(item: Datum): boolean {
+    return item.quantity > 1 && !this.isProcessingItem(item.product.id);
+  }
+
+  // ✅ NUEVO: Verifica si se puede aumentar
+  canIncrease(item: Datum): boolean {
+    return item.quantity < item.product.stock && 
+           this.isAvailable(item) && 
+           !this.isProcessingItem(item.product.id);
+  }
+
+  // ✅ NUEVO: Verifica si un item específico está siendo procesado
+  isProcessingItem(productId: string): boolean {
+    return this.processingItemId() === productId;
   }
 
   // ========== MÉTODOS PRIVADOS ==========

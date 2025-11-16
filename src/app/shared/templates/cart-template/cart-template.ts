@@ -42,6 +42,9 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
   private readonly _localError = signal<string | null>(null);
   private readonly _currentParams = signal<CartQueryParams>({ page: 1, limit: 10 });
 
+  // ✅ NUEVO: Signal para trackear operación en progreso
+  private readonly _isProcessing = signal(false);
+
   // Computed values - estado derivado
   readonly cartData = computed(() => this._cartData());
   readonly items = computed(() => this._cartData()?.data || []);
@@ -62,6 +65,7 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
   readonly estimatedTax = computed(() => this.summary()?.estimatedTax ?? 0);
   readonly estimatedShipping = computed(() => this.summary()?.estimatedShipping ?? 0);
   readonly estimatedTotal = computed(() => this.summary()?.estimatedTotal ?? 0);
+  isProcessing = signal(false);
 
   ngOnInit(): void {
     console.log('🛒 CartTemplate - Inicializando');
@@ -126,6 +130,7 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
   onQuantityIncreased(productId: string): void {
     console.log('➕ Incrementando cantidad:', productId);
 
+    this._isProcessing.set(true); // ✅ Activar processing
     this._localLoading.set(true);
 
     this.cartService.incrementQuantity(productId, 1)
@@ -139,7 +144,10 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
           this._localError.set('No se pudo actualizar la cantidad');
           return EMPTY;
         }),
-        finalize(() => this._localLoading.set(false)),
+        finalize(() => {
+          this._localLoading.set(false);
+          this._isProcessing.set(false); // ✅ Desactivar processing
+        }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
@@ -151,6 +159,7 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
   onQuantityDecreased(productId: string): void {
     console.log('➖ Decrementando cantidad:', productId);
 
+    this._isProcessing.set(true); // ✅ Activar processing
     this._localLoading.set(true);
 
     this.cartService.decrementQuantity(productId, 1)
@@ -164,7 +173,10 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
           this._localError.set('No se pudo actualizar la cantidad');
           return EMPTY;
         }),
-        finalize(() => this._localLoading.set(false)),
+        finalize(() => {
+          this._localLoading.set(false);
+          this._isProcessing.set(false); // ✅ Desactivar processing
+        }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
