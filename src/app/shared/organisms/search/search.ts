@@ -39,6 +39,7 @@ export class Search {
     favorites: '❤️',
     user: '👤',
     cart: '🛍️',
+    admin: '⚙️',
     whatsapp: '📞'
   };
 
@@ -64,6 +65,13 @@ export class Search {
       badge: this.cartItemCount(),
       showBadge: this.showCartBadge(),
       action: () => this.router.navigate(['/cart'])
+    },
+    {
+      icon: this.icons.admin,
+      label: 'Admin',
+      badge: 0,
+      showBadge: false,
+      action: () => this.router.navigate(['/admin'])
     },
     {
       icon: this.icons.whatsapp,

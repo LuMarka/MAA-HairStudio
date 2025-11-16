@@ -44,7 +44,7 @@ export const pagesRoutes: Routes = [
         path: 'about',
         component: About,
         data: {
-          title: ' Historia | MAA Hair Studio',
+          title: 'Historia | MAA Hair Studio',
           description: "Mi historia.",
           keywords: "about, history, story, background, mi historia, sobre mí",
         }
@@ -68,6 +68,15 @@ export const pagesRoutes: Routes = [
         }
       },
       {
+        path: 'details/:id',
+        component: DetailProduct,
+        data: {
+          title: "Detalles | MAA Hair Studio",
+          description: "Detalles del producto.",
+          keywords: "details, product, information, detalles, producto, información",
+        }
+      },
+      {
         path: 'gallery',
         component: Gallery,
         data: {
@@ -86,6 +95,26 @@ export const pagesRoutes: Routes = [
         }
       },
       {
+        path: 'form',
+        component: Form,
+        data: {
+          title: "Formulario | MAA Hair Studio",
+          description: "Formulario de contacto.",
+          keywords: "form, contact, inquiries, formulario, contacto, consultas",
+        }
+      },
+      // ✅ Rutas protegidas con authGuard
+      {
+        path: 'profile',
+        component: Profile,
+        canActivate: [authGuard],
+        data: {
+          title: "Perfil | MAA Hair Studio",
+          description: "Perfil de usuario.",
+          keywords: "profile, user, account, perfil, usuario, cuenta",
+        }
+      },
+      {
         path: 'cart',
         component: Cart,
         canActivate: [authGuard],
@@ -93,34 +122,6 @@ export const pagesRoutes: Routes = [
           title: "Carrito | MAA Hair Studio",
           description: "Tu carrito de compras.",
           keywords: "cart, shopping, checkout, carrito, compras",
-        }
-      },
-      {
-        path: 'checkout',
-        component: Cheking,
-        canActivate: [authGuard],
-        data: {
-          title: "Checkout | MAA Hair Studio",
-          description: "Proceso de pago.",
-          keywords: "checkout, payment, purchase, pago, orden de compra",
-        }
-      },
-      {
-        path: 'details/:id',
-        component: DetailProduct,
-        data: {
-          title: "Detalles | MAA Hair Studio",
-          description: "Detalles del producto.",
-          keywords: "details, product, information, detalles, producto, información",
-        }
-      },
-      {
-        path: 'form',
-        component: Form,
-        data: {
-          title: "Formulario | MAA Hair Studio",
-          description: "Formulario de contacto.",
-          keywords: "form, contact, inquiries, formulario, contacto, consultas",
         }
       },
       {
@@ -136,15 +137,43 @@ export const pagesRoutes: Routes = [
       {
         path: 'purchase-order',
         component: PurchaseOrder,
-        //canActivate: [authGuard],
+        canActivate: [authGuard],
         data: {
           title: "Finalizar Pedido | MAA Hair Studio",
           description: "Completa tu compra y finaliza tu pedido.",
           keywords: "purchase order, checkout, finalize, completar compra, finalizar pedido",
         }
+      },
+      {
+        path: 'checkout',
+        component: Cheking,
+        canActivate: [authGuard],
+        data: {
+          title: "Checkout | MAA Hair Studio",
+          description: "Proceso de pago.",
+          keywords: "checkout, payment, purchase, pago, orden de compra",
+        }
       }
     ]
   },
+  // ✅ Ruta de login separada (solo para invitados)
+  {
+    path: 'login',
+    component: LayoutLogin,
+    canActivate: [guestGuard],
+    children: [
+      {
+        path: '',
+        component: Login,
+        data: {
+          title: "Iniciar Sesión | MAA Hair Studio",
+          description: "Inicie sesión en su cuenta.",
+          keywords: "login, authentication, access, iniciar sesión, autenticación",
+        }
+      }
+    ]
+  },
+  // ✅ Rutas de administración
   {
     path: 'admin',
     component: LayoutDash,
@@ -158,7 +187,7 @@ export const pagesRoutes: Routes = [
           title: "Dashboard | MAA Hair Studio",
           description: "Panel de administración.",
           keywords: "admin, dashboard, management",
-        },
+        }
       },
       {
         path: 'category',
@@ -203,32 +232,6 @@ export const pagesRoutes: Routes = [
           title: "Lista de Deseos | Admin MAA Hair Studio",
           description: "Panel de administración de la lista de deseos.",
           keywords: "admin, dashboard, management, wishlist",
-        }
-      }
-    ]
-  },
-  {
-    path: 'login',
-    component: LayoutLogin,
-    canActivate: [guestGuard],
-    children: [
-      {
-        path: '',
-        component: Login,
-        data: {
-          title: "Iniciar Sesión | MAA Hair Studio",
-          description: "Inicie sesión en su cuenta.",
-          keywords: "login, authentication, access",
-        }
-      },
-      {
-        path: 'profile',
-        component: Profile,
-        canActivate: [authGuard],
-        data: {
-          title: "Perfil | MAA Hair Studio",
-          description: "Perfil de usuario.",
-          keywords: "profile, user, account",
         }
       }
     ]
