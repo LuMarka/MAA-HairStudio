@@ -1,0 +1,158 @@
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+.user-profile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: v.$spacing-sm;
+  padding: v.$spacing-xs v.$spacing-sm;
+  border-radius: v.$borderRadius-sm;
+  cursor: pointer;
+  transition: all v.$transitionDuration v.$transitionEasing;
+
+  &:hover {
+    background-color: rgba(114, 143, 112, 0.08);
+  }
+
+  @include m.mobile-only {
+    gap: v.$spacing-xs;
+    padding: v.$spacing-xs v.$spacing-xs;
+  }
+
+  &__icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, v.color('primary') 0%, v.color('green-600') 100%);
+    color: v.color('text-light');
+    flex-shrink: 0;
+    transition: all v.$transitionDuration v.$transitionEasing;
+    box-shadow: 0 2px 8px rgba(114, 143, 112, 0.25);
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .user-profile:hover & {
+      box-shadow: 0 4px 12px rgba(114, 143, 112, 0.35);
+      transform: scale(1.08);
+    }
+
+    @include m.mobile-only {
+      width: 28px;
+      height: 28px;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    @include m.mobile-only {
+      display: none;
+    }
+  }
+
+  &__label {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: v.color('text-muted');
+    margin: 0;
+    letter-spacing: 0.3px;
+    font-family: v.$font-family-secondary;
+    text-transform: uppercase;
+  }
+
+  &__name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: v.color('primary');
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: capitalize;
+    font-family: v.$font-family-primary;
+    max-width: 120px;
+  }
+
+  &__hover-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: v.$spacing-xs;
+    background-color: v.color('surface');
+    border: 1px solid v.color('gray0');
+    border-radius: v.$borderRadius-sm;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transition: all v.$transitionDuration v.$transitionEasing;
+    z-index: 1000;
+    min-width: 160px;
+  }
+
+  &:hover &__hover-menu {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  &__logout-btn {
+    display: flex;
+    align-items: center;
+    gap: v.$spacing-sm;
+    width: 100%;
+    padding: v.$spacing-md v.$spacing-lg;
+    background: none;
+    border: none;
+    color: v.color('error');
+    cursor: pointer;
+    font-size: v.$font-size-sm;
+    font-weight: 600;
+    font-family: v.$font-family-secondary;
+    transition: all v.$transitionDuration v.$transitionEasing;
+    border-left: 3px solid transparent;
+    text-align: left;
+
+    svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      color: v.color('error');
+    }
+
+    &:hover {
+      background-color: rgba(220, 38, 38, 0.1);
+      border-left-color: v.color('error');
+      color: v.color('error');
+    }
+
+    &:active {
+      background-color: rgba(220, 38, 38, 0.15);
+    }
+
+    &:focus {
+      outline: none;
+      background-color: rgba(220, 38, 38, 0.1);
+      border-left-color: v.color('error');
+    }
+
+    @include m.mobile-only {
+      padding: v.$spacing-md v.$spacing-md;
+      font-size: 0.8125rem;
+    }
+  }
+}
+
