@@ -1,9 +1,10 @@
 import { Injectable, inject, signal, computed, effect, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, switchMap, map, finalize } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
+import { ProductsService } from './products.service';
 import type {
   DataWishlist,
   AddToWishlistRequest,
@@ -18,6 +19,7 @@ import type {
   WishlistAnalyticsResponse,
   WishlistClearResponse,
 } from '../models/interfaces/wishlist.interface';
+import type { Datum as ProductDatum } from '../models/interfaces/Product.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -25,14 +27,14 @@ import type {
 export class WishlistService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-  private readonly platformId = inject(PLATFORM_ID); // ✅ Inyectar PLATFORM_ID
+  private readonly productsService = inject(ProductsService);
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly baseUrl = `${environment.apiUrl}wishlist`;
 
   // Keys para localStorage
   private readonly WISHLIST_IDS_KEY = 'maa_wishlist_ids';
   private readonly WISHLIST_DATA_KEY = 'maa_wishlist_data';
 
-  // ✅ Verificar si estamos en el navegador
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
   // Signals para estado reactivo
@@ -40,6 +42,10 @@ export class WishlistService {
   private readonly isLoadingSignal = signal<boolean>(false);
   private readonly error = signal<string | null>(null);
   private readonly wishlistedProductIds = signal<Set<string>>(new Set());
+
+  // ✅ NUEVO: Signal para productos completos (formato Datum)
+  private readonly fullProductsSignal = signal<ProductDatum[]>([]);
+  private readonly isLoadingProductsSignal = signal<boolean>(false);
 
   // Computed signals públicos
   readonly wishlist = this.wishlistData.asReadonly();
@@ -51,13 +57,18 @@ export class WishlistService {
   readonly availableItems = computed(() => this.wishlistData()?.summary.availableItems ?? 0);
   readonly itemsOnSale = computed(() => this.wishlistData()?.summary.itemsOnSale ?? 0);
 
+  // ✅ NUEVO: Computed para productos completos
+  readonly fullProducts = this.fullProductsSignal.asReadonly();
+  readonly isLoadingProducts = this.isLoadingProductsSignal.asReadonly();
+  readonly productIds = computed(() =>
+    this.wishlistData()?.data.map(item => item.product.id) ?? []
+  );
+
   constructor() {
-    // ✅ Solo restaurar en el navegador
     if (this.isBrowser) {
       this.restoreStateFromStorage();
     }
 
-    // ✅ Sincronizar con servidor cuando el usuario esté autenticado
     effect(() => {
       if (this.authService.isAuthenticated() && this.isBrowser) {
         this.syncWithServer();
@@ -66,7 +77,6 @@ export class WishlistService {
       }
     });
 
-    // ✅ Persistir cambios en localStorage (solo en navegador)
     effect(() => {
       const ids = this.wishlistedProductIds();
       const data = this.wishlistData();
@@ -76,6 +86,8 @@ export class WishlistService {
       }
     });
   }
+
+  // ========== MÉTODOS PÚBLICOS EXISTENTES ==========
 
   isProductInWishlist(productId: string): boolean {
     return this.wishlistedProductIds().has(productId);
@@ -121,6 +133,72 @@ export class WishlistService {
     );
   }
 
+  // ========== ✅ NUEVOS MÉTODOS PARA PRODUCTOS COMPLETOS ==========
+
+  /**
+   * ✅ Obtiene la wishlist con productos completos en formato Datum
+   * Útil para product-card que espera la interfaz Datum de products
+   */
+  getWishlistWithFullProducts(params?: WishlistQueryParams): Observable<ProductDatum[]> {
+    return this.getWishlist(params).pipe(
+      switchMap(wishlistData => {
+        const productIds = wishlistData.data.map(item => item.product.id);
+
+        if (productIds.length === 0) {
+          this.fullProductsSignal.set([]);
+          return new Observable<ProductDatum[]>(observer => {
+            observer.next([]);
+            observer.complete();
+          });
+        }
+
+        return this.getFullProductsByIds(productIds);
+      })
+    );
+  }
+
+  /**
+   * ✅ Obtiene productos completos por IDs (formato Datum)
+   * Usa el endpoint de ProductsService que devuelve productos completos
+   */
+  getFullProductsByIds(productIds: string[]): Observable<ProductDatum[]> {
+    if (productIds.length === 0) {
+      this.fullProductsSignal.set([]);
+      return new Observable<ProductDatum[]>(observer => {
+        observer.next([]);
+        observer.complete();
+      });
+    }
+
+    this.isLoadingProductsSignal.set(true);
+
+    return this.productsService.getProductsByIds(productIds).pipe(
+      map(response => response.data),
+      tap(products => {
+        this.fullProductsSignal.set(products);
+        console.log('✅ Productos completos cargados:', products.length);
+      }),
+      catchError(error => {
+        console.error('❌ Error al obtener productos completos:', error);
+        this.fullProductsSignal.set([]);
+        this.handleError(error);
+        return throwError(() => error);
+      }),
+      finalize(() => this.isLoadingProductsSignal.set(false))
+    );
+  }
+
+  /**
+   * ✅ Refresca los productos completos de la wishlist actual
+   * Útil después de agregar/eliminar productos
+   */
+  refreshFullProducts(): Observable<ProductDatum[]> {
+    const currentIds = this.productIds();
+    return this.getFullProductsByIds(currentIds);
+  }
+
+  // ========== MÉTODOS DE ACCIÓN ACTUALIZADOS ==========
+
   addToWishlist(request: AddToWishlistRequest): Observable<WishlistActionResponse> {
     if (this.isProductInWishlist(request.productId)) {
       console.warn('⚠️ El producto ya está en la wishlist');
@@ -135,6 +213,11 @@ export class WishlistService {
         this.wishlistData.set(response.wishlist);
         this.updateWishlistedProductIds(response.wishlist);
         this.isLoadingSignal.set(false);
+
+        // ✅ Refrescar productos completos automáticamente
+        if (this.fullProducts().length > 0) {
+          this.refreshFullProducts().subscribe();
+        }
       }),
       catchError((err) => {
         if (err.status === 409) {
@@ -164,6 +247,11 @@ export class WishlistService {
         this.wishlistData.set(response.wishlist);
         this.updateWishlistedProductIds(response.wishlist);
         this.isLoadingSignal.set(false);
+
+        // ✅ Actualizar productos completos removiendo el eliminado
+        this.fullProductsSignal.update(products =>
+          products.filter(product => product.id !== productId)
+        );
       }),
       catchError((err) => {
         this.handleError(err);
@@ -171,6 +259,50 @@ export class WishlistService {
       })
     );
   }
+
+  moveToCart(request: MoveToCartRequest): Observable<WishlistActionResponse> {
+    this.isLoadingSignal.set(true);
+    this.error.set(null);
+
+    return this.http.post<WishlistActionResponse>(`${this.baseUrl}/move-to-cart`, request).pipe(
+      tap((response) => {
+        this.wishlistData.set(response.wishlist);
+        this.updateWishlistedProductIds(response.wishlist);
+        this.isLoadingSignal.set(false);
+
+        // ✅ Si se remueve de wishlist, actualizar productos completos
+        if (request.removeFromWishlist) {
+          this.fullProductsSignal.update(products =>
+            products.filter(product => product.id !== request.productId)
+          );
+        }
+      }),
+      catchError((err) => {
+        this.handleError(err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  clearWishlist(): Observable<WishlistClearResponse> {
+    this.isLoadingSignal.set(true);
+    this.error.set(null);
+
+    return this.http.delete<WishlistClearResponse>(`${this.baseUrl}/clear`).pipe(
+      tap((response) => {
+        this.wishlistData.set(response.wishlist);
+        this.wishlistedProductIds.set(new Set());
+        this.fullProductsSignal.set([]); // ✅ Limpiar productos completos
+        this.isLoadingSignal.set(false);
+      }),
+      catchError((err) => {
+        this.handleError(err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  // ========== MÉTODOS EXISTENTES (sin cambios) ==========
 
   checkProductInWishlist(productId: string): Observable<WishlistCheckResponse> {
     return this.http.get<WishlistCheckResponse>(`${this.baseUrl}/check/${productId}`).pipe(
@@ -232,42 +364,8 @@ export class WishlistService {
     );
   }
 
-  moveToCart(request: MoveToCartRequest): Observable<WishlistActionResponse> {
-    this.isLoadingSignal.set(true);
-    this.error.set(null);
-
-    return this.http.post<WishlistActionResponse>(`${this.baseUrl}/move-to-cart`, request).pipe(
-      tap((response) => {
-        this.wishlistData.set(response.wishlist);
-        this.updateWishlistedProductIds(response.wishlist);
-        this.isLoadingSignal.set(false);
-      }),
-      catchError((err) => {
-        this.handleError(err);
-        return throwError(() => err);
-      })
-    );
-  }
-
   viewProduct(productId: string): Observable<ViewProductResponse> {
     return this.http.post<ViewProductResponse>(`${this.baseUrl}/view/${productId}`, {}).pipe(
-      catchError((err) => {
-        this.handleError(err);
-        return throwError(() => err);
-      })
-    );
-  }
-
-  clearWishlist(): Observable<WishlistClearResponse> {
-    this.isLoadingSignal.set(true);
-    this.error.set(null);
-
-    return this.http.delete<WishlistClearResponse>(`${this.baseUrl}/clear`).pipe(
-      tap((response) => {
-        this.wishlistData.set(response.wishlist);
-        this.wishlistedProductIds.set(new Set());
-        this.isLoadingSignal.set(false);
-      }),
       catchError((err) => {
         this.handleError(err);
         return throwError(() => err);
@@ -293,12 +391,13 @@ export class WishlistService {
     );
   }
 
+  // ========== MÉTODOS PRIVADOS ==========
+
   private updateWishlistedProductIds(wishlist: DataWishlist): void {
     const productIds = new Set(wishlist.data.map(item => item.product.id));
     this.wishlistedProductIds.set(productIds);
   }
 
-  // ✅ Solo guarda si estamos en el navegador
   private saveStateToStorage(): void {
     if (!this.isBrowser) return;
 
@@ -315,7 +414,6 @@ export class WishlistService {
     }
   }
 
-  // ✅ Solo restaura si estamos en el navegador
   private restoreStateFromStorage(): void {
     if (!this.isBrowser) return;
 
@@ -337,7 +435,6 @@ export class WishlistService {
     }
   }
 
-  // ✅ Solo limpia si estamos en el navegador
   private clearStorage(): void {
     if (!this.isBrowser) return;
 
@@ -352,7 +449,9 @@ export class WishlistService {
   resetState(): void {
     this.wishlistData.set(null);
     this.wishlistedProductIds.set(new Set());
+    this.fullProductsSignal.set([]); // ✅ Limpiar productos completos
     this.isLoadingSignal.set(false);
+    this.isLoadingProductsSignal.set(false);
     this.error.set(null);
     this.clearStorage();
   }
@@ -362,6 +461,7 @@ export class WishlistService {
       error instanceof Error ? error.message : 'Ha ocurrido un error desconocido';
     this.error.set(errorMessage);
     this.isLoadingSignal.set(false);
+    this.isLoadingProductsSignal.set(false);
     console.error('Error en WishlistService:', error);
   }
 }

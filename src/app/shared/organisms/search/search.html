@@ -7,22 +7,25 @@
       />
     </div>
 
-<div class="search__actions" role="toolbar" aria-label="Acciones rápidas">
-  @for (action of actions; track action) {
-    <button
-      type="button"
-      class="search__action"
-      [class.search__action--cart]="action.label === 'Carrito'"
-      (click)="action.action()"
-      [attr.aria-label]="action.label"
-      [title]="action.label"
-    >
-      <span class="search__action-icon">{{ action.icon }}</span>
-      @if (action.label === 'Carrito' && cartItemCount() > 0) {
-        <span class="search__action-badge">{{ cartItemCount() }}</span>
+    <div class="search__actions" role="toolbar" aria-label="Acciones rápidas">
+      @for (action of actions(); track action.label) {
+        <button
+          type="button"
+          class="search__action"
+          [class.search__action--has-badge]="action.showBadge"
+          (click)="action.action()"
+          [attr.aria-label]="action.label + (action.showBadge ? ': ' + action.badge + ' items' : '')"
+          [title]="action.label"
+        >
+          <span class="search__action-icon">{{ action.icon }}</span>
+
+          @if (action.showBadge && action.badge > 0) {
+            <span class="search__action-badge">
+              {{ action.badge > 99 ? '99+' : action.badge }}
+            </span>
+          }
+        </button>
       }
-    </button>
-  }
-</div>
+    </div>
   </div>
 </section>
