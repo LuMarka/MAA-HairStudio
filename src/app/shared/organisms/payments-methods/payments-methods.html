@@ -1,22 +1,46 @@
 <section class="payments-methods">
 	<div class="payments-methods__container">
 		<div class="payments-methods__line" aria-hidden="true"></div>
-		<header class="payments-methods__header" style="width:100%;">
+
+		<header class="payments-methods__header">
 			<h2 class="payments-methods__title">Medios de Pago</h2>
 		</header>
-		<div #track class="payments-methods__track" (mouseenter)="pauseAutoScroll()" (mouseleave)="resumeAutoScroll()" (touchstart)="pauseAutoScroll()" (touchend)="resumeAutoScroll()">
-			<a *ngFor="let medio of medios()" [routerLink]="['/tienda']" class="payments-methods__card" role="button">
-				<div class="payments-methods__media">
-					<ng-container *ngIf="medio.icon; else imgTpl">
-						<i class="bi" [ngClass]="medio.icon" aria-hidden="true"></i>
-					</ng-container>
-					<ng-template #imgTpl>
-						<img [src]="medio.img || '/images/placeholder.png'" [alt]="medio.title" loading="lazy" class="payments-methods__icon" />
-					</ng-template>
-				</div>
-				<div class="payments-methods__label">{{ medio.title }}</div>
-			</a>
+
+		<div
+			#track
+			class="payments-methods__track"
+			(mouseenter)="pauseAutoScroll()"
+			(mouseleave)="resumeAutoScroll()"
+			(touchstart)="pauseAutoScroll()"
+			(touchend)="resumeAutoScroll()"
+		>
+			@for (medio of medios(); track medio.id) {
+				<a
+					[routerLink]="['/tienda']"
+					class="payments-methods__card"
+					role="button"
+					[attr.aria-label]="'Pagar con ' + medio.title"
+				>
+					<div class="payments-methods__media">
+						@if (medio.icon) {
+							<i
+								[class]="'bi ' + medio.icon"
+								aria-hidden="true"
+							></i>
+						} @else {
+							<img
+								[src]="medio.img || '/images/placeholder.png'"
+								[alt]="medio.title"
+								loading="lazy"
+								class="payments-methods__icon"
+							/>
+						}
+					</div>
+					<div class="payments-methods__label">{{ medio.title }}</div>
+				</a>
+			}
 		</div>
+
 		<div class="payments-methods__divider" aria-hidden="true"></div>
 	</div>
 </section>

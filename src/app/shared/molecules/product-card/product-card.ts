@@ -17,7 +17,10 @@ export class ProductCard {
   readonly context = input<ProductCardContext>('catalog');
   readonly showWishlistButton = input(true);
   readonly isInWishlist = input<boolean>(false);
+  readonly isInCart = input<boolean>(false);
+  readonly cartQuantity = input<number>(0);
   readonly isWishlistLoading = input<boolean>(false);
+  readonly isCartLoading = input<boolean>(false);
 
   // ========== OUTPUTS ==========
   readonly toggleWishlist = output<string>();
@@ -25,9 +28,21 @@ export class ProductCard {
   readonly removeFromWishlist = output<string>();
   readonly moveToCart = output<{ productId: string; quantity: number }>();
 
-  // ========== COMPUTED ==========
+  // ========== COMPUTED - Contexto ==========
   readonly isWishlistContext = computed(() => this.context() === 'wishlist');
   readonly isCatalogContext = computed(() => this.context() === 'catalog');
+
+  // ========== COMPUTED - Estado del Cart ==========
+  readonly isAddToCartDisabled = computed(() => {
+    const product = this.product();
+    return !product.isAvailable || 
+           product.stock <= 0 || 
+           this.isCartLoading();
+  });
+
+  readonly showCartButton = computed(() => {
+    return this.isCatalogContext() && !this.isWishlistContext();
+  });
 
   // ========== TEXTOS ==========
   readonly texts = {
@@ -40,26 +55,32 @@ export class ProductCard {
     removeFromWishlistText: 'Eliminar'
   };
 
-  // ========== MÉTODOS - SOLO EMITEN ==========
+  // ========== MÉTODOS - WISHLIST ==========
 
   onToggleWishlist(): void {
-    console.log('🔵 ProductCard - onToggleWishlist:', this.product().id);
+    console.log('❤️ ProductCard - Toggle Wishlist:', this.product().id);
     this.toggleWishlist.emit(this.product().id);
   }
 
   onRemoveFromWishlist(): void {
-    console.log('🔵 ProductCard - onRemoveFromWishlist:', this.product().id);
+    console.log('🗑️ ProductCard - Remove from Wishlist:', this.product().id);
     this.removeFromWishlist.emit(this.product().id);
   }
 
+  // ========== MÉTODOS - CART ==========
+
   onAddToCart(): void {
-    console.log('🔵 ProductCard - onAddToCart llamado para:', this.product().id);
-    console.log('🔵 ProductCard - Producto:', this.product().name);
+    if (this.isAddToCartDisabled()) {
+      console.warn('⚠️ Add to cart deshabilitado');
+      return;
+    }
+
+    console.log('🛒 ProductCard - Add to Cart:', this.product().id);
     this.addToCart.emit(this.product().id);
   }
 
   onMoveToCart(): void {
-    console.log('🔵 ProductCard - onMoveToCart:', this.product().id);
+    console.log('🔄 ProductCard - Move to Cart:', this.product().id);
     this.moveToCart.emit({
       productId: this.product().id,
       quantity: 1

@@ -10,76 +10,67 @@
 
     <!-- Estado de carga -->
     @if (loading()) {
-      <div class="featured__loading">
-        <div class="featured__spinner"></div>
-        <p>Cargando productos destacados...</p>
-      </div>
+    <div class="featured__loading">
+      <div class="featured__spinner"></div>
+      <p>Cargando productos destacados...</p>
+    </div>
     }
 
     <!-- Estado de error -->
     @if (errorMessage()) {
-      <div class="featured__error">
-        <p>{{ errorMessage() }}</p>
-        <button class="featured__retry-btn" (click)="loadFeaturedProducts()">
-          Intentar de nuevo
-        </button>
-      </div>
+    <div class="featured__error">
+      <p>{{ errorMessage() }}</p>
+      <button class="featured__retry-btn" (click)="loadFeaturedProducts()">
+        Intentar de nuevo
+      </button>
+    </div>
     }
 
     <!-- Contenido principal (cuando hay productos) -->
     @if (!loading() && !errorMessage() && products().length > 0) {
-      <!-- Contenedor del carrusel con flechas laterales -->
-      <div class="featured__carousel">
-        <!-- Flecha izquierda -->
-        <button
-          class="featured__arrow featured__arrow--prev"
-          [class]="{'featured__arrow--disabled': isFirstPage()}"
-          (click)="previousPage()"
-          aria-label="Ver productos anteriores">
-          <span class="featured__arrow-icon">❮</span>
-        </button>
+    <!-- Contenedor del carrusel con flechas laterales -->
+    <div class="featured__carousel">
+      <!-- Flecha izquierda -->
+      <button class="featured__arrow featured__arrow--prev" [class]="{'featured__arrow--disabled': isFirstPage()}"
+        (click)="previousPage()" aria-label="Ver productos anteriores">
+        <span class="featured__arrow-icon">❮</span>
+      </button>
 
-        <!-- Grid de productos con animación al scroll -->
-        <div class="featured__grid" #productGrid>
-          @for (product of visibleProducts(); track product.id) {
-            <div
-              class="featured__product-wrapper"
-              [class]="{'featured__product--visible': isProductVisible(product.id)}"
-              [attr.data-product-id]="product.id"
-              #productCard>
-              <app-product-card [product]="product" />
-            </div>
-          }
+      <!-- Grid de productos con animación al scroll -->
+      <div class="featured__grid" #productGrid>
+        @for (product of visibleProducts(); track product.id) {
+        <div class="featured__product-wrapper" [class]="{'featured__product--visible': isProductVisible(product.id)}"
+          [attr.data-product-id]="product.id" #productCard>
+          <app-product-card [product]="product" [context]="'catalog'" [isInWishlist]="isProductInWishlist(product.id)"
+            [isInCart]="isProductInCart(product.id)" [cartQuantity]="getProductQuantityInCart(product.id)"
+            [isWishlistLoading]="isWishlistLoading()" [isCartLoading]="isCartLoading()"
+            (toggleWishlist)="handleToggleWishlist($event)" (addToCart)="handleAddToCart($event)" />
         </div>
-
-        <!-- Flecha derecha -->
-        <button
-          class="featured__arrow featured__arrow--next"
-          [class]="{'featured__arrow--disabled': isLastPage()}"
-          (click)="nextPage()"
-          aria-label="Ver más productos">
-          <span class="featured__arrow-icon">❯</span>
-        </button>
-      </div>
-
-      <!-- Indicadores de página -->
-      <div class="featured__pagination">
-        @for (page of pageIndicators(); track page) {
-          <button
-            class="featured__page-dot"
-            [class]="{'featured__page-dot--active': currentPage() === page}"
-            (click)="goToPage(page)"
-            aria-label="Ir a página {{page + 1}}">
-          </button>
         }
       </div>
+
+      <!-- Flecha derecha -->
+      <button class="featured__arrow featured__arrow--next" [class]="{'featured__arrow--disabled': isLastPage()}"
+        (click)="nextPage()" aria-label="Ver más productos">
+        <span class="featured__arrow-icon">❯</span>
+      </button>
+    </div>
+
+    <!-- Indicadores de página -->
+    <div class="featured__pagination">
+      @for (page of pageIndicators(); track page) {
+      <button class="featured__page-dot" [class]="{'featured__page-dot--active': currentPage() === page}"
+        (click)="goToPage(page)" aria-label="Ir a página {{page + 1}}">
+      </button>
+      }
+    </div>
     }
 
     <!-- Estado cuando no hay productos -->
     @if (!loading() && !errorMessage() && products().length === 0) {
-      <div class="featured__empty">
-        <p>No hay productos destacados disponibles en este momento.</p>
-      </div>
+    <div class="featured__empty">
+      <p>No hay productos destacados disponibles en este momento.</p>
+    </div>
     }
   </div>
 </section>

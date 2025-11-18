@@ -8,6 +8,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Meta } from '../../../core/models/interfaces/Product.interface';
 
+
 export interface PaginationEvent {
   page: number;
   limit: number;

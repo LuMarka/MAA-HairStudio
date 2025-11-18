@@ -267,7 +267,10 @@
               [product]="product"
               [context]="'catalog'"
               [isInWishlist]="isProductInWishlist(product.id)"
+              [isInCart]="isProductInCart(product.id)"
+              [cartQuantity]="getProductQuantityInCart(product.id)"
               [isWishlistLoading]="isWishlistLoading()"
+              [isCartLoading]="isCartLoading()"
               (toggleWishlist)="handleToggleWishlist($event)"
               (addToCart)="handleAddToCart($event)"
             />
