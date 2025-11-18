@@ -2,7 +2,6 @@
   <div class="auth__card">
     <h1 class="auth__title">Iniciar sesión</h1>
     
-    @if (!showPasswordRecovery()) {
     <form [formGroup]="form" (ngSubmit)="submit()" class="auth__form">
       <!-- Email field -->
       <div class="auth__form-group">
@@ -86,17 +85,6 @@
       <p class="auth__footer">
         ¿No tienes cuenta? <a (click)="onRegisterClick()" class="auth__link">Regístrate</a>
       </p>
-
-      <!-- Forgot password link -->
-      <p class="auth__footer auth__forgot">
-        <a (click)="onForgotPasswordClick()" class="auth__link">¿Olvidaste tu contraseña?</a>
-      </p>
     </form>
-    } @else {
-    <!-- Password Recovery Component -->
-    <div class="auth__recovery-wrapper">
-      <app-password-recovery (backToLogin)="onHidePasswordRecovery()"></app-password-recovery>
-    </div>
-    }
   </div>
 </section>

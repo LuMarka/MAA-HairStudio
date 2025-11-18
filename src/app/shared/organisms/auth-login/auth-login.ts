@@ -1,20 +1,14 @@
+import { Component, inject, output, signal, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, output, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { finalize } from 'rxjs/operators';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { PasswordRecoveryComponent } from '../password-recovery/password-recovery.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-auth-login',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    PasswordRecoveryComponent
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './auth-login.html',
   styleUrls: ['./auth-login.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -45,9 +39,6 @@ export class AuthLogin {
     password: this.form.get('password'),
     remember: this.form.get('remember')
   };
-
-  // Señal para mostrar/ocultar el componente de recuperación
-  readonly showPasswordRecovery = signal(false);
 
   submit(): void {
     if (this.form.invalid) {
@@ -87,19 +78,11 @@ export class AuthLogin {
   }
 
   togglePasswordVisibility(): void {
-    this.passwordVisible.update(v => !v);
+    this.passwordVisible.update(current => !current);
   }
 
   onRegisterClick(): void {
     this.goToRegister.emit();
-  }
-
-  onForgotPasswordClick(): void {
-    this.showPasswordRecovery.set(true);
-  }
-
-  onHidePasswordRecovery(): void {
-    this.showPasswordRecovery.set(false);
   }
 
   private redirectAfterLogin(role: string): void {

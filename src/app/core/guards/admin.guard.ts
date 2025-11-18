@@ -10,7 +10,7 @@ export const adminGuard: CanActivateFn = () => {
 
   // Verificar si está autenticado y es admin
   if (authService.isCurrentlyAuthenticated()) {
-    const user = authService.user();
+    const user = authService.currentUser();
     
     if (user?.role === 'admin') {
       return true;
@@ -24,7 +24,7 @@ export const adminGuard: CanActivateFn = () => {
   if (authService.hasValidToken()) {
     return authService.verifyToken().pipe(
       map(() => {
-        const user = authService.user();
+        const user = authService.currentUser();
         if (user?.role === 'admin') {
           return true;
         } else {

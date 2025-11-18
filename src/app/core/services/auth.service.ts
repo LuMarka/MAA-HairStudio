@@ -1,21 +1,22 @@
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { EMPTY, Observable, throwError } from 'rxjs';
-import { catchError, finalize, tap } from 'rxjs/operators';
+import { Observable, throwError, EMPTY } from 'rxjs';
+import { catchError, tap, finalize } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
-  ApiError,
-  ChangePasswordRequest,
-  ChangePasswordResponse,
+  User,
+  RegisterRequest,
+  RegisterResponse,
   LoginRequest,
   LoginResponse,
   ProfileResponse,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
   RefreshTokenResponse,
-  RegisterRequest,
-  RegisterResponse,
-  User,
-  VerifyTokenResponse
+  VerifyTokenResponse,
+  LogoutResponse,
+  ApiError
 } from '../models/interfaces/auth.interface';
 
 @Injectable({
@@ -24,10 +25,7 @@ import {
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-
-  private readonly currentUser = signal<User | null>(null);
-  readonly user = this.currentUser.asReadonly();
-
+  
   // URLs de la API
   private readonly authUrl = `${environment.apiUrl}auth`;
   
@@ -37,6 +35,7 @@ export class AuthService {
   private readonly TOKEN_EXPIRY_KEY = 'maa_token_expiry';
 
   // Signals para estado reactivo
+  private readonly currentUserSignal = signal<User | null>(null);
   private readonly isLoadingSignal = signal(false);
   private readonly errorSignal = signal<string | null>(null);
   
@@ -44,11 +43,12 @@ export class AuthService {
   private refreshTimer?: ReturnType<typeof setTimeout>;
 
   // Computed values públicos
+  readonly currentUser = this.currentUserSignal.asReadonly();
   readonly isLoading = this.isLoadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
-  readonly isAuthenticated = computed(() => !!this.currentUser());
-  readonly isAdmin = computed(() => this.currentUser()?.role === 'admin');
-  readonly isUser = computed(() => this.currentUser()?.role === 'user');
+  readonly isAuthenticated = computed(() => !!this.currentUserSignal());
+  readonly isAdmin = computed(() => this.currentUserSignal()?.role === 'admin');
+  readonly isUser = computed(() => this.currentUserSignal()?.role === 'user');
 
   constructor() {
     this.initializeAuth();
@@ -75,7 +75,7 @@ export class AuthService {
 
     if (storedUser && token && tokenExpiry && this.isTokenValid(tokenExpiry)) {
       // Restaurar estado válido desde localStorage
-      this.currentUser.set(storedUser);
+      this.currentUserSignal.set(storedUser);
       this.scheduleTokenRefresh(tokenExpiry);
       
       console.log('AuthService - Estado restaurado:', {
@@ -135,7 +135,7 @@ export class AuthService {
 
     return this.http.get<ProfileResponse>(`${this.authUrl}/profile`).pipe(
       tap(response => {
-        this.currentUser.set(response.user);
+        this.currentUserSignal.set(response.user);
         this.storeUser(response.user);
       }),
       catchError(error => this.handleError(error)),
@@ -183,7 +183,7 @@ export class AuthService {
     return this.http.get<VerifyTokenResponse>(`${this.authUrl}/verify`).pipe(
       tap(response => {
         if (response.valid && response.user) {
-          this.currentUser.set(response.user);
+          this.currentUserSignal.set(response.user);
           this.storeUser(response.user);
           const newExpiry = this.calculateTokenExpiry(response.expiresIn);
           this.setTokenExpiry(newExpiry);
@@ -202,20 +202,13 @@ export class AuthService {
   /**
    * 7. Cerrar Sesión - POST /api/v1/auth/logout
    */
-  logout(): Observable<void> {
+  logout(): Observable<LogoutResponse> {
     this.clearRefreshTimer();
     
-    return this.http.post<void>(`${this.authUrl}/logout`, {}).pipe(
+    return this.http.post<LogoutResponse>(`${this.authUrl}/logout`, {}).pipe(
       catchError(() => EMPTY),
       finalize(() => {
-        // Limpiar estado local
-        this.currentUser.set(null);
-        
-        // Remover token del localStorage
-        localStorage.removeItem('authToken');
-        sessionStorage.removeItem('authToken');
-        
-        // Navegar al login
+        this.clearAuthData();
         this.router.navigate(['/login']);
       })
     );
@@ -246,7 +239,7 @@ export class AuthService {
    * Verifica el estado actual de autenticación
    */
   isCurrentlyAuthenticated(): boolean {
-    const user = this.currentUser();
+    const user = this.currentUserSignal();
     const token = this.getToken();
     const expiry = this.getTokenExpiry();
     
@@ -282,7 +275,7 @@ export class AuthService {
     const expiry = this.calculateTokenExpiry(loginResponse.expiresIn);
     
     this.setToken(loginResponse.access_token);
-    this.currentUser.set(loginResponse.user);
+    this.currentUserSignal.set(loginResponse.user);
     this.setTokenExpiry(expiry);
     this.storeUser(loginResponse.user);
     this.scheduleTokenRefresh(expiry);
@@ -378,7 +371,7 @@ export class AuthService {
       localStorage.removeItem(this.TOKEN_EXPIRY_KEY);
     }
     
-    this.currentUser.set(null);
+    this.currentUserSignal.set(null);
     this.clearError();
   }
 
