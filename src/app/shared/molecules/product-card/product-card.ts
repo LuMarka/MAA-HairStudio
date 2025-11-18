@@ -35,8 +35,8 @@ export class ProductCard {
   // ========== COMPUTED - Estado del Cart ==========
   readonly isAddToCartDisabled = computed(() => {
     const product = this.product();
-    return !product.isAvailable || 
-           product.stock <= 0 || 
+    return !product.isAvailable ||
+           product.stock <= 0 ||
            this.isCartLoading();
   });
 
@@ -44,12 +44,18 @@ export class ProductCard {
     return this.isCatalogContext() && !this.isWishlistContext();
   });
 
+  // ========== COMPUTED - Formato ==========
+  readonly formattedPrice = computed(() => {
+    const price = this.product().price;
+    return this.formatPrice(price);
+  });
+
   // ========== TEXTOS ==========
   readonly texts = {
     addToWishlistAriaLabel: 'Agregar a lista de favoritos',
     removeFromWishlistAriaLabel: 'Eliminar de lista de favoritos',
-    addToCartText: 'Agregar al carrito',
-    moveToCartText: 'Mover al carrito',
+    addToCartText: 'Comprar',
+    moveToCartText: 'Comprar',
     viewProductDetails: 'Ver detalles del producto',
     productImageAlt: 'Imagen del producto',
     removeFromWishlistText: 'Eliminar'
@@ -85,5 +91,13 @@ export class ProductCard {
       productId: this.product().id,
       quantity: 1
     });
+  }
+
+  // ========== MÉTODOS - FORMATO ==========
+
+  private formatPrice(price: number | string): string {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    const integerPart = Math.round(numPrice).toLocaleString('es-AR');
+    return integerPart;
   }
 }

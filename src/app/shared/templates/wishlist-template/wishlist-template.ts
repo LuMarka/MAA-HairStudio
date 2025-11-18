@@ -159,7 +159,7 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
           this._fullProducts.update(products =>
             products.filter(p => p.id !== data.productId)
           );
-          console.log('✅ Movido al carrito:', response.message);
+          console.log('✅ Agregado:', response.message);
         }),
         catchError((error) => {
           console.error('❌ Error al mover al carrito:', error);
