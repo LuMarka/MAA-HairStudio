@@ -18,8 +18,7 @@
             class="wishlist-template__clear-btn"
             (click)="clearWishlist()"
             [attr.aria-label]="texts.clearButtonAriaLabel"
-            [disabled]="isLoading()"
-          >
+            [disabled]="isLoading()">
             {{ isLoading() ? texts.clearingText : texts.clearButtonText }}
           </button>
         </div>
@@ -27,7 +26,7 @@
     </div>
 
     <!-- Loading State -->
-    @if (isLoading() || isLoadingProducts()) {
+    @if (isLoading() && isEmpty()) {
       <div class="wishlist-template__loading">
         <div class="wishlist-template__spinner" aria-hidden="true"></div>
         <p class="wishlist-template__loading-text">{{ texts.loadingText }}</p>
@@ -35,7 +34,7 @@
     }
 
     <!-- Error State -->
-    @else if (error()) {
+    @else if (error() && !isLoading()) {
       <div class="wishlist-template__error">
         <div class="wishlist-template__error-icon">⚠️</div>
         <h2 class="wishlist-template__error-title">{{ texts.errorTitle }}</h2>
@@ -43,29 +42,50 @@
         <button
           type="button"
           class="wishlist-template__retry-btn"
-          (click)="retryLoad()"
-        >
+          (click)="retryLoad()">
           {{ texts.retryButtonText }}
         </button>
       </div>
     }
 
+    @if (isLoading()) {
+      <div class="wishlist-template__loading-overlay">
+        <div class="wishlist-template__spinner" aria-hidden="true">
+          <p>Actualizando...</p>
+        </div>
+      </div>
+    }
+
     <!-- Content -->
     @else {
-      @if (products().length > 0) {
+      @if (hasItems()) {
         <!-- Products Grid -->
         <div class="wishlist-template__grid">
-          @for (product of products(); track product.id) {
+          @for (product of fullProducts(); track product.id) {
             <app-product-card
               [product]="product"
               [context]="'wishlist'"
               [isInWishlist]="true"
               [isWishlistLoading]="isLoading()"
               (removeFromWishlist)="handleRemove($event)"
-              (moveToCart)="handleMoveToCart({ productId: $event.productId, quantity: 1 })"
+              (moveToCart)="handleMoveToCart($event)"
             />
           }
         </div>
+
+        <!-- Paginador -->
+        @if (meta() && meta()!.totalPages > 1) {
+          <div class="wishlist-template__pagination">
+            <app-paginator
+              [meta]="meta()!"
+              [entityName]="'productos favoritos'"
+              [showPageSizeSelector]="true"
+              [pageSizeOptions]="[10, 20, 50]"
+              [maxVisiblePages]="5"
+              (pageChange)="onPageChange($event)"
+            />
+          </div>
+        }
 
         <!-- Explore More Section -->
         <div class="wishlist-template__explore-more">
@@ -73,8 +93,7 @@
           <button
             type="button"
             class="wishlist-template__explore-btn"
-            (click)="navigateToProducts()"
-          >
+            (click)="navigateToProducts()">
             <span class="wishlist-template__explore-icon">{{ texts.exploreIcon }}</span>
             {{ texts.exploreButtonText }}
             <span class="wishlist-template__explore-arrow">{{ texts.exploreArrow }}</span>
@@ -93,8 +112,7 @@
           <button
             type="button"
             class="wishlist-template__shop-btn"
-            (click)="navigateToProducts()"
-          >
+            (click)="navigateToProducts()">
             {{ texts.emptyButtonText }}
           </button>
         </div>

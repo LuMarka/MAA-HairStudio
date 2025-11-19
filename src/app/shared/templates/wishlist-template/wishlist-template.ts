@@ -1,32 +1,70 @@
-import { Component, computed, inject, OnInit, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { WishlistService } from '../../../core/services/wishlistOld.service';
-import { ProductCard } from '../../molecules/product-card/product-card';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  inject,
+  PLATFORM_ID,
+  DestroyRef,
+  signal,
+  computed,
+  ChangeDetectionStrategy
+} from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
-import { Product } from '../../../core/services/products.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { tap, catchError, finalize } from 'rxjs/operators';
+import { EMPTY } from 'rxjs';
+import { WishlistService } from '../../../core/services/wishlist.service';
+import { ScrollAnimationService } from '../../../core/services/scroll-animation.service';
+import { ProductCard } from '../../molecules/product-card/product-card';
+import { Paginator, PaginationEvent } from '../../molecules/paginator/paginator';
+import type { DataWishlist, WishlistQueryParams } from '../../../core/models/interfaces/wishlist.interface';
+import type { Datum as ProductDatum } from '../../../core/models/interfaces/Product.interface';
 
 @Component({
   selector: 'app-wishlist-template',
-  imports: [ProductCard, CommonModule],
+  imports: [ProductCard, Paginator],
   templateUrl: './wishlist-template.html',
   styleUrl: './wishlist-template.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WishlistTemplate implements OnInit {
+export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
+  private readonly scrollAnimationService = inject(ScrollAnimationService);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly wishlistService = inject(WishlistService);
   private readonly router = inject(Router);
-  private readonly destroyRef = inject(DestroyRef);
 
-  // ACTUALIZADO: Usar productos completos en lugar de items de wishlist
-  readonly products = computed(() => this.wishlistService.fullProducts());
-  readonly isLoadingProducts = computed(() => this.wishlistService.isLoadingProducts());
+  // State management con signals
+  private readonly _wishlistData = signal<DataWishlist | null>(null);
+  private readonly _fullProducts = signal<ProductDatum[]>([]);
+  private readonly _localLoading = signal(false);
+  private readonly _localError = signal<string | null>(null);
+  private readonly _currentParams = signal<WishlistQueryParams>({ page: 1, limit: 10 });
 
-  // Mantener computed values existentes para compatibilidad
-  readonly itemCount = computed(() => this.wishlistService.totalItems());
-  readonly isLoading = computed(() => this.wishlistService.isLoading());
-  readonly error = computed(() => this.wishlistService.error());
-  readonly isEmpty = computed(() => this.wishlistService.isEmpty());
+  // Computed values
+  readonly wishlistData = computed(() => this._wishlistData());
+  readonly fullProducts = computed(() => this._fullProducts());
+  readonly items = computed(() => this._wishlistData()?.data || []);
+  readonly meta = computed(() => this._wishlistData()?.meta);
+  readonly summary = computed(() => this._wishlistData()?.summary);
+  readonly currentParams = computed(() => this._currentParams());
+
+  readonly isLoading = computed(() =>
+    this._localLoading() ||
+    this.wishlistService.isLoading() ||
+    this.wishlistService.isLoadingProducts()
+  );
+
+  readonly error = computed(() => this._localError() || this.wishlistService.errorMessage());
+  readonly hasItems = computed(() => this.fullProducts().length > 0);
+  readonly isEmpty = computed(() => !this.hasItems());
+
+  readonly itemCount = computed(() => this.summary()?.totalItems ?? 0);
+  readonly totalValue = computed(() => this.summary()?.totalValue ?? 0);
+  readonly availableItems = computed(() => this.summary()?.availableItems ?? 0);
+  readonly itemsOnSale = computed(() => this.summary()?.itemsOnSale ?? 0);
 
   readonly texts = {
     title: 'Mis Productos Favoritos',
@@ -51,75 +89,200 @@ export class WishlistTemplate implements OnInit {
   };
 
   ngOnInit(): void {
-    this.loadWishlistWithProducts();
+    console.log('💝 WishlistTemplate - Inicializando');
+    this.loadWishlist();
   }
 
-  private loadWishlistWithProducts(): void {
-    // ACTUALIZADO: Cargar wishlist con productos completos
-    this.wishlistService.getWishlistWithFullProducts({ page: 1, limit: 50 })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (products: Product[]) => {
-          console.log('Wishlist con productos completos cargada:', products.length);
-        },
-        error: (error) => {
-          console.error('Error al cargar wishlist con productos:', error);
-        }
-      });
-  }
-
-  navigateToProducts(): void {
-    this.router.navigate(['/products']);
-  }
-
-  clearWishlist(): void {
-    if (confirm(this.texts.clearConfirmMessage)) {
-      this.wishlistService.clearWishlist()
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: () => {
-            console.log('Wishlist limpiada exitosamente');
-          },
-          error: () => {
-            console.error('Error al limpiar wishlist');
-          }
-        });
+  ngAfterViewInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.initializeScrollAnimations();
     }
   }
 
+  ngOnDestroy(): void {
+    console.log('💝 WishlistTemplate - Destruyendo');
+  }
+
+  // ========== MÉTODOS PÚBLICOS - PAGINACIÓN ==========
+
+  onPageChange(event: PaginationEvent): void {
+    console.log('📄 Cambio de página:', event);
+
+    this.updateParams({
+      page: event.page,
+      limit: event.limit
+    });
+
+    this.loadWishlistWithParams(this.currentParams());
+  }
+
+  // ========== MÉTODOS PÚBLICOS - ACCIONES ==========
+
   handleRemove(productId: string): void {
+    console.log('🗑️ Eliminando de wishlist:', productId);
+
+    this._localLoading.set(true);
+
     this.wishlistService.removeFromWishlist(productId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => {
+      .pipe(
+        tap((response) => {
+          this._wishlistData.set(response.wishlist);
+          this._fullProducts.update(products =>
+            products.filter(p => p.id !== productId)
+          );
           console.log('✅ Producto removido:', response.message);
-        },
-        error: (error) => {
-          console.error('❌ Error:', error);
-        }
-      });
+        }),
+        catchError((error) => {
+          console.error('❌ Error al remover:', error);
+          this._localError.set('No se pudo eliminar el producto');
+          return EMPTY;
+        }),
+        finalize(() => this._localLoading.set(false)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
   }
-
-  retryLoad(): void {
-    this.wishlistService.clearError();
-    this.loadWishlistWithProducts();
-  }
-
 
   handleMoveToCart(data: { productId: string; quantity: number }): void {
+    console.log('🛒 Moviendo al carrito:', data);
+
+    this._localLoading.set(true);
+
     this.wishlistService.moveToCart({
       productId: data.productId,
       quantity: data.quantity,
       removeFromWishlist: true
     })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => {
-          console.log('✅ Movido al carrito:', response.message);
-        },
-        error: (error) => {
-          console.error('❌ Error:', error);
-        }
+      .pipe(
+        tap((response) => {
+          this._wishlistData.set(response.wishlist);
+          this._fullProducts.update(products =>
+            products.filter(p => p.id !== data.productId)
+          );
+          console.log('✅ Agregado:', response.message);
+        }),
+        catchError((error) => {
+          console.error('❌ Error al mover al carrito:', error);
+          this._localError.set('No se pudo mover al carrito');
+          return EMPTY;
+        }),
+        finalize(() => this._localLoading.set(false)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
+  }
+
+  clearWishlist(): void {
+    if (!confirm(this.texts.clearConfirmMessage)) {
+      return;
+    }
+
+    console.log('🗑️ Limpiando wishlist completa');
+
+    this._localLoading.set(true);
+
+    this.wishlistService.clearWishlist()
+      .pipe(
+        tap((response) => {
+          this._wishlistData.set(response.wishlist);
+          this._fullProducts.set([]);
+          console.log('✅ Wishlist limpiada:', response.message);
+        }),
+        catchError((error) => {
+          console.error('❌ Error al limpiar wishlist:', error);
+          this._localError.set('No se pudo limpiar la wishlist');
+          return EMPTY;
+        }),
+        finalize(() => this._localLoading.set(false)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
+  }
+
+  navigateToProducts(): void {
+    console.log('🛍️ Navegando a productos');
+    this.router.navigate(['/products']);
+  }
+
+  retryLoad(): void {
+    console.log('🔄 Reintentando cargar wishlist');
+    this.clearError();
+    this.reloadWishlist();
+  }
+
+  reloadWishlist(): void {
+    console.log('🔄 Recargando wishlist manualmente');
+    this.loadWishlist();
+  }
+
+  clearError(): void {
+    this._localError.set(null);
+  }
+
+  // ========== MÉTODOS PRIVADOS ==========
+
+  private initializeParams(): void {
+    this._currentParams.set({ page: 1, limit: 10 });
+  }
+
+  private loadWishlist(): void {
+    this.initializeParams();
+    this.loadWishlistWithParams(this.currentParams());
+  }
+
+  private updateParams(newParams: WishlistQueryParams): void {
+    this._currentParams.set({ ...this._currentParams(), ...newParams });
+  }
+
+  private loadWishlistWithParams(params: WishlistQueryParams): void {
+    this._localLoading.set(true);
+    this._localError.set(null);
+
+    console.log('📦 Cargando wishlist con parámetros:', params);
+
+    this.wishlistService.getWishlistWithFullProducts(params)
+      .pipe(
+        tap((products: ProductDatum[]) => {
+          const wishlistData = this.wishlistService.wishlist();
+          this._wishlistData.set(wishlistData);
+          this._fullProducts.set(products);
+
+          console.log('✅ Wishlist cargada:', {
+            items: products.length,
+            total: wishlistData?.summary.totalItems ?? 0,
+            page: wishlistData?.meta.page ?? 1
+          });
+        }),
+        catchError((error) => {
+          const errorMessage = error?.error?.message || 'Error al cargar la wishlist';
+          this._localError.set(errorMessage);
+          console.error('❌ Error al cargar wishlist:', error);
+          return EMPTY;
+        }),
+        finalize(() => this._localLoading.set(false)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
+  }
+
+  private initializeScrollAnimations(): void {
+    if (!this.hasItems()) {
+      console.log('⏭️ Sin items para animar');
+      return;
+    }
+
+    console.log('🎬 Inicializando animaciones de scroll');
+    this.scrollAnimationService.observeElements('.wishlist-template__header');
+
+    setTimeout(() => {
+      const wishlistItems = document.querySelectorAll('.product-card');
+      wishlistItems.forEach((item, index) => {
+        (item as HTMLElement).style.transitionDelay = `${index * 0.05}s`;
       });
+      this.scrollAnimationService.observeElements('.product-card');
+    }, 300);
+
+    this.scrollAnimationService.observeElements('.wishlist-template__pagination');
+    this.scrollAnimationService.observeElements('.wishlist-template__explore-more');
   }
 }

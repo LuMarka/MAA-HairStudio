@@ -10,6 +10,7 @@ import { SubCategoryService } from '../../../core/services/subcategory.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { CartService } from '../../../core/services/cart.service';
 
 // Enum para los tipos de productos
 export enum ProductType {
@@ -63,6 +64,7 @@ export class Products implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly wishlistService = inject(WishlistService);
   private readonly authService = inject(AuthService);
+  private readonly cartService = inject(CartService);
 
   // ========== INPUTS ==========
   readonly dataApi = input<ProductsApiResponse | null>();
@@ -107,6 +109,9 @@ export class Products implements OnInit {
 
   // ========== COMPUTED - Wishlist ==========
   readonly isWishlistLoading = computed(() => this.wishlistService.isLoading());
+
+  // ========== COMPUTED - Cart ==========
+  readonly isCartLoading = computed(() => this.cartService.isLoading());
 
   // ========== COMPUTED - Opciones ==========
   readonly productTypeOptions = computed((): ProductTypeOption[] => [
@@ -278,6 +283,97 @@ export class Products implements OnInit {
       });
   }
 
+  // ========== MÉTODOS PÚBLICOS - CART ==========
+
+  /**
+   * ✅ Verifica si un producto está en el carrito
+   */
+  isProductInCart(productId: string): boolean {
+    return this.cartService.isProductInCart(productId);
+  }
+
+  /**
+   * ✅ Obtiene la cantidad de un producto en el carrito
+   */
+  getProductQuantityInCart(productId: string): number {
+    return this.cartService.getProductQuantity(productId);
+  }
+
+  /**
+   * ✅ Maneja agregar producto al carrito con toda la lógica
+   */
+  handleAddToCart(productId: string): void {
+    console.log('🛒 Intentando agregar al carrito:', productId);
+
+    // 1️⃣ Verificar autenticación
+    if (!this.authService.isAuthenticated() || !this.authService.hasValidToken()) {
+      console.warn('❌ Usuario NO autenticado');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // 2️⃣ Verificar si ya está en el carrito
+    if (this.cartService.isProductInCart(productId)) {
+      console.warn('⚠️ El producto ya está en el carrito');
+      // Opcionalmente: navegar al carrito o mostrar mensaje
+      alert('Este producto ya está en tu carrito. Ve al carrito para modificar la cantidad.');
+      this.router.navigate(['/cart']);
+      return;
+    }
+
+    // 3️⃣ Obtener información del producto
+    const products = this.dataApi()?.data || [];
+    const product = products.find(p => p.id === productId);
+
+    if (!product) {
+      console.error('❌ Producto no encontrado');
+      return;
+    }
+
+    // 4️⃣ Validar disponibilidad
+    if (!product.isAvailable || product.stock <= 0) {
+      console.warn('⚠️ Producto no disponible');
+      alert(`Lo sentimos, "${product.name}" no está disponible en este momento.`);
+      return;
+    }
+
+    // 5️⃣ Agregar al carrito
+    this.addToCart(productId, product.name);
+  }
+
+  // ========== MÉTODOS PRIVADOS - CART ==========
+
+  /**
+   * Agrega un producto al carrito
+   */
+  private addToCart(productId: string, productName: string): void {
+    this.cartService.addToCart({
+      productId,
+      quantity: 1,
+      note: `Agregado desde catálogo: ${productName}`
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (response) => {
+        console.log('✅ Producto agregado al carrito:', response.message);
+        
+        // Opcionalmente: mostrar notificación o navegar
+        const shouldGoToCart = confirm(
+          `"${productName}" se agregó al carrito.\n\n¿Quieres ir al carrito?`
+        );
+        
+        if (shouldGoToCart) {
+          this.router.navigate(['/cart']);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error al agregar al carrito:', error);
+        const errorMessage = error?.error?.message || 'No se pudo agregar el producto al carrito';
+        alert(errorMessage);
+      }
+    });
+  }
+
   // ========== MÉTODOS PÚBLICOS - FILTROS ==========
 
   onPageChange(event: PaginationEvent): void {
@@ -361,26 +457,6 @@ export class Products implements OnInit {
       this.loadSubCategoriesByCategory(categoryId);
     }
   }
-
-  handleAddToCart(productId: string): void {
-  console.log('Agregar al carrito:', productId);
-  
-  // Verificar autenticación primero
-  if (!this.authService.isAuthenticated() || !this.authService.hasValidToken()) {
-    console.warn('❌ Usuario NO autenticado');
-    this.router.navigate(['/login']);
-    return;
-  }
-
-  // TODO: Implementar lógica del carrito
-  const products = this.dataApi()?.data || [];
-  const product = products.find(p => p.id === productId);
-  
-  if (product) {
-    console.log('✅ Producto a agregar al carrito:', product.name, product.price);
-    // Aquí irá la llamada al servicio del carrito
-  }
-}
 
   // ========== MÉTODOS PRIVADOS ==========
 
