@@ -24,13 +24,13 @@ export class Search {
   private readonly whatsappMessage = 'Hola! Quisiera agendar un turno';
 
   // Contador del carrito
-  cartItemCount = this.cartService.totalItems;
+ /*  cartItemCount = this.cartService.totalItems; */
   isAuthenticated = this.authService.isAuthenticated;
   isUserMenuOpen = signal(false);
   private readonly wishlistService = inject(WishlistService);
-  
-  private readonly whatsappNumber = '5493534015655';
-  private readonly whatsappMessage = 'Hola! Quisiera agendar un turno';
+
+/*   private readonly whatsappNumber = '5493534015655';
+  private readonly whatsappMessage = 'Hola! Quisiera agendar un turno'; */
 
   // ========== SIGNALS ==========
   readonly searchSuggestions = signal<SearchSuggestion[]>([]);
@@ -112,7 +112,7 @@ export class Search {
     console.log('Búsqueda realizada:', result.query);
   }
   // ========== ACTIONS ==========
-  readonly actions = computed(() => [
+/*   readonly actions = computed(() => [
     {
       icon: this.icons.favorites,
       label: 'Favoritos',
@@ -148,13 +148,13 @@ export class Search {
       showBadge: false,
       action: () => this.openWhatsApp()
     }
-  ]);
+  ]); */
 
   // ========== MÉTODOS PÚBLICOS ==========
 
-  onSearch(result: { query: string; timestamp: number }): void {
+/*   onSearch(result: { query: string; timestamp: number }): void {
     console.log('🔍 Búsqueda realizada:', result.query);
-  }
+  } */
 
   onSearchPerformed(result: SearchResult): void {
     console.log('🔍 Search performed:', result);
@@ -178,7 +178,7 @@ export class Search {
 
   private loadSuggestions(query: string): void {
     this.isLoading.set(true);
-    
+
     setTimeout(() => {
       const mockSuggestions: SearchSuggestion[] = [
         { id: '1', text: 'Corte de cabello', type: 'service' as const, icon: '✂️' },

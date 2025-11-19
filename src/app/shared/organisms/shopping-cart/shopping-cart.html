@@ -32,10 +32,10 @@
       <!-- Lista de productos -->
       <div class="cart__items">
         @for (item of items(); track item.id) {
-          <article 
-            class="cart-item" 
+          <article
+            class="cart-item"
             [class.cart-item--unavailable]="!isAvailable(item)">
-            
+
             <div class="cart-item__image-container">
               <img
                 [src]="item.product.image"
@@ -65,12 +65,12 @@
                   <p class="cart-item__category">{{ item.product.subcategory }}</p>
                 }
 
-                @if (item.note) {
+<!--                 @if (item.note) {
                   <p class="cart-item__note">
                     <span class="cart-item__note-label">Nota:</span>
                     {{ item.note }}
                   </p>
-                }
+                } -->
 
                 @if (item.product.stock <= 5 && item.product.stock > 0) {
                   <p class="cart-item__stock-warning">
@@ -109,7 +109,7 @@
                         -
                       }
                     </button>
-                    
+
                     <div class="cart-item__qty-display-wrapper">
                       <span class="cart-item__qty-display">
                         {{ item.quantity }}
@@ -121,7 +121,7 @@
                         </div>
                       }
                     </div>
-                    
+
                     <button
                       type="button"
                       class="cart-item__qty-btn"
