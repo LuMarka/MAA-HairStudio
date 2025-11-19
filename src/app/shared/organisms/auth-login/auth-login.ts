@@ -16,6 +16,7 @@ import { finalize } from 'rxjs/operators';
 export class AuthLogin {
   // Usar output() en lugar de @Output()
   readonly goToRegister = output<void>();
+  readonly goToPasswordRecovery = output<void>();
 
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
@@ -83,6 +84,10 @@ export class AuthLogin {
 
   onRegisterClick(): void {
     this.goToRegister.emit();
+  }
+
+  onForgotPasswordClick(): void {
+    this.goToPasswordRecovery.emit();
   }
 
   private redirectAfterLogin(role: string): void {

@@ -257,6 +257,7 @@
     background-color: v.color('green-800');
     color: v.color('white1');
     font-weight: 600;
+    font-size: 1rem;
     padding: v.$spacing-md v.$spacing-md;
     border-radius: v.$borderRadius-lg;
     border: none;
@@ -282,7 +283,7 @@
       width: 200%;
       height: 200%;
       background: rgba(255, 255, 255, 0.1);
-      transform: rotate(45deg);
+      //transform: rotate(45deg);
       transition: all 0.6s ease;
       opacity: 0;
     }
@@ -290,13 +291,14 @@
     &:hover {
       &::before {
         opacity: 1;
-        transform: rotate(45deg) translate(10%, 10%);
+        transform: translate(10%, 10%);
       }
     }
 
     &:focus {
       outline: none;
-      box-shadow: 0 0 0 3px rgba(v.color('accent'), 0.5);
+      box-shadow: 0 0 0 15px rgba(v.color('accent'), 0.5);
+
     }
 
     &:disabled {
