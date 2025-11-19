@@ -3,17 +3,15 @@
 
 .login-template {
   display: flex;
-  align-items: flex-start; // Align to top instead of center
+  align-items: flex-start;
   justify-content: center;
   min-height: 50vh;
   padding: v.$spacing-lg;
-  padding-top: 1.5rem; // Remove top padding as we've increased margin in layout
+  padding-top: 1.5rem;
 
-  @media screen and (max-width: v.$tablet) {
-    padding: v.$spacing-md; // Less padding on smaller screens
-  }
-   @include m.mobile-only {
-    padding-top: 1rem; // Less padding on mobile
+  @include m.mobile-only {
+    padding: v.$spacing-md;
+    padding-top: 1rem;
   }
 
   &__container {
@@ -21,11 +19,11 @@
     max-width: 480px;
     margin: 0 auto;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    border-radius: 12px;
+    border-radius: v.$borderRadius;
     background-color: v.color('surface');
 
-    @media screen and (max-width: v.$mobile) {
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); // Lighter shadow on mobile
+    @include m.mobile-only {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     }
   }
 }

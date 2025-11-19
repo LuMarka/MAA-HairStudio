@@ -4,6 +4,7 @@ import { SearchBar } from '../search-bar/search-bar';
 import { SearchResult } from '../../../core/models/interfaces/SearchResult.interface';
 import { SearchSuggestion } from '../../../core/models/interfaces/SearchSuggestion.interface';
 import { CartService } from '../../../core/services/cart.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 
 
@@ -16,8 +17,16 @@ import { WishlistService } from '../../../core/services/wishlist.service';
 })
 
 export class Search {
-  private readonly router = inject(Router);
+  readonly router = inject(Router);
   private readonly cartService = inject(CartService);
+  readonly authService = inject(AuthService);
+  private readonly whatsappNumber = '5493534015655';
+  private readonly whatsappMessage = 'Hola! Quisiera agendar un turno';
+
+  // Contador del carrito
+  cartItemCount = this.cartService.totalItems;
+  isAuthenticated = this.authService.isAuthenticated;
+  isUserMenuOpen = signal(false);
   private readonly wishlistService = inject(WishlistService);
   
   private readonly whatsappNumber = '5493534015655';
@@ -43,6 +52,65 @@ export class Search {
     whatsapp: '📞'
   };
 
+  get actions(): { icon: string; label: string; action: () => void }[] {
+    return [
+      {
+        icon: this.icons.favorites,
+        label: 'Favoritos',
+        action: () => this.router.navigate(['/wishlist'])
+      },
+      {
+        icon: this.icons.user,
+        label: this.isAuthenticated() ? 'Cuenta' : 'Mi Cuenta',
+        action: () => this.toggleUserMenu()
+      },
+      {
+        icon: this.icons.cart,
+        label: 'Carrito',
+        action: () => this.router.navigate(['/cart'])
+      },
+      {
+        icon: this.icons.whatsapp,
+        label: 'Agendar (WhatsApp)',
+        action: () => this.openWhatsApp()
+      }
+    ];
+  }
+
+  toggleUserMenu(): void {
+    this.isUserMenuOpen.update(open => !open);
+  }
+
+  closeUserMenu(): void {
+    this.isUserMenuOpen.set(false);
+  }
+
+  private handleUserAction(): void {
+    if (this.isAuthenticated()) {
+      // Si está autenticado, cerrar sesión
+      this.authService.logout().subscribe({
+        next: () => {
+          console.log('Sesión cerrada exitosamente');
+          this.closeUserMenu();
+          this.router.navigate(['/login']);
+        },
+        error: (err) => {
+          console.error('Error al cerrar sesión:', err);
+        },
+      });
+    } else {
+      // Si no está autenticado, ir al login
+      this.router.navigate(['/login']);
+    }
+  }
+
+  logout(): void {
+    this.handleUserAction();
+  }
+
+  onSearch(result: { query: string; timestamp: number }): void {
+    console.log('Búsqueda realizada:', result.query);
+  }
   // ========== ACTIONS ==========
   readonly actions = computed(() => [
     {

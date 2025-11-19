@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { AuthLogin } from '../../organisms/auth-login/auth-login';
 import { AuthRegister } from '../../organisms/auth-register/auth-register';
 
@@ -9,16 +9,17 @@ type AuthView = 'login' | 'register';
   standalone: true,
   imports: [AuthLogin, AuthRegister],
   templateUrl: './login-template.html',
-  styleUrl: './login-template.scss'
+  styleUrl: './login-template.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginTemplate {
   activeView = signal<AuthView>('login');
 
-  showLogin() {
+  showLogin(): void {
     this.activeView.set('login');
   }
 
-  showRegister() {
+  showRegister(): void {
     this.activeView.set('register');
   }
 }
