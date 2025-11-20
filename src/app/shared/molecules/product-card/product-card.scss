@@ -169,7 +169,7 @@
   }
 
   &__brand {
-    font-size: 0.875rem;
+    font-size: 1.5rem;
     font-weight: 600;
     color: v.color('secondary');
     margin-bottom: v.$spacing-xs;
@@ -183,7 +183,7 @@
     color: v.color('gray6');
     margin-bottom: v.$spacing-xs;
     transition: color 0.3s ease;
-    cursor: pointer; // Agregar cursor pointer para indicar clickeable
+    cursor: pointer;
 
     &:hover {
       color: v.color('accent'); // Cambiar color en hover
@@ -191,7 +191,7 @@
   }
 
   &__description {
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 300;
     color: v.color('gray4');
     margin-bottom: v.$spacing-sm;
