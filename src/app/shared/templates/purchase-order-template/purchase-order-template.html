@@ -313,7 +313,7 @@
               <div class="summary-totals">
                 <div class="total-row">
                   <span>Subtotal:</span>
-                  <span>${{ cartTotal().toFixed(2) }}</span>
+                  <span>${{ subtotal().toFixed(2) }}</span>
                 </div>
                 <div class="total-row">
                   <span>Envío:</span>
@@ -327,11 +327,11 @@
                 </div>
                 <div class="total-row">
                   <span>IVA (21%):</span>
-                  <span>${{ (cartTotal() * 0.21).toFixed(2) }}</span>
+                  <span>${{ ivaAmount().toFixed(2) }}</span>
                 </div>
                 <div class="total-row total-row--final">
                   <span>Total:</span>
-                  <span>${{ (cartTotal() * 1.21).toFixed(2) }}</span>
+                  <span>${{ totalWithIva().toFixed(2) }}</span>
                 </div>
               </div>
 
@@ -547,7 +547,7 @@
                 <div class="order-totals">
                   <div class="total-line">
                     <span>Subtotal:</span>
-                    <span>${{ cartTotal().toFixed(2) }}</span>
+                    <span>${{ subtotal().toFixed(2) }}</span>
                   </div>
                   <div class="total-line">
                     <span>Envío:</span>
@@ -561,11 +561,11 @@
                   </div>
                   <div class="total-line">
                     <span>IVA (21%):</span>
-                    <span>${{ (cartTotal() * 0.21).toFixed(2) }}</span>
+                    <span>${{ ivaAmount().toFixed(2) }}</span>
                   </div>
                   <div class="total-line total-line--final">
                     <span>Total:</span>
-                    <span>${{ (cartTotal() * 1.21).toFixed(2) }}</span>
+                    <span>${{ totalWithIva().toFixed(2) }}</span>
                   </div>
                 </div>
 
@@ -741,7 +741,7 @@
                   <!-- Order totals -->
                   <div class="confirmation-item">
                     <span class="confirmation-item__label">Subtotal:</span>
-                    <span class="confirmation-item__value">${{ cartTotal().toFixed(2) }}</span>
+                    <span class="confirmation-item__value">${{ subtotal().toFixed(2) }}</span>
                   </div>
                   <div class="confirmation-item">
                     <span class="confirmation-item__label">Envío:</span>
@@ -755,11 +755,11 @@
                   </div>
                   <div class="confirmation-item">
                     <span class="confirmation-item__label">IVA (21%):</span>
-                    <span class="confirmation-item__value">${{ (cartTotal() * 0.21).toFixed(2) }}</span>
+                    <span class="confirmation-item__value">${{ ivaAmount().toFixed(2) }}</span>
                   </div>
                   <div class="confirmation-item confirmation-item--total">
                     <span class="confirmation-item__label">Total:</span>
-                    <span class="confirmation-item__value">${{ (cartTotal() * 1.21).toFixed(2) }}</span>
+                    <span class="confirmation-item__value">${{ totalWithIva().toFixed(2) }}</span>
                   </div>
                 </div>
               </div>

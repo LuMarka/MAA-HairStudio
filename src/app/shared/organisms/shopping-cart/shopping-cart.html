@@ -39,7 +39,7 @@
             }
 
             <div class="cart-item__info">
-              <div class="cart-item__details">
+              <div class="cart-item__details cart-item__details--clickable" (click)="goToProductDetail(item.id)">
                 <h3 class="cart-item__name">{{ item.name }}</h3>
                 @if (item.brand) {
                   <p class="cart-item__brand">{{ item.brand }}</p>

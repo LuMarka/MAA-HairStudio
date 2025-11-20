@@ -22,7 +22,7 @@ export class ShoppingCart {
 
   readonly items = computed(() => this.cartService.items());
   readonly totalItems = computed(() => this.cartService.totalItems());
-  readonly cartTotal = computed(() => this.cartService.total());
+  readonly cartTotal = computed(() => this.cartService.total()/1.21);
   readonly isEmpty = computed(() => this.items().length === 0);
 
   readonly tax = computed(() => this.cartTotal() * 0.21);
@@ -91,5 +91,9 @@ export class ShoppingCart {
 
   clearCart(): void {
     this.cartService.clearCart();
+  }
+
+  goToProductDetail(productId: string): void {
+    this.router.navigate(['/details', productId]);
   }
 }
