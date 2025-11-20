@@ -103,7 +103,7 @@ export class ProductCard {
     console.log('💬 ProductCard - Consult Availability:', this.product().id);
     const message = this.generateWhatsAppMessage();
     console.log('📝 Mensaje generado:', message);
-    const phoneNumber = '5492616984285';
+    const phoneNumber = '5493534015655';
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     console.log('🔗 URL de WhatsApp:', whatsappUrl);
     window.open(whatsappUrl, '_blank');
