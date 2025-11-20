@@ -1,4 +1,4 @@
-import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { Datum } from '../../../core/models/interfaces/Product.interface';
 
@@ -27,6 +27,7 @@ export class ProductCard {
   readonly addToCart = output<string>();
   readonly removeFromWishlist = output<string>();
   readonly moveToCart = output<{ productId: string; quantity: number }>();
+  readonly consultAvailability = output<string>();
 
   // ========== COMPUTED - Contexto ==========
   readonly isWishlistContext = computed(() => this.context() === 'wishlist');
@@ -49,6 +50,9 @@ export class ProductCard {
     const price = this.product().price;
     return this.formatPrice(price);
   });
+
+  // ========== COMPUTED - Stock ==========
+  readonly isOutOfStock = computed(() => this.product().stock <= 0);
 
   // ========== TEXTOS ==========
   readonly texts = {
@@ -91,6 +95,31 @@ export class ProductCard {
       productId: this.product().id,
       quantity: 1
     });
+  }
+
+  // ========== MÉTODOS - CONSULTAR DISPONIBILIDAD ==========
+
+  onConsultAvailability(): void {
+    console.log('💬 ProductCard - Consult Availability:', this.product().id);
+    const message = this.generateWhatsAppMessage();
+    console.log('📝 Mensaje generado:', message);
+    const phoneNumber = '5492616984285';
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    console.log('🔗 URL de WhatsApp:', whatsappUrl);
+    window.open(whatsappUrl, '_blank');
+    this.consultAvailability.emit(this.product().id);
+  }
+
+  private generateWhatsAppMessage(): string {
+    const product = this.product();
+    console.log('📦 Producto capturado:', product);
+    console.log('📦 Nombre:', product.name);
+    console.log('📦 Marca:', product.brand);
+    const productName = product.name || 'Producto sin nombre';
+    const productBrand = product.brand || 'Marca no disponible';
+    const message = `Hola, quisiera consultar sobre la disponibilidad del producto: ${productName}. Marca: ${productBrand}`;
+    console.log('✅ Mensaje final:', message);
+    return message;
   }
 
   // ========== MÉTODOS - FORMATO ==========
