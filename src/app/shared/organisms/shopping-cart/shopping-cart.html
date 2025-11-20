@@ -208,16 +208,124 @@
             </span>
           </div>
 
-          <div class="cart-summary__actions">
-            <button
-              type="button"
-              class="cart__btn cart__btn--primary cart__btn--full-width"
-              (click)="proceedToCheckout()"
-              [disabled]="isEmpty()">
-              <span class="cart__btn-text">Finalizar compra</span>
-              <span class="cart__btn-icon">→</span>
-            </button>
+          <!-- Sección de checkout -->
+          <div class="cart-summary__checkout">
+            @if (!showDeliveryOptions()) {
+              <!-- Botón inicial de finalizar compra -->
+              <button
+                type="button"
+                class="cart__btn cart__btn--primary cart__btn--full-width"
+                (click)="onStartCheckout()"
+                [disabled]="isEmpty()">
+                <span class="cart__btn-text">Finalizar compra</span>
+                <span class="cart__btn-icon">→</span>
+              </button>
+            } @else {
+              <!-- Opciones de entrega -->
+              <div class="delivery-selection">
+                <div class="delivery-selection__header">
+                  <h4 class="delivery-selection__title">¿Cómo quieres recibir tu pedido?</h4>
+                  <p class="delivery-selection__subtitle">Selecciona una opción para continuar</p>
+                </div>
 
+                <div class="delivery-selection__options">
+                  <!-- Opción: Envío a domicilio -->
+                  <label
+                    class="delivery-option"
+                    [class.delivery-option--selected]="selectedDeliveryOption() === 'delivery'">
+                    <input
+                      type="radio"
+                      name="deliveryOption"
+                      value="delivery"
+                      [checked]="selectedDeliveryOption() === 'delivery'"
+                      (change)="onSelectDeliveryOption('delivery')"
+                      class="delivery-option__input">
+
+                    <div class="delivery-option__content">
+                      <div class="delivery-option__icon">🚚</div>
+                      <div class="delivery-option__text">
+                        <span class="delivery-option__title">Envío a domicilio</span>
+                        <span class="delivery-option__subtitle">Costo a convenir</span>
+                        <span class="delivery-option__description">
+                          Te cotizaremos el envío según tu ubicación
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="delivery-option__check">
+                      @if (selectedDeliveryOption() === 'delivery') {
+                        ✓
+                      }
+                    </div>
+                  </label>
+
+                  <!-- Opción: Retiro en tienda -->
+                  <label
+                    class="delivery-option"
+                    [class.delivery-option--selected]="selectedDeliveryOption() === 'pickup'">
+                    <input
+                      type="radio"
+                      name="deliveryOption"
+                      value="pickup"
+                      [checked]="selectedDeliveryOption() === 'pickup'"
+                      (change)="onSelectDeliveryOption('pickup')"
+                      class="delivery-option__input">
+
+                    <div class="delivery-option__content">
+                      <div class="delivery-option__icon">🏪</div>
+                      <div class="delivery-option__text">
+                        <span class="delivery-option__title">Retiro en tienda</span>
+                        <span class="delivery-option__subtitle">Gratis</span>
+                        <span class="delivery-option__description">
+                          Retira en nuestro local en La Plata
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="delivery-option__check">
+                      @if (selectedDeliveryOption() === 'pickup') {
+                        ✓
+                      }
+                    </div>
+                  </label>
+                </div>
+
+                <!-- Confirmación de selección -->
+                @if (selectedDeliveryOption()) {
+                  <div class="delivery-confirmation">
+                    <div class="delivery-confirmation__content">
+                      <span class="delivery-confirmation__icon">✅</span>
+                      <div class="delivery-confirmation__text">
+                        <strong>{{ deliveryText() }}</strong>
+                        <span class="delivery-confirmation__detail">
+                          {{ deliverySubtext() }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                <!-- Botones de acción -->
+                <div class="delivery-selection__actions">
+                  <button
+                    type="button"
+                    class="cart__btn cart__btn--secondary"
+                    (click)="onCancelDeliverySelection()">
+                    ← Volver
+                  </button>
+
+                  <button
+                    type="button"
+                    class="cart__btn cart__btn--primary"
+                    [disabled]="!selectedDeliveryOption()"
+                    (click)="onProceedToCheckout()">
+                    Continuar →
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- Botón secundario -->
             <button
               type="button"
               class="cart__btn cart__btn--ghost cart__btn--full-width"
@@ -230,7 +338,7 @@
     </div>
 
     <!-- Paginador -->
-
+    @if (meta()) {
       <div class="cart__pagination">
         <app-paginator
           [meta]="meta()!"
@@ -241,6 +349,7 @@
           (pageChange)="onPageChange($event)"
         />
       </div>
+    }
 
     <div class="cart__footer">
       <button

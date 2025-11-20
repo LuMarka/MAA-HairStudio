@@ -1,6 +1,6 @@
 import { Component, input, output, ChangeDetectionStrategy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CartService } from '../../../core/services/cartOld.service';
+/* import { CartService } from '../../../core/services/cartOld.service'; */
 import { inject } from '@angular/core';
 
 interface CartItem {
@@ -43,13 +43,13 @@ export class PurchaseOrderSummary {
   readonly finalizeOrder = output<void>();
 
   // Services
-  private readonly cartService = inject(CartService);
+  /* private readonly cartService = inject(CartService); */
 
   // Computed signals
-  readonly cartItems = computed(() => this.cartService.items());
-  readonly cartTotal = computed(() => this.cartService.total());
+  /* readonly cartItems = computed(() => this.cartService.items());
+  readonly cartTotal = computed(() => this.cartService.total()); */
 
-  readonly subtotal = computed(() => this.cartTotal());
+  /* readonly subtotal = computed(() => this.cartTotal()); */
 
   readonly shipping = computed(() => {
     const data = this.orderData();
@@ -65,19 +65,19 @@ export class PurchaseOrderSummary {
     return data.deliveryOption === 'pickup' ? 'Retiro en tienda (gratis)' : 'A convenir';
   });
 
-  readonly tax = computed(() => this.subtotal() * 0.21);
+ /*  readonly tax = computed(() => this.subtotal() * 0.21);
 
   readonly total = computed(() => {
     const shipping = this.shipping();
     const subtotal = this.subtotal();
-    const tax = this.tax();
+    const tax = this.tax(); */
 
-    if (shipping === null) {
+   /*  if (shipping === null) {
       return subtotal + tax;
     }
 
     return subtotal + shipping + tax;
-  });
+  }); */
 
   readonly estimatedDelivery = computed(() => {
     const data = this.orderData();
@@ -114,8 +114,8 @@ export class PurchaseOrderSummary {
   readonly isOrderValid = computed(() => {
     const data = this.orderData();
     const method = this.paymentMethod();
-    const items = this.cartItems();
-    return !!(data && method && items.length > 0);
+    /* const items = this.cartItems(); */
+    /* return !!(data && method && items.length > 0); */
   });
 
   onEditCart(): void {

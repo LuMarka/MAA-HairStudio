@@ -186,7 +186,7 @@ export interface OrderMeta {
 /**
  * Tipos de entrega
  */
-export type DeliveryType = 'tienda' | 'casa';
+export type DeliveryType = 'pickup' | 'delivery';
 
 /**
  * Estados de la orden
@@ -247,12 +247,96 @@ export function isHomeDeliveryOrder(order: OrderData): order is OrderData & {
   shippingAddress: OrderShippingAddress;
   shippingSnapshot: OrderShippingSnapshot;
 } {
-  return order.deliveryType === 'casa' && order.shippingAddress !== null;
+  return order.deliveryType === 'delivery' && order.shippingAddress !== null;
 }
 
 export function isStorePickupOrder(order: OrderData): order is OrderData & {
   shippingAddress: null;
   shippingSnapshot: null;
 } {
-  return order.deliveryType === 'tienda';
+  return order.deliveryType === 'pickup';
+}
+
+/**
+ * Respuesta de lista de órdenes
+ */
+export interface OrderListResponse {
+  success: boolean;
+  message: string;
+  data: OrderData[];
+  meta: OrderListMeta;
+}
+
+/**
+ * Metadata de lista de órdenes
+ */
+export interface OrderListMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  filters?: {
+    status?: OrderStatus;
+    paymentStatus?: PaymentStatus;
+    userId?: string;
+    startDate?: string;
+    endDate?: string;
+  };
+}
+
+/**
+ * Parámetros de consulta para órdenes
+ */
+export interface OrderQueryParams {
+  page?: number;
+  limit?: number;
+  status?: OrderStatus;
+  paymentStatus?: PaymentStatus;
+  userId?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+/**
+ * DTO para establecer costo de envío
+ */
+export interface SetShippingCostDto {
+  shippingCost: number;
+  shippingNotes?: string;
+}
+
+/**
+ * DTO para confirmar orden
+ */
+export interface ConfirmOrderDto {
+  confirm: boolean;
+}
+
+/**
+ * DTO para actualizar estado de orden
+ */
+export interface UpdateOrderStatusDto {
+  status: OrderStatus;
+  paymentStatus?: PaymentStatus;
+  notes?: string;
+}
+
+/**
+ * Respuesta de estadísticas
+ */
+export interface OrderStatisticsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    totalOrders: number;
+    ordersByStatus: Record<string, number>;
+    revenue: {
+      total: number;
+      currency: string;
+    };
+    periods: {
+      today: number;
+      thisMonth: number;
+    };
+  };
 }
