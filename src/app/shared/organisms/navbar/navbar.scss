@@ -61,11 +61,22 @@
     }
   }
 
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-md;
+    flex-shrink: 0;
+    z-index: 11;
+
+    @include mixins.mobile-only() {
+      gap: vars.$spacing-sm;
+    }
+  }
+
   &__mobile-toggle {
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    z-index: 11;
 
     @include mixins.tablet-up() {
       display: none;

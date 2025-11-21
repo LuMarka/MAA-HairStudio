@@ -56,6 +56,19 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
   /* readonly cartItems = computed(() => this.cartService.items());
   readonly cartTotal = computed(() => this.cartService.total()); */
 
+  readonly subtotal = computed(() => {
+    const total = this.cartTotal();
+    return total / 1.21; // Descontar el IVA del total
+  });
+
+  readonly ivaAmount = computed(() => {
+    return this.subtotal() * 0.21; // 21% de IVA
+  });
+
+  readonly totalWithIva = computed(() => {
+    return this.subtotal() + this.ivaAmount();
+  });
+
   readonly deliveryOptionText = computed(() => {
     return this.selectedDeliveryOption() === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio';
   });
@@ -331,10 +344,10 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
     this.orderSent.set(true);
     /* this.cartService.clearCart(); */
 
-    // Auto redirect after 5 seconds
+    // Auto redirect after 60 seconds
     setTimeout(() => {
       this.router.navigate(['/']);
-    }, 15000);
+    }, 60000);
   }
 
   onBackToHome(): void {

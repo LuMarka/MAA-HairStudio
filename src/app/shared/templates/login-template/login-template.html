@@ -1,10 +1,17 @@
 
+
 <div class="login-template">
   <div class="login-template__container">
     @if (activeView() === 'login') {
-      <app-auth-login (goToRegister)="showRegister()"></app-auth-login>
-    } @else {
+      <app-auth-login
+        (goToRegister)="showRegister()"
+        (goToPasswordRecovery)="showPasswordRecovery()">
+      </app-auth-login>
+    } @else if (activeView() === 'register') {
       <app-auth-register (goToLogin)="showLogin()"></app-auth-register>
+    } @else if (activeView() === 'password-recovery') {
+      <app-password-recovery (goToLogin)="showLogin()"></app-password-recovery>
     }
   </div>
 </div>
+

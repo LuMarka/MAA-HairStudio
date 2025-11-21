@@ -10,6 +10,7 @@ export interface DatumCategory {
   id: string;
   name: string;
   description: string;
+  shortDescription: string; //lalalaal
   slug: string | null;
   image?: string;
   icon: Icon;

@@ -99,9 +99,175 @@
       position: relative;
     }
 
+    &--user {
+      padding: v.$spacing-xs v.$spacing-sm;
+      min-width: auto;
+      height: auto;
+
+      &:hover {
+        background: rgba(v.color('primary'), 0.1);
+      }
+    }
+
     @include m.tablet-up {
       min-width: 40px;
       height: 40px;
+    }
+  }
+
+  &__user-info {
+    display: flex;
+    align-items: center;
+    gap: v.$spacing-xs;
+  }
+
+  &__user-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+
+    @include m.tablet-up {
+      font-size: 1.25rem;
+    }
+  }
+
+  &__user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    @include m.mobile-only {
+      display: none;
+    }
+  }
+
+  &__user-greeting {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: v.color('text-muted');
+    margin: 0;
+    letter-spacing: 0.3px;
+    font-family: v.$font-family-secondary;
+    text-transform: uppercase;
+  }
+
+  &__user-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: v.color('primary');
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: capitalize;
+    font-family: v.$font-family-primary;
+    max-width: 120px;
+  }
+
+  &__user-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  &__user-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: v.$spacing-xs;
+    background-color: v.color('surface');
+    border: 1px solid v.color('gray0');
+    border-radius: v.$borderRadius-sm;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transition: all v.$transitionDuration v.$transitionEasing;
+    z-index: 1000;
+    min-width: 160px;
+    animation: slideDown 0.2s v.$transitionEasing forwards;
+  }
+
+  &__user-wrapper--open &__user-menu {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  &__user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: v.$spacing-sm;
+    width: 100%;
+    padding: v.$spacing-md v.$spacing-lg;
+    background: none;
+    border: none;
+    color: v.color('text-primary');
+    cursor: pointer;
+    font-size: v.$font-size-sm;
+    font-weight: 600;
+    font-family: v.$font-family-secondary;
+    transition: all v.$transitionDuration v.$transitionEasing;
+    border-left: 3px solid transparent;
+    text-align: left;
+
+    svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background-color: rgba(114, 143, 112, 0.05);
+      border-left-color: v.color('primary');
+    }
+
+    &:active {
+      background-color: rgba(114, 143, 112, 0.1);
+    }
+
+    &:focus {
+      outline: none;
+      background-color: rgba(114, 143, 112, 0.05);
+      border-left-color: v.color('primary');
+    }
+
+    &--logout {
+      color: v.color('error');
+
+      svg {
+        color: v.color('error');
+      }
+
+      &:hover {
+        background-color: rgba(220, 38, 38, 0.1);
+        border-left-color: v.color('error');
+        color: v.color('error');
+      }
+
+      &:active {
+        background-color: rgba(220, 38, 38, 0.15);
+      }
+
+      &:focus {
+        outline: none;
+        background-color: rgba(220, 38, 38, 0.1);
+        border-left-color: v.color('error');
+      }
+    }
+
+    @include m.mobile-only {
+      padding: v.$spacing-md v.$spacing-md;
+      font-size: 0.8125rem;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 

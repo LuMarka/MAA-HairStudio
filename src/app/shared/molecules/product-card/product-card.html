@@ -30,12 +30,12 @@
 
   <div class="product-card__content">
     <p class="product-card__brand">{{ product().brand }}</p>
-    <p class="product-card__brand">Disponible: {{ product().stock }}</p>
+   <!-- <p class="product-card__brand">Disponible: {{ product().stock }}</p> -->
     <h3 class="product-card__name">{{ product().name }}</h3>
-    <p class="product-card__description">{{ product().description }}</p>
+    <p class="product-card__description">{{ product().shortDescription }}</p>
 
     <div class="product-card__footer">
-      <span class="product-card__price">${{ product().price }}</span>
+      <span class="product-card__price">${{ formattedPrice() }}</span>
 
       <div class="product-card__actions">
         @if (isWishlistContext()) {
@@ -63,6 +63,10 @@
         <button type="button" class="product-card__button product-card__button--primary product-card__button--in-cart"
           (click)="onAddToCart()">
           ✓ En carrito ({{ cartQuantity() }})
+        </button>
+        } @else if (isOutOfStock()) {
+        <button type="button" class="product-card__button product-card__button--secondary" (click)="onConsultAvailability()">
+          📞 Consultar Disponibilidad
         </button>
         } @else if (product().stock > 0) {
         <button type="button" class="product-card__button product-card__button--primary" (click)="onAddToCart()"

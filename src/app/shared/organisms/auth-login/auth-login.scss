@@ -87,6 +87,10 @@
 
   &__checkbox-wrapper {
     margin: 0.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
   }
 
   &__checkbox {
@@ -99,6 +103,20 @@
 
   &__checkbox-label {
     color: v.color('text-dark');
+  }
+
+  &__forgot-password {
+    color: v.color('primary');
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s;
+
+    &:hover {
+      color: color.adjust(v.color('primary'), $lightness: -10%);
+      text-decoration: underline;
+    }
   }
 
   &__btn {

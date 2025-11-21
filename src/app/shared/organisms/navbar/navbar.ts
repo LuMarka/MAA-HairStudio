@@ -1,4 +1,4 @@
-import { Component, HostListener, signal } from '@angular/core';
+import { Component, HostListener, signal, ChangeDetectionStrategy } from '@angular/core';
 import { NavItem } from '../../../core/models/interfaces/NavItem.interface';
 import { Logo } from "../../molecules/logo/logo";
 import { NavMenu } from "../../molecules/nav-menu/nav-menu";
@@ -9,7 +9,8 @@ import { MenuToggle } from "../../molecules/menu-toggle/menu-toggle";
   standalone: true,
   imports: [Logo, NavMenu, MenuToggle],
   templateUrl: './navbar.html',
-  styleUrl: './navbar.scss'
+  styleUrl: './navbar.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Navbar {
   isScrolled = signal(false);

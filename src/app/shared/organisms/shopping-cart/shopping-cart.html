@@ -32,10 +32,10 @@
       <!-- Lista de productos -->
       <div class="cart__items">
         @for (item of items(); track item.id) {
-          <article 
-            class="cart-item" 
+          <article
+            class="cart-item"
             [class.cart-item--unavailable]="!isAvailable(item)">
-            
+
             <div class="cart-item__image-container">
               <img
                 [src]="item.product.image"
@@ -51,26 +51,18 @@
             </div>
 
             <div class="cart-item__info">
-              <div class="cart-item__details">
-                <h3 class="cart-item__name">{{ item.product.name }}</h3>
-
-                <div class="cart-item__meta">
-                  <span class="cart-item__brand">{{ item.product.brand }}</span>
-                  @if (item.product.volume) {
-                    <span class="cart-item__volume">{{ item.product.volume }}</span>
-                  }
-                </div>
-
-                @if (item.product.subcategory) {
-                  <p class="cart-item__category">{{ item.product.subcategory }}</p>
+              <div class="cart-item__details cart-item__details--clickable" (click)="goToProductDetail(item.id)">
+                <h3 class="cart-item__name">{{ item.name }}</h3>
+                @if (item.brand) {
+                  <p class="cart-item__brand">{{ item.brand }}</p>
                 }
 
-                @if (item.note) {
+<!--                 @if (item.note) {
                   <p class="cart-item__note">
                     <span class="cart-item__note-label">Nota:</span>
                     {{ item.note }}
                   </p>
-                }
+                } -->
 
                 @if (item.product.stock <= 5 && item.product.stock > 0) {
                   <p class="cart-item__stock-warning">
@@ -109,7 +101,7 @@
                         -
                       }
                     </button>
-                    
+
                     <div class="cart-item__qty-display-wrapper">
                       <span class="cart-item__qty-display">
                         {{ item.quantity }}
@@ -121,7 +113,7 @@
                         </div>
                       }
                     </div>
-                    
+
                     <button
                       type="button"
                       class="cart-item__qty-btn"
