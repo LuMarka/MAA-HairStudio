@@ -1,41 +1,44 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
-export const adminGuard: CanActivateFn = (): Observable<boolean> => {
+export const adminGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (!authService.hasValidToken()) {
-    router.navigate(['/login']);
-    return of(false);
-  }
-
-  if (authService.isAuthenticated() && authService.isAdmin()) {
-    return of(true);
-  }
-
-  return authService.verifyToken().pipe(
-    map(response => {
-      if (response.valid && response.user.role === 'admin') {
-        return true;
-      }
-
-      // Si es un usuario válido pero no admin, redirigir al home
-      if (response.valid) {
-        router.navigate(['/']);
-        return false;
-      }
-
-      // Si no es válido, redirigir al login
-      router.navigate(['/login']);
+  // Verificar si está autenticado y es admin
+  if (authService.isCurrentlyAuthenticated()) {
+    const user = authService.currentUser();
+    
+    if (user?.role === 'admin') {
+      return true;
+    } else {
+      router.navigate(['/']);
       return false;
-    }),
-    catchError(() => {
-      router.navigate(['/login']);
-      return of(false);
-    })
-  );
+    }
+  }
+
+  // Si hay token válido pero no usuario cargado, verificar con servidor
+  if (authService.hasValidToken()) {
+    return authService.verifyToken().pipe(
+      map(() => {
+        const user = authService.currentUser();
+        if (user?.role === 'admin') {
+          return true;
+        } else {
+          router.navigate(['/']);
+          return false;
+        }
+      }),
+      catchError(() => {
+        router.navigate(['/login']);
+        return of(false);
+      })
+    );
+  }
+
+  router.navigate(['/login']);
+  return false;
 };

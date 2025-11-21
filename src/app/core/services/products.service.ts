@@ -176,9 +176,41 @@ export class ProductsService {
 
   /**
    * 11. Obtener Producto por ID
+   * 
+   * @param id - UUID del producto
+   * @returns Observable con la respuesta de la API que incluye el producto completo
+   * @example
+   * ```typescript
+   * this.productsService.getProductById('123e4567-e89b-12d3-a456-426614174000')
+   *   .subscribe({
+   *     next: (response) => {
+   *       if (response.success) {
+   *         console.log('Producto:', response.data);
+   *       }
+   *     },
+   *     error: (error) => {
+   *       console.error('Error al obtener producto:', error);
+   *     }
+   *   });
+   * ```
    */
-  getProductById(id: string): Observable<{ success: boolean; message: string; data: Product }> {
-    return this.http.get<{ success: boolean; message: string; data: Product }>(`${this.apiUrl}${id}`);
+  getProductById(id: string): Observable<{ 
+    success: boolean; 
+    message: string; 
+    data: Product;
+    statusCode?: number;
+    error?: string;
+  }> {
+    this._loading.set(true);
+    this._error.set(null);
+    
+    return this.http.get<{ 
+      success: boolean; 
+      message: string; 
+      data: Product;
+      statusCode?: number;
+      error?: string;
+    }>(`${this.apiUrl}${id}`);
   }
 
   /**

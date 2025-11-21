@@ -11,6 +11,7 @@ export interface Datum {
   name: string;
   slug: string;
   description: string;
+  shortDescription: string; //lalalalal
   displayOrder: number;
   color: Color;
   icon: Icon;

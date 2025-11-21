@@ -1,6 +1,6 @@
 import { Component, input, output, ChangeDetectionStrategy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CartService } from '../../../core/services/cart.service';
+import { CartService } from '../../../core/services/cartOld.service';
 import { inject } from '@angular/core';
 
 interface CartItem {

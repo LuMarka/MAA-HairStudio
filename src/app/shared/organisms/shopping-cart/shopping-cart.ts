@@ -1,20 +1,19 @@
-import { Component, ChangeDetectionStrategy, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 import { inject } from '@angular/core';
-import { CartService } from '../../../core/services/cart.service';
-
-type DeliveryOption = 'delivery' | 'pickup';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { Paginator, PaginationEvent } from '../../molecules/paginator/paginator';
+import type { CartInterface, Datum } from '../../../core/models/interfaces/cart.interface';
 
 @Component({
   selector: 'app-shopping-cart',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [Paginator],
   templateUrl: './shopping-cart.html',
-  styleUrl: './shopping-cart.scss'
+  styleUrl: './shopping-cart.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShoppingCart {
-  private readonly cartService = inject(CartService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
   readonly showDeliveryOptions = signal(false);
@@ -23,74 +22,173 @@ export class ShoppingCart {
   readonly items = computed(() => this.cartService.items());
   readonly totalItems = computed(() => this.cartService.totalItems());
   readonly cartTotal = computed(() => this.cartService.total()/1.21);
+  // ========== INPUTS ==========
+  readonly dataApi = input<CartInterface | null>();
+  readonly isProcessing = input<boolean>(false);
+  readonly processingItemId = input<string | null>(null); // ✅ NUEVO: ID del item siendo procesado
+
+  // ========== OUTPUTS ==========
+  readonly paginated = output<PaginationEvent>();
+  readonly itemRemoved = output<string>();
+  readonly quantityIncreased = output<string>();
+  readonly quantityDecreased = output<string>();
+  readonly cartCleared = output<void>();
+  readonly checkoutInitiated = output<void>();
+  readonly shoppingContinued = output<void>();
+
+  // ========== COMPUTED - Data ==========
+  readonly cartData = computed(() => this.dataApi());
+  readonly items = computed(() => this.cartData()?.data ?? []);
+  readonly summary = computed(() => this.cartData()?.summary ?? null);
+  readonly meta = computed(() => this.cartData()?.meta ?? null);
+
+  // ========== COMPUTED - Estado ==========
   readonly isEmpty = computed(() => this.items().length === 0);
+  readonly hasItems = computed(() => this.items().length > 0);
 
-  readonly tax = computed(() => this.cartTotal() * 0.21);
-  readonly totalWithTax = computed(() => this.cartTotal() + this.tax());
+  // ========== COMPUTED - Resumen ==========
+  readonly totalItems = computed(() => this.summary()?.totalItems ?? 0);
+  readonly totalQuantity = computed(() => this.summary()?.totalQuantity ?? 0);
+  readonly subtotal = computed(() => this.summary()?.subtotal ?? 0);
+  readonly totalDiscount = computed(() => this.summary()?.totalDiscount ?? 0);
+  readonly totalAmount = computed(() => this.summary()?.totalAmount ?? 0);
+  readonly estimatedTax = computed(() => this.summary()?.estimatedTax ?? 0);
+  readonly estimatedShipping = computed(() => this.summary()?.estimatedShipping ?? 0);
+  readonly estimatedTotal = computed(() => this.summary()?.estimatedTotal ?? 0);
 
-  readonly deliveryText = computed(() => {
-    const option = this.selectedDeliveryOption();
-    if (!option) return '';
-    return option === 'delivery' ? 'Envío a domicilio' : 'Retiro en tienda';
-  });
+  // ========== COMPUTED - UI ==========
+  readonly hasUnavailableItems = computed(() =>
+    this.items().some(item => !this.isAvailable(item))
+  );
 
-  readonly deliverySubtext = computed(() => {
-    const option = this.selectedDeliveryOption();
-    if (!option) return '';
-    return option === 'delivery' ? 'Costo a convenir' : 'Sin costo adicional';
-  });
+  // ========== MÉTODOS PÚBLICOS - PAGINACIÓN ==========
 
-  removeItem(itemId: string): void {
-    this.cartService.removeItem(itemId);
+  /**
+   * Maneja el cambio de página
+   */
+  onPageChange(event: PaginationEvent): void {
+    this.paginated.emit(event);
   }
 
-  updateQuantity(itemId: string, quantity: number): void {
-    this.cartService.updateQuantity(itemId, quantity);
+  // ========== MÉTODOS PÚBLICOS - CART ==========
+
+  /**
+   * Elimina un item del carrito
+   */
+  removeItem(item: Datum): void {
+    if (!this.verifyAuthentication()) return;
+    if (this.isProcessing()) return;
+    this.itemRemoved.emit(item.product.id);
   }
 
-  increaseQuantity(itemId: string): void {
-    const item = this.items().find(i => i.id === itemId);
-    if (item) {
-      this.updateQuantity(itemId, item.quantity + 1);
+  /**
+   * Incrementa la cantidad de un producto
+   */
+  increaseQuantity(item: Datum): void {
+    if (!this.verifyAuthentication()) return;
+    if (this.isProcessingItem(item.product.id)) return;
+
+    if (item.quantity >= item.product.stock) {
+      alert(`Stock máximo disponible: ${item.product.stock}`);
+      return;
     }
+
+    this.quantityIncreased.emit(item.product.id);
   }
 
-  decreaseQuantity(itemId: string): void {
-    const item = this.items().find(i => i.id === itemId);
-    if (item && item.quantity > 1) {
-      this.updateQuantity(itemId, item.quantity - 1);
+  /**
+   * Decrementa la cantidad de un producto
+   */
+  decreaseQuantity(item: Datum): void {
+    if (!this.verifyAuthentication()) return;
+    if (this.isProcessingItem(item.product.id)) return;
+
+    if (item.quantity <= 1) {
+      console.warn('⚠️ Cantidad mínima alcanzada (1)');
+      return;
     }
+
+    this.quantityDecreased.emit(item.product.id);
   }
 
-  onStartCheckout(): void {
-    this.showDeliveryOptions.set(true);
-  }
-
-  onSelectDeliveryOption(option: DeliveryOption): void {
-    this.selectedDeliveryOption.set(option);
-  }
-
-  onProceedToCheckout(): void {
-    const deliveryOption = this.selectedDeliveryOption();
-    if (!deliveryOption) return;
-
-    // Navegar al purchase-order con la opción seleccionada
-    this.router.navigate(['/purchase-order'], {
-      queryParams: { deliveryOption }
-    });
-  }
-
-  onCancelDeliverySelection(): void {
-    this.showDeliveryOptions.set(false);
-    this.selectedDeliveryOption.set(null);
-  }
-
-  continueShopping(): void {
-    this.router.navigate(['/products']);
-  }
-
+  /**
+   * Limpia todo el carrito
+   */
   clearCart(): void {
-    this.cartService.clearCart();
+    if (this.isEmpty()) return;
+    if (!this.verifyAuthentication()) return;
+    if (this.isProcessing()) return;
+
+    if (!confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
+      return;
+    }
+
+    this.cartCleared.emit();
+  }
+
+  // ========== MÉTODOS PÚBLICOS - CHECKOUT ==========
+
+  /**
+   * Procede al checkout
+   */
+  proceedToCheckout(): void {
+    if (this.isEmpty()) return;
+    if (!this.verifyAuthentication()) return;
+    if (this.isProcessing()) return;
+
+    this.checkoutInitiated.emit();
+  }
+
+  /**
+   * Continúa comprando
+   */
+  continueShopping(): void {
+    this.shoppingContinued.emit();
+  }
+
+  // ========== MÉTODOS AUXILIARES ==========
+
+  formatPrice(price: number): string {
+    return price.toFixed(2);
+  }
+
+  hasDiscount(item: Datum): boolean {
+    return item.isOnSale && item.product.originalPrice > item.product.finalPrice;
+  }
+
+  getDiscountPercentage(item: Datum): string {
+    return item.product.discountPercentage;
+  }
+
+  isAvailable(item: Datum): boolean {
+    return item.product.isAvailable && item.product.stock > 0;
+  }
+
+  // ✅ NUEVO: Verifica si se puede disminuir
+  canDecrease(item: Datum): boolean {
+    return item.quantity > 1 && !this.isProcessingItem(item.product.id);
+  }
+
+  // ✅ NUEVO: Verifica si se puede aumentar
+  canIncrease(item: Datum): boolean {
+    return item.quantity < item.product.stock && 
+           this.isAvailable(item) && 
+           !this.isProcessingItem(item.product.id);
+  }
+
+  // ✅ NUEVO: Verifica si un item específico está siendo procesado
+  isProcessingItem(productId: string): boolean {
+    return this.processingItemId() === productId;
+  }
+
+  // ========== MÉTODOS PRIVADOS ==========
+
+  private verifyAuthentication(): boolean {
+    if (!this.authService.isAuthenticated() || !this.authService.hasValidToken()) {
+      this.router.navigate(['/login']);
+      return false;
+    }
+    return true;
   }
 
   goToProductDetail(productId: string): void {

@@ -8,7 +8,9 @@ import { PaginationEvent, Paginator } from "../../molecules/paginator/paginator"
 import { CategoryService } from '../../../core/services/category.service';
 import { SubCategoryService } from '../../../core/services/subcategory.service';
 import { ActivatedRoute, Router } from '@angular/router';
-
+import { WishlistService } from '../../../core/services/wishlist.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { CartService } from '../../../core/services/cart.service';
 
 // Enum para los tipos de productos
 export enum ProductType {
@@ -18,22 +20,13 @@ export enum ProductType {
   MASCARILLA = 'Mascarilla',
   SERUM = 'Serum',
   ACEITE = 'Oleo',
- // SPRAY = 'Spray',
   CREMA = 'Crema para peinar',
   GEL = 'Gel',
   MOUSSE = 'Mousse',
   CERA = 'Cera',
- // POMADA = 'Pomada',
- // TRATAMIENTO = 'Tratamiento',
-//TINTE = 'Tinte',
-//DECOLORANTE = 'Decolorante',
   PROTECTOR_TERMICO = 'Crema termoprotectora',
   LEAVE_IN = 'Leave-in',
- // AMPOLLA = 'Ampolla',
- // TONICO = 'Tónico',
- // EXFOLIANTE = 'Exfoliante',
 }
-
 
 interface SelectOption {
   readonly label: string;
@@ -43,14 +36,12 @@ interface SelectOption {
   readonly icon?: string;
 }
 
-// Agregar interface para las opciones de ordenamiento
 interface SortOption {
   readonly label: string;
   readonly value: string;
   readonly sortBy: 'name' | 'price' | 'finalPrice' | 'rating' | 'popularity' | 'createdAt' | 'updatedAt' | 'brand' | 'viewCount';
   readonly sortOrder: 'ASC' | 'DESC';
 }
-
 
 interface ProductTypeOption {
   readonly label: string;
@@ -71,149 +62,85 @@ export class Products implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly wishlistService = inject(WishlistService);
+  private readonly authService = inject(AuthService);
+  private readonly cartService = inject(CartService);
 
-  // Inputs
+  // ========== INPUTS ==========
   readonly dataApi = input<ProductsApiResponse | null>();
   readonly inputPaginated = input<PaginationEvent | null>(null);
-  readonly searchQuery = input<string>(''); // Nuevo input para la búsqueda
+  readonly searchQuery = input<string>('');
 
-  // Outputs
+  // ========== OUTPUTS ==========
   readonly paginated = output<PaginationEvent>();
   readonly categoryFilterChanged = output<string>();
   readonly subCategoryFilterChanged = output<string>();
   readonly sortChanged = output<{ sortBy: string; sortOrder: string }>();
   readonly productTypeFilterChanged = output<string>();
-  readonly searchChanged = output<string>(); // Nuevo output para búsquedas
+  readonly searchChanged = output<string>();
 
-  // Signals para el estado local
+  // ========== SIGNALS ==========
   readonly selectedCategory = signal<string>('');
   readonly selectedSubCategory = signal<string>('');
   readonly selectedSort = signal<string>('name-ASC');
   readonly selectedProductType = signal<ProductType>(ProductType.TODOS);
 
-  // Computed values para categorías
+  // ========== COMPUTED - Categorías ==========
   readonly categoryOptions = computed(() => this.categoryService.categorySelectOptions());
   readonly isLoadingCategories = computed(() => this.categoryService.isLoading());
   readonly categoryError = computed(() => this.categoryService.error());
   readonly activeCategories = computed(() => this.categoryService.activeCategories());
   readonly hasCategoriesAvailable = computed(() => this.activeCategories().length > 0);
 
-  // Computed values para subcategorías
+  // ========== COMPUTED - Subcategorías ==========
   readonly subCategoryOptions = computed((): SelectOption[] => {
     const categoryId = this.selectedCategory();
     if (!categoryId) return [];
-
     return this.subCategoryService.subCategorySelectOptionsByCategory()(categoryId);
   });
 
   readonly isLoadingSubCategories = computed(() => this.subCategoryService.isLoading());
   readonly subCategoryError = computed(() => this.subCategoryService.error());
-
   readonly hasSubCategoriesAvailable = computed(() => {
     const options = this.subCategoryOptions();
     return options.length > 1 && !options[0]?.disabled;
   });
-
   readonly shouldShowSubCategorySelect = computed(() => Boolean(this.selectedCategory()));
 
-  // Computed para opciones de tipo de producto
+  // ========== COMPUTED - Wishlist ==========
+  readonly isWishlistLoading = computed(() => this.wishlistService.isLoading());
+
+  // ========== COMPUTED - Cart ==========
+  readonly isCartLoading = computed(() => this.cartService.isLoading());
+
+  // ========== COMPUTED - Opciones ==========
   readonly productTypeOptions = computed((): ProductTypeOption[] => [
     { label: 'Todos', value: ProductType.TODOS },
-    { label: 'Shampoo', value: ProductType.SHAMPOO/*,  icon: 'shampoo-bottle' */ },
-    { label: 'Acondicionador', value: ProductType.ACONDICIONADOR/* , icon: 'bottle-droplet' */ },
-    { label: 'Mascarilla', value: ProductType.MASCARILLA/*, icon: 'mask'*/ },
-    { label: 'Serum', value: ProductType.SERUM/*, icon: 'droplet'*/ },
-    { label: 'Oleo', value: ProductType.ACEITE/*, icon: 'oil-bottle'*/ },
-    //{ label: 'Spray', value: ProductType.SPRAY, icon: 'spray-can' },
-    { label: 'Mousse', value: ProductType.MOUSSE/* , icon: 'mousse-bottle' */ },
-    { label: 'Gel', value: ProductType.GEL/*, icon: 'gel-tube' */},
-    { label: 'Crema para peinar', value: ProductType.CREMA/*, icon: 'jar'*/ },
-    //{ label: 'Cera', value: ProductType.CERA/* , icon: 'wax-pot' */ },
-   // { label: 'Pomada', value: ProductType.POMADA, icon: 'pomade-jar' },
-    //{ label: 'Tratamiento', value: ProductType.TRATAMIENTO, icon: 'treatment-tube' },
-    //{ label: 'Tinte', value: ProductType.TINTE, icon: 'hair-dye' },
-   // { label: 'Decolorante', value: ProductType.DECOLORANTE, icon: 'bleach-bottle' },
-    { label: 'Termoprotector', value: ProductType.PROTECTOR_TERMICO/* , icon: 'heat-protector' */ },
-    //{ label: 'Leave-in', value: ProductType.LEAVE_IN/* , icon: 'leave-in-bottle' */ },
-   // { label: 'Ampolla', value: ProductType.AMPOLLA, icon: 'ampolla' },
-    //{ label: 'Tónico', value: ProductType.TONICO, icon: 'tonic-bottle' },
-   // { label: 'Exfoliante', value: ProductType.EXFOLIANTE, icon: 'scrub-jar' },
+    { label: 'Shampoo', value: ProductType.SHAMPOO },
+    { label: 'Acondicionador', value: ProductType.ACONDICIONADOR },
+    { label: 'Mascarilla', value: ProductType.MASCARILLA },
+    { label: 'Serum', value: ProductType.SERUM },
+    { label: 'Oleo', value: ProductType.ACEITE },
+    { label: 'Mousse', value: ProductType.MOUSSE },
+    { label: 'Gel', value: ProductType.GEL },
+    { label: 'Crema para peinar', value: ProductType.CREMA },
+    { label: 'Termoprotector', value: ProductType.PROTECTOR_TERMICO },
   ]);
 
-  // Computed para las opciones de ordenamiento
   readonly sortOptions = computed((): SortOption[] => [
-    {
-      label: 'Nombre (A-Z)',
-      value: 'name-ASC',
-      sortBy: 'name',
-      sortOrder: 'ASC'
-    },
-    {
-      label: 'Nombre (Z-A)',
-      value: 'name-DESC',
-      sortBy: 'name',
-      sortOrder: 'DESC'
-    },
-    {
-      label: 'Precio (Menor a Mayor)',
-      value: 'price-ASC',
-      sortBy: 'price',
-      sortOrder: 'ASC'
-    },
-    {
-      label: 'Precio (Mayor a Menor)',
-      value: 'price-DESC',
-      sortBy: 'price',
-      sortOrder: 'DESC'
-    },
-    {
-      label: 'Mejor Valorados',
-      value: 'rating-DESC',
-      sortBy: 'rating',
-      sortOrder: 'DESC'
-    },
-    {
-      label: 'Más Populares',
-      value: 'popularity-DESC',
-      sortBy: 'popularity',
-      sortOrder: 'DESC'
-    },
-    {
-      label: 'Más Recientes',
-      value: 'createdAt-DESC',
-      sortBy: 'createdAt',
-      sortOrder: 'DESC'
-    }
+    { label: 'Nombre (A-Z)', value: 'name-ASC', sortBy: 'name', sortOrder: 'ASC' },
+    { label: 'Nombre (Z-A)', value: 'name-DESC', sortBy: 'name', sortOrder: 'DESC' },
+    { label: 'Precio (Menor a Mayor)', value: 'price-ASC', sortBy: 'price', sortOrder: 'ASC' },
+    { label: 'Precio (Mayor a Menor)', value: 'price-DESC', sortBy: 'price', sortOrder: 'DESC' },
+    { label: 'Mejor Valorados', value: 'rating-DESC', sortBy: 'rating', sortOrder: 'DESC' },
+    { label: 'Más Populares', value: 'popularity-DESC', sortBy: 'popularity', sortOrder: 'DESC' },
+    { label: 'Más Recientes', value: 'createdAt-DESC', sortBy: 'createdAt', sortOrder: 'DESC' }
   ]);
 
-  // Computed para obtener los datos seleccionados
-  readonly selectedCategoryData = computed(() => {
-    const selectedId = this.selectedCategory();
-    return selectedId ? this.categoryService.getCategoryFromCache(selectedId) : null;
-  });
-
-  readonly selectedSubCategoryData = computed(() => {
-    const selectedId = this.selectedSubCategory();
-    return selectedId ? this.subCategoryService.getSubCategoryFromCache(selectedId) : null;
-  });
-
-  // Computed para obtener la opción actual seleccionada
-  readonly selectedSortOption = computed(() => {
-    const currentValue = this.selectedSort();
-    return this.sortOptions().find(option => option.value === currentValue);
-  });
-
-  readonly selectedProductTypeData = computed(() => {
-    const selectedType = this.selectedProductType();
-    return this.productTypeOptions().find(option => option.value === selectedType);
-  });
-
-  // Computed para el título dinámico (actualizado para incluir búsquedas)
+  // ========== COMPUTED - UI ==========
   readonly currentTitle = computed(() => {
     const searchQuery = this.searchQuery();
-    if (searchQuery) {
-      return `Resultados para "${searchQuery}"`;
-    }
+    if (searchQuery) return `Resultados para "${searchQuery}"`;
 
     const subCategory = this.selectedSubCategoryData();
     const category = this.selectedCategoryData();
@@ -226,7 +153,6 @@ export class Products implements OnInit {
     return 'Todos los productos';
   });
 
-  // Computed para información de búsqueda
   readonly searchInfo = computed(() => {
     const query = this.searchQuery();
     const hasResults = this.dataApi()?.data?.length || 0;
@@ -245,10 +171,7 @@ export class Products implements OnInit {
     };
   });
 
-  // Computed para verificar si hay búsqueda activa
   readonly hasActiveSearch = computed(() => Boolean(this.searchQuery().trim()));
-
-  // Actualizar hasActiveFilters para incluir búsqueda
   readonly hasActiveFilters = computed(() =>
     Boolean(
       this.searchQuery() ||
@@ -258,51 +181,222 @@ export class Products implements OnInit {
     )
   );
 
-  // Effect para cargar subcategorías automáticamente cuando cambie la categoría
+  readonly selectedCategoryData = computed(() => {
+    const selectedId = this.selectedCategory();
+    return selectedId ? this.categoryService.getCategoryFromCache(selectedId) : null;
+  });
+
+  readonly selectedSubCategoryData = computed(() => {
+    const selectedId = this.selectedSubCategory();
+    return selectedId ? this.subCategoryService.getSubCategoryFromCache(selectedId) : null;
+  });
+
+  readonly selectedSortOption = computed(() => {
+    const currentValue = this.selectedSort();
+    return this.sortOptions().find(option => option.value === currentValue);
+  });
+
+  readonly selectedProductTypeData = computed(() => {
+    const selectedType = this.selectedProductType();
+    return this.productTypeOptions().find(option => option.value === selectedType);
+  });
+
+  // ========== EFFECTS ==========
   private readonly categoryChangeEffect = effect(() => {
     const categoryId = this.selectedCategory();
-
     if (categoryId) {
       this.loadSubCategoriesByCategory(categoryId);
     } else {
-      // Limpiar subcategoría cuando no hay categoría seleccionada
       this.selectedSubCategory.set('');
     }
   });
 
+  // ========== LIFECYCLE ==========
   ngOnInit(): void {
     this.loadCategories();
   }
 
-  // Métodos de manejo de eventos
+  // ========== MÉTODOS PÚBLICOS - WISHLIST ==========
+
+  /**
+   * ✅ Verifica si un producto está en wishlist
+   */
+  isProductInWishlist(productId: string): boolean {
+    return this.wishlistService.isProductInWishlist(productId);
+  }
+
+  /**
+   * ✅ Maneja el toggle de wishlist con toda la lógica
+   */
+  handleToggleWishlist(productId: string): void {
+    // 1️⃣ Verificar autenticación
+    if (!this.authService.isAuthenticated() || !this.authService.hasValidToken()) {
+      console.warn('❌ Usuario NO autenticado');
+      // TODO: Mostrar modal de login o redirigir
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // 2️⃣ Verificar estado actual
+    const isInWishlist = this.wishlistService.isProductInWishlist(productId);
+
+    // 3️⃣ Ejecutar acción
+    if (isInWishlist) {
+      this.removeFromWishlist(productId);
+    } else {
+      this.addToWishlist(productId);
+    }
+  }
+
+  // ========== MÉTODOS PRIVADOS - WISHLIST ==========
+
+  private addToWishlist(productId: string): void {
+    const products = this.dataApi()?.data || [];
+    const product = products.find(p => p.id === productId);
+
+    this.wishlistService.addToWishlist({
+      productId,
+      note: product ? `Me gusta ${product.name}` : '',
+      visibility: 'private'
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (response) => {
+        console.log('✅ Producto agregado:', response.message);
+      },
+      error: (error) => {
+        console.error('❌ Error al agregar:', error);
+      }
+    });
+  }
+
+  private removeFromWishlist(productId: string): void {
+    this.wishlistService.removeFromWishlist(productId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Producto removido:', response.message);
+        },
+        error: (error) => {
+          console.error('❌ Error al remover:', error);
+        }
+      });
+  }
+
+  // ========== MÉTODOS PÚBLICOS - CART ==========
+
+  /**
+   * ✅ Verifica si un producto está en el carrito
+   */
+  isProductInCart(productId: string): boolean {
+    return this.cartService.isProductInCart(productId);
+  }
+
+  /**
+   * ✅ Obtiene la cantidad de un producto en el carrito
+   */
+  getProductQuantityInCart(productId: string): number {
+    return this.cartService.getProductQuantity(productId);
+  }
+
+  /**
+   * ✅ Maneja agregar producto al carrito con toda la lógica
+   */
+  handleAddToCart(productId: string): void {
+    console.log('🛒 Intentando agregar al carrito:', productId);
+
+    // 1️⃣ Verificar autenticación
+    if (!this.authService.isAuthenticated() || !this.authService.hasValidToken()) {
+      console.warn('❌ Usuario NO autenticado');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // 2️⃣ Verificar si ya está en el carrito
+    if (this.cartService.isProductInCart(productId)) {
+      console.warn('⚠️ El producto ya está en el carrito');
+      // Opcionalmente: navegar al carrito o mostrar mensaje
+      alert('Este producto ya está en tu carrito. Ve al carrito para modificar la cantidad.');
+      this.router.navigate(['/cart']);
+      return;
+    }
+
+    // 3️⃣ Obtener información del producto
+    const products = this.dataApi()?.data || [];
+    const product = products.find(p => p.id === productId);
+
+    if (!product) {
+      console.error('❌ Producto no encontrado');
+      return;
+    }
+
+    // 4️⃣ Validar disponibilidad
+    if (!product.isAvailable || product.stock <= 0) {
+      console.warn('⚠️ Producto no disponible');
+      alert(`Lo sentimos, "${product.name}" no está disponible en este momento.`);
+      return;
+    }
+
+    // 5️⃣ Agregar al carrito
+    this.addToCart(productId, product.name);
+  }
+
+  // ========== MÉTODOS PRIVADOS - CART ==========
+
+  /**
+   * Agrega un producto al carrito
+   */
+  private addToCart(productId: string, productName: string): void {
+    this.cartService.addToCart({
+      productId,
+      quantity: 1,
+      note: `Agregado desde catálogo: ${productName}`
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (response) => {
+        console.log('✅ Producto agregado al carrito:', response.message);
+        
+        // Opcionalmente: mostrar notificación o navegar
+        const shouldGoToCart = confirm(
+          `"${productName}" se agregó al carrito.\n\n¿Quieres ir al carrito?`
+        );
+        
+        if (shouldGoToCart) {
+          this.router.navigate(['/cart']);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error al agregar al carrito:', error);
+        const errorMessage = error?.error?.message || 'No se pudo agregar el producto al carrito';
+        alert(errorMessage);
+      }
+    });
+  }
+
+  // ========== MÉTODOS PÚBLICOS - FILTROS ==========
+
   onPageChange(event: PaginationEvent): void {
     this.paginated.emit(event);
   }
 
   onCategoryChange(categoryId: string): void {
-    if (categoryId === this.selectedCategory()) return; // Evitar re-renders innecesarios
-
-    // Actualizar estado local
+    if (categoryId === this.selectedCategory()) return;
     this.selectedCategory.set(categoryId);
-    this.selectedSubCategory.set(''); // Limpiar subcategoría al cambiar categoría
-
-    // Emitir cambios al componente padre
+    this.selectedSubCategory.set('');
     this.categoryFilterChanged.emit(categoryId);
-    this.subCategoryFilterChanged.emit(''); // Notificar que se limpió la subcategoría
+    this.subCategoryFilterChanged.emit('');
   }
 
   onSubCategoryChange(subCategoryId: string): void {
-    if (subCategoryId === this.selectedSubCategory()) return; // Evitar re-renders innecesarios
-
+    if (subCategoryId === this.selectedSubCategory()) return;
     this.selectedSubCategory.set(subCategoryId);
     this.subCategoryFilterChanged.emit(subCategoryId);
   }
 
   onSortChange(sortValue: string): void {
-    if (sortValue === this.selectedSort()) return; // Evitar re-renders innecesarios
-
+    if (sortValue === this.selectedSort()) return;
     this.selectedSort.set(sortValue);
-
     const selectedOption = this.sortOptions().find(option => option.value === sortValue);
     if (selectedOption) {
       this.sortChanged.emit({
@@ -315,12 +409,10 @@ export class Products implements OnInit {
   onProductTypeChange(productType: string): void {
     const typeValue = productType as ProductType;
     if (typeValue === this.selectedProductType()) return;
-
     this.selectedProductType.set(typeValue);
     this.productTypeFilterChanged.emit(productType);
   }
 
-  // Métodos de utilidad
   clearCategorySelection(): void {
     this.onCategoryChange('');
   }
@@ -333,54 +425,26 @@ export class Products implements OnInit {
     this.onProductTypeChange(ProductType.TODOS);
   }
 
-  // Método de utilidad para resetear ordenamiento
   resetSort(): void {
     this.onSortChange('name-ASC');
   }
 
-  // Nuevo método para limpiar búsqueda
   clearSearch(): void {
     this.searchChanged.emit('');
-    // Remover el parámetro 'search' de la URL
     this.removeSearchParam();
   }
 
-  // Método privado para remover el parámetro search de la URL
-  private removeSearchParam(): void {
-    const currentUrl = this.router.url;
-    const urlTree = this.router.parseUrl(currentUrl);
-
-    // Eliminar el parámetro 'search' de los queryParams
-    delete urlTree.queryParams['search'];
-
-    // Navegar a la nueva URL sin el parámetro search
-    this.router.navigateByUrl(urlTree, { replaceUrl: true });
-  }
-
-  // Actualizar clearAllFilters para incluir búsqueda
   clearAllFilters(): void {
     this.selectedCategory.set('');
     this.selectedSubCategory.set('');
     this.selectedSort.set('name-ASC');
     this.selectedProductType.set(ProductType.TODOS);
-
     this.categoryFilterChanged.emit('');
     this.subCategoryFilterChanged.emit('');
     this.sortChanged.emit({ sortBy: 'name', sortOrder: 'ASC' });
     this.productTypeFilterChanged.emit('');
-    this.searchChanged.emit(''); // Emitir limpieza de búsqueda
-
-    // Limpiar todos los query params relacionados con filtros
+    this.searchChanged.emit('');
     this.clearAllQueryParams();
-  }
-
-  // Método privado para limpiar todos los query params de filtros
-  private clearAllQueryParams(): void {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {},
-      replaceUrl: true
-    });
   }
 
   refreshCategories(): void {
@@ -394,13 +458,29 @@ export class Products implements OnInit {
     }
   }
 
-  // Métodos privados
+  // ========== MÉTODOS PRIVADOS ==========
+
+  private removeSearchParam(): void {
+    const currentUrl = this.router.url;
+    const urlTree = this.router.parseUrl(currentUrl);
+    delete urlTree.queryParams['search'];
+    this.router.navigateByUrl(urlTree, { replaceUrl: true });
+  }
+
+  private clearAllQueryParams(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
+  }
+
   private loadCategories(): void {
     this.categoryService.getAllCategories()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (categories) => {
-          console.log('Categories loaded successfully:', categories.length, 'categories');
+          console.log('Categories loaded:', categories.length);
         },
         error: (error) => {
           console.error('Error loading categories:', error);
@@ -409,7 +489,6 @@ export class Products implements OnInit {
   }
 
   private loadSubCategoriesByCategory(categoryId: string): void {
-    // Solo cargar si no están en cache
     const cachedSubCategories = this.subCategoryService
       .getSubCategoriesByCategoryFromCache(categoryId);
 
@@ -418,7 +497,7 @@ export class Products implements OnInit {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (subCategories) => {
-            console.log(`Subcategories loaded for category ${categoryId}:`, subCategories.length, 'subcategories');
+            console.log(`Subcategories loaded for category ${categoryId}:`, subCategories.length);
           },
           error: (error) => {
             console.error('Error loading subcategories:', error);

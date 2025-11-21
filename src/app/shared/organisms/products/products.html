@@ -263,7 +263,17 @@
             </div>
             } @else {
             @for (product of dataApi()?.data; track product.id) {
-            <app-product-card [product]="product"></app-product-card>
+            <app-product-card
+              [product]="product"
+              [context]="'catalog'"
+              [isInWishlist]="isProductInWishlist(product.id)"
+              [isInCart]="isProductInCart(product.id)"
+              [cartQuantity]="getProductQuantityInCart(product.id)"
+              [isWishlistLoading]="isWishlistLoading()"
+              [isCartLoading]="isCartLoading()"
+              (toggleWishlist)="handleToggleWishlist($event)"
+              (addToCart)="handleAddToCart($event)"
+            />
             }
             }
           </div>

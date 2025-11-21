@@ -1,45 +1,14 @@
 <nav class="nav-menu" [class.nav-menu--mobile]="isMobile()">
   <ul class="nav-menu__list">
     @for (item of navItems(); track item.route) {
-    <li class="nav-menu__item" [class.nav-menu__item--has-mega-menu]="item.label === 'Tienda'">
+    <li class="nav-menu__item">
       <a class="nav-menu__link"
          [routerLink]="item.route"
          routerLinkActive="nav-menu__link--active"
          [routerLinkActiveOptions]="{exact: item.route === '/'}"
-         (click)="onLinkClick(item)"
-         (mouseenter)="item.label === 'Tienda' ? showMegaMenu.set(true) : null"
-         (mouseleave)="item.label === 'Tienda' ? showMegaMenu.set(false) : null"
-         (focus)="item.label === 'Tienda' ? showMegaMenu.set(true) : null"
-         (blur)="item.label === 'Tienda' ? showMegaMenu.set(false) : null">
+         (click)="onLinkClick(item)">
         {{ item.label }}
       </a>
-  @if (item.label === 'Tienda' && showMegaMenu() && isProductsRoute) {
-  <div class="nav-menu__mega-menu" (mouseenter)="showMegaMenu.set(true)" (mouseleave)="showMegaMenu.set(false)">
-        <div class="nav-menu__mega-menu-col">
-          <div class="nav-menu__mega-menu-title">KERASTASE</div>
-          <ul class="nav-menu__mega-menu-list">
-            <li><a (click)="$event.preventDefault()">Nutritive</a></li>
-            <li><a (click)="$event.preventDefault()">Genesis</a></li>
-            <li><a (click)="$event.preventDefault()">Discipline</a></li>
-            <li><a (click)="$event.preventDefault()">Resistance</a></li>
-            <li><a (click)="$event.preventDefault()">Elixir</a></li>
-            <li><a (click)="$event.preventDefault()">Ver más</a></li>
-          </ul>
-        </div>
-        <div class="nav-menu__mega-menu-col">
-          <div class="nav-menu__mega-menu-title">L'OREAL PROFESSIONNEL</div>
-          <ul class="nav-menu__mega-menu-list">
-            <li><a (click)="$event.preventDefault()">Absolut Repair</a></li>
-            <li><a (click)="$event.preventDefault()">Vitamino Color</a></li>
-            <li><a (click)="$event.preventDefault()">Metal Detox</a></li>
-            <li><a (click)="$event.preventDefault()">Pro Longer</a></li>
-            <li><a (click)="$event.preventDefault()">Inforcer</a></li>
-            <li><a (click)="$event.preventDefault()">Blondifier</a></li>
-            <li><a (click)="$event.preventDefault()">Ver más</a></li>
-          </ul>
-        </div>
-      </div>
-      }
     </li>
     }
   </ul>
