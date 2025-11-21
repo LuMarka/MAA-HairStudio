@@ -1,7 +1,7 @@
 import { Component, signal, inject, ChangeDetectionStrategy, computed, OnInit, effect } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { CartService } from '../../../core/services/cartOld.service';
+/* import { CartService } from '../../../core/services/cartOld.service'; */
 import { CommonModule } from '@angular/common';
 
 interface CartItem {
@@ -36,7 +36,7 @@ interface OrderData {
   styleUrl: './purchase-order-template.scss'
 })
 export class PurchaseOrderTemplate implements OnInit {
-  private readonly cartService = inject(CartService);
+  /* private readonly cartService = inject(CartService); */
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
@@ -53,8 +53,8 @@ export class PurchaseOrderTemplate implements OnInit {
 private readonly WHATSAPP_NUMBER = '5492616984285';
 /*    private readonly WHATSAPP_NUMBER = '5493534015655'; */
 
-  readonly cartItems = computed(() => this.cartService.items());
-  readonly cartTotal = computed(() => this.cartService.total());
+  /* readonly cartItems = computed(() => this.cartService.items());
+  readonly cartTotal = computed(() => this.cartService.total()); */
 
   readonly subtotal = computed(() => {
     const total = this.cartTotal();
@@ -120,9 +120,9 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
     });
 
     // Check if cart is empty
-    if (this.cartItems().length === 0) {
+    /* if (this.cartItems().length === 0) {
       this.router.navigate(['/cart']);
-    }
+    } */
 
     // Subscribe to form changes
     this.orderForm.valueChanges.subscribe(() => {
@@ -284,15 +284,15 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
   onFinalizeOrder(): void {
     const data = this.orderData();
     const paymentMethod = this.selectedPaymentMethod();
-    const cartItems = this.cartItems();
-    const total = this.cartTotal();
+    /* const cartItems = this.cartItems();
+    const total = this.cartTotal(); */
 
     if (!data || !paymentMethod) {
       alert('Por favor complete todos los datos requeridos');
       return;
     }
 
-    if (cartItems.length === 0) {
+   /*  if (cartItems.length === 0) {
       alert('El carrito está vacío');
       this.router.navigate(['/cart']);
       return;
@@ -301,7 +301,7 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
     if (total <= 0) {
       alert('Total inválido');
       return;
-    }
+    } */
 
     const completeOrderData: OrderData = {
       ...data,
@@ -309,7 +309,7 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
     };
 
     this.isProcessing.set(true);
-    this.sendToWhatsApp(completeOrderData, cartItems, total);
+    /* this.sendToWhatsApp(completeOrderData, cartItems, total); */
   }
 
   private sendToWhatsApp(orderData: OrderData, cartItems: CartItem[], total: number): void {
@@ -342,7 +342,7 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
   private handleOrderSuccess(): void {
     this.isProcessing.set(false);
     this.orderSent.set(true);
-    this.cartService.clearCart();
+    /* this.cartService.clearCart(); */
 
     // Auto redirect after 60 seconds
     setTimeout(() => {

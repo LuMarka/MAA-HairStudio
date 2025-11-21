@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Datum, Data, Meta, Filters, Category } from '../models/interfaces/Product.interface';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 
 export interface ProductFilters {
   search?: string;                    // Búsqueda en nombre, descripción, marca, colección, tipo
@@ -176,7 +176,7 @@ export class ProductsService {
 
   /**
    * 11. Obtener Producto por ID
-   * 
+   *
    * @param id - UUID del producto
    * @returns Observable con la respuesta de la API que incluye el producto completo
    * @example
@@ -194,19 +194,19 @@ export class ProductsService {
    *   });
    * ```
    */
-  getProductById(id: string): Observable<{ 
-    success: boolean; 
-    message: string; 
+  getProductById(id: string): Observable<{
+    success: boolean;
+    message: string;
     data: Product;
     statusCode?: number;
     error?: string;
   }> {
     this._loading.set(true);
     this._error.set(null);
-    
-    return this.http.get<{ 
-      success: boolean; 
-      message: string; 
+
+    return this.http.get<{
+      success: boolean;
+      message: string;
       data: Product;
       statusCode?: number;
       error?: string;

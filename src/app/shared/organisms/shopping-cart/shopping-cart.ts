@@ -1,9 +1,12 @@
-import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, signal, effect } from '@angular/core';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { OrderService } from '../../../core/services/order.service';
+import { AddressService } from '../../../core/services/address.service';
 import { Paginator, PaginationEvent } from '../../molecules/paginator/paginator';
 import type { CartInterface, Datum } from '../../../core/models/interfaces/cart.interface';
+import type { DeliveryType } from '../../../core/models/interfaces/order.interface';
 
 @Component({
   selector: 'app-shopping-cart',
@@ -15,6 +18,9 @@ import type { CartInterface, Datum } from '../../../core/models/interfaces/cart.
 export class ShoppingCart {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  // ✅ NUEVO: Inyectar servicios necesarios para checkout
+  private readonly orderService = inject(OrderService);
+  private readonly addressService = inject(AddressService);
 
   readonly showDeliveryOptions = signal(false);
   readonly selectedDeliveryOption = signal<DeliveryOption | null>(null);
@@ -25,7 +31,7 @@ export class ShoppingCart {
   // ========== INPUTS ==========
   readonly dataApi = input<CartInterface | null>();
   readonly isProcessing = input<boolean>(false);
-  readonly processingItemId = input<string | null>(null); // ✅ NUEVO: ID del item siendo procesado
+  readonly processingItemId = input<string | null>(null);
 
   // ========== OUTPUTS ==========
   readonly paginated = output<PaginationEvent>();
@@ -61,29 +67,57 @@ export class ShoppingCart {
     this.items().some(item => !this.isAvailable(item))
   );
 
+  // ========== SIGNALS - CHECKOUT ==========
+  readonly showDeliveryOptions = signal(false);
+  readonly selectedDeliveryOption = signal<DeliveryType | null>(null);
+  // ✅ NUEVO: Signals para manejo de estado de checkout
+  readonly isCreatingOrder = signal(false);
+  readonly checkoutError = signal<string | null>(null);
+
+  // ========== COMPUTED - CHECKOUT ==========
+  readonly deliveryText = computed(() => {
+    const option = this.selectedDeliveryOption();
+    return option === 'delivery' 
+      ? 'Envío a domicilio seleccionado' 
+      : 'Retiro en tienda seleccionado';
+  });
+
+  readonly deliverySubtext = computed(() => {
+    const option = this.selectedDeliveryOption();
+    return option === 'delivery'
+      ? 'Recibirás una cotización de envío antes de pagar'
+      : 'Podrás retirar tu pedido en nuestro local';
+  });
+
+  // ✅ NUEVO: Computed para validar si puede proceder
+  readonly canProceedToCheckout = computed(() => {
+    return this.hasItems() && 
+           !this.hasUnavailableItems() && 
+           !this.isCreatingOrder();
+  });
+
+  // ✅ NUEVO: Effect para limpiar errores
+  constructor() {
+    effect(() => {
+      this.selectedDeliveryOption();
+      this.checkoutError.set(null);
+    });
+  }
+
   // ========== MÉTODOS PÚBLICOS - PAGINACIÓN ==========
 
-  /**
-   * Maneja el cambio de página
-   */
   onPageChange(event: PaginationEvent): void {
     this.paginated.emit(event);
   }
 
   // ========== MÉTODOS PÚBLICOS - CART ==========
 
-  /**
-   * Elimina un item del carrito
-   */
   removeItem(item: Datum): void {
     if (!this.verifyAuthentication()) return;
     if (this.isProcessing()) return;
     this.itemRemoved.emit(item.product.id);
   }
 
-  /**
-   * Incrementa la cantidad de un producto
-   */
   increaseQuantity(item: Datum): void {
     if (!this.verifyAuthentication()) return;
     if (this.isProcessingItem(item.product.id)) return;
@@ -96,9 +130,6 @@ export class ShoppingCart {
     this.quantityIncreased.emit(item.product.id);
   }
 
-  /**
-   * Decrementa la cantidad de un producto
-   */
   decreaseQuantity(item: Datum): void {
     if (!this.verifyAuthentication()) return;
     if (this.isProcessingItem(item.product.id)) return;
@@ -111,9 +142,6 @@ export class ShoppingCart {
     this.quantityDecreased.emit(item.product.id);
   }
 
-  /**
-   * Limpia todo el carrito
-   */
   clearCart(): void {
     if (this.isEmpty()) return;
     if (!this.verifyAuthentication()) return;
@@ -126,11 +154,6 @@ export class ShoppingCart {
     this.cartCleared.emit();
   }
 
-  // ========== MÉTODOS PÚBLICOS - CHECKOUT ==========
-
-  /**
-   * Procede al checkout
-   */
   proceedToCheckout(): void {
     if (this.isEmpty()) return;
     if (!this.verifyAuthentication()) return;
@@ -139,11 +162,53 @@ export class ShoppingCart {
     this.checkoutInitiated.emit();
   }
 
-  /**
-   * Continúa comprando
-   */
   continueShopping(): void {
     this.shoppingContinued.emit();
+  }
+
+  // ========== MÉTODOS PÚBLICOS - CHECKOUT ==========
+
+  onStartCheckout(): void {
+    if (!this.verifyAuthentication()) return;
+    if (!this.canProceedToCheckout()) return;
+
+    this.showDeliveryOptions.set(true);
+    this.checkoutError.set(null);
+    console.log('🛒 Iniciando checkout...');
+  }
+
+  onSelectDeliveryOption(option: DeliveryType): void {
+    this.selectedDeliveryOption.set(option);
+    this.checkoutError.set(null);
+    console.log('📦 Tipo de entrega seleccionado:', option);
+  }
+
+  onCancelDeliverySelection(): void {
+    this.showDeliveryOptions.set(false);
+    this.selectedDeliveryOption.set(null);
+    this.checkoutError.set(null);
+    console.log('❌ Cancelando selección de entrega');
+  }
+
+  // ✅ NUEVO: Método principal de checkout con lógica completa
+  onProceedToCheckout(): void {
+    const deliveryType = this.selectedDeliveryOption();
+    
+    if (!deliveryType) {
+      this.checkoutError.set('Por favor, selecciona un tipo de entrega');
+      return;
+    }
+
+    if (!this.verifyAuthentication()) return;
+    
+    this.isCreatingOrder.set(true);
+    this.checkoutError.set(null);
+
+    if (deliveryType === 'pickup') {
+      this.handleStorePickup();
+    } else {
+      this.handleHomeDelivery();
+    }
   }
 
   // ========== MÉTODOS AUXILIARES ==========
@@ -164,24 +229,121 @@ export class ShoppingCart {
     return item.product.isAvailable && item.product.stock > 0;
   }
 
-  // ✅ NUEVO: Verifica si se puede disminuir
   canDecrease(item: Datum): boolean {
     return item.quantity > 1 && !this.isProcessingItem(item.product.id);
   }
 
-  // ✅ NUEVO: Verifica si se puede aumentar
   canIncrease(item: Datum): boolean {
     return item.quantity < item.product.stock && 
            this.isAvailable(item) && 
            !this.isProcessingItem(item.product.id);
   }
 
-  // ✅ NUEVO: Verifica si un item específico está siendo procesado
   isProcessingItem(productId: string): boolean {
     return this.processingItemId() === productId;
   }
 
-  // ========== MÉTODOS PRIVADOS ==========
+  // ========== MÉTODOS PRIVADOS - CHECKOUT LOGIC ==========
+
+  /**
+   * ✅ NUEVO: Maneja el checkout con retiro en tienda
+   */
+  private handleStorePickup(): void {
+    console.log('🏪 Procesando retiro en tienda...');
+
+    this.orderService.createOrderFromCart({
+      deliveryType: 'pickup',
+      notes: 'Retiro en tienda'
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ Orden creada exitosamente:', response.data.orderNumber);
+        
+        // Emitir evento para que el padre limpie el carrito
+        this.cartCleared.emit();
+        
+        // Redirigir a la página de la orden
+        this.router.navigate(['/orders', response.data.id]);
+      },
+      error: (error) => {
+        console.error('❌ Error al crear orden:', error);
+        this.checkoutError.set(error.message || 'Error al crear la orden');
+        this.isCreatingOrder.set(false);
+      },
+      complete: () => {
+        this.isCreatingOrder.set(false);
+      }
+    });
+  }
+
+  /**
+   * ✅ NUEVO: Maneja el checkout con envío a domicilio
+   */
+  private handleHomeDelivery(): void {
+    console.log('🚚 Procesando envío a domicilio...');
+
+    this.addressService.getAddresses().subscribe({
+      next: (addressResponse) => {
+        const addresses = addressResponse.data;
+
+        if (addresses.length === 0) {
+          console.log('📍 Sin direcciones. Redirigiendo a crear dirección...');
+          this.router.navigate(['/addresses/new'], {
+            queryParams: { returnUrl: '/cart', action: 'checkout' }
+          });
+          this.isCreatingOrder.set(false);
+          return;
+        }
+
+        const defaultAddress = addresses.find(addr => addr.isDefault);
+        
+        if (defaultAddress) {
+          this.createOrderWithAddress(defaultAddress.id);
+        } else {
+          console.log('📍 Sin dirección por defecto. Redirigiendo a seleccionar...');
+          this.router.navigate(['/addresses/select'], {
+            queryParams: { returnUrl: '/cart', action: 'checkout' }
+          });
+          this.isCreatingOrder.set(false);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error al obtener direcciones:', error);
+        this.checkoutError.set('Error al verificar direcciones. Intenta nuevamente.');
+        this.isCreatingOrder.set(false);
+      }
+    });
+  }
+
+  /**
+   * ✅ NUEVO: Crea una orden con una dirección específica
+   */
+  private createOrderWithAddress(addressId: string): void {
+    console.log('📦 Creando orden con dirección:', addressId);
+
+    this.orderService.createOrderFromCart({
+      deliveryType: 'delivery',
+      shippingAddressId: addressId,
+      notes: 'Envío a domicilio'
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ Orden creada exitosamente:', response.data.orderNumber);
+        
+        // Emitir evento para que el padre limpie el carrito
+        this.cartCleared.emit();
+        
+        // Redirigir a la página de la orden
+        this.router.navigate(['/orders', response.data.id]);
+      },
+      error: (error) => {
+        console.error('❌ Error al crear orden:', error);
+        this.checkoutError.set(error.message || 'Error al crear la orden');
+        this.isCreatingOrder.set(false);
+      },
+      complete: () => {
+        this.isCreatingOrder.set(false);
+      }
+    });
+  }
 
   private verifyAuthentication(): boolean {
     if (!this.authService.isAuthenticated() || !this.authService.hasValidToken()) {
