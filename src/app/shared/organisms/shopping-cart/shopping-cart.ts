@@ -16,6 +16,12 @@ export class ShoppingCart {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
+  readonly showDeliveryOptions = signal(false);
+  readonly selectedDeliveryOption = signal<DeliveryOption | null>(null);
+
+  readonly items = computed(() => this.cartService.items());
+  readonly totalItems = computed(() => this.cartService.totalItems());
+  readonly cartTotal = computed(() => this.cartService.total()/1.21);
   // ========== INPUTS ==========
   readonly dataApi = input<CartInterface | null>();
   readonly isProcessing = input<boolean>(false);
@@ -183,5 +189,9 @@ export class ShoppingCart {
       return false;
     }
     return true;
+  }
+
+  goToProductDetail(productId: string): void {
+    this.router.navigate(['/details', productId]);
   }
 }
