@@ -7,6 +7,7 @@ import { AddressService } from '../../../core/services/address.service';
 import { Paginator, PaginationEvent } from '../../molecules/paginator/paginator';
 import type { CartInterface, Datum } from '../../../core/models/interfaces/cart.interface';
 import type { DeliveryType } from '../../../core/models/interfaces/order.interface';
+import { CartService } from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-shopping-cart',
@@ -17,17 +18,18 @@ import type { DeliveryType } from '../../../core/models/interfaces/order.interfa
 })
 export class ShoppingCart {
   private readonly authService = inject(AuthService);
+  private readonly cartService = inject(CartService);
   private readonly router = inject(Router);
   // ✅ NUEVO: Inyectar servicios necesarios para checkout
   private readonly orderService = inject(OrderService);
   private readonly addressService = inject(AddressService);
 
   readonly showDeliveryOptions = signal(false);
-  readonly selectedDeliveryOption = signal<DeliveryOption | null>(null);
+  readonly selectedDeliveryOption = signal<DeliveryType | null>(null);
 
-  readonly items = computed(() => this.cartService.items());
-  readonly totalItems = computed(() => this.cartService.totalItems());
-  readonly cartTotal = computed(() => this.cartService.total()/1.21);
+  /* readonly items = computed(() => this.cartService.items());
+  readonly totalItems = computed(() => this.cartService.totalItems()); */
+  readonly cartTotal = computed(() => this.cartService.totalAmount()/1.21);
   // ========== INPUTS ==========
   readonly dataApi = input<CartInterface | null>();
   readonly isProcessing = input<boolean>(false);
@@ -68,8 +70,8 @@ export class ShoppingCart {
   );
 
   // ========== SIGNALS - CHECKOUT ==========
-  readonly showDeliveryOptions = signal(false);
-  readonly selectedDeliveryOption = signal<DeliveryType | null>(null);
+  /* readonly showDeliveryOptions = signal(false);
+  readonly selectedDeliveryOption = signal<DeliveryType | null>(null); */
   // ✅ NUEVO: Signals para manejo de estado de checkout
   readonly isCreatingOrder = signal(false);
   readonly checkoutError = signal<string | null>(null);
@@ -77,8 +79,8 @@ export class ShoppingCart {
   // ========== COMPUTED - CHECKOUT ==========
   readonly deliveryText = computed(() => {
     const option = this.selectedDeliveryOption();
-    return option === 'delivery' 
-      ? 'Envío a domicilio seleccionado' 
+    return option === 'delivery'
+      ? 'Envío a domicilio seleccionado'
       : 'Retiro en tienda seleccionado';
   });
 
@@ -91,8 +93,8 @@ export class ShoppingCart {
 
   // ✅ NUEVO: Computed para validar si puede proceder
   readonly canProceedToCheckout = computed(() => {
-    return this.hasItems() && 
-           !this.hasUnavailableItems() && 
+    return this.hasItems() &&
+           !this.hasUnavailableItems() &&
            !this.isCreatingOrder();
   });
 
@@ -193,14 +195,14 @@ export class ShoppingCart {
   // ✅ NUEVO: Método principal de checkout con lógica completa
   onProceedToCheckout(): void {
     const deliveryType = this.selectedDeliveryOption();
-    
+
     if (!deliveryType) {
       this.checkoutError.set('Por favor, selecciona un tipo de entrega');
       return;
     }
 
     if (!this.verifyAuthentication()) return;
-    
+
     this.isCreatingOrder.set(true);
     this.checkoutError.set(null);
 
@@ -234,8 +236,8 @@ export class ShoppingCart {
   }
 
   canIncrease(item: Datum): boolean {
-    return item.quantity < item.product.stock && 
-           this.isAvailable(item) && 
+    return item.quantity < item.product.stock &&
+           this.isAvailable(item) &&
            !this.isProcessingItem(item.product.id);
   }
 
@@ -257,12 +259,12 @@ export class ShoppingCart {
     }).subscribe({
       next: (response) => {
         console.log('✅ Orden creada exitosamente:', response.data.orderNumber);
-        
+
         // Emitir evento para que el padre limpie el carrito
         this.cartCleared.emit();
-        
+
         // Redirigir a la página de la orden
-        this.router.navigate(['/orders', response.data.id]);
+      this.router.navigate(['/purchase-order']);
       },
       error: (error) => {
         console.error('❌ Error al crear orden:', error);
@@ -295,7 +297,7 @@ export class ShoppingCart {
         }
 
         const defaultAddress = addresses.find(addr => addr.isDefault);
-        
+
         if (defaultAddress) {
           this.createOrderWithAddress(defaultAddress.id);
         } else {
@@ -327,12 +329,12 @@ export class ShoppingCart {
     }).subscribe({
       next: (response) => {
         console.log('✅ Orden creada exitosamente:', response.data.orderNumber);
-        
+
         // Emitir evento para que el padre limpie el carrito
         this.cartCleared.emit();
-        
+
         // Redirigir a la página de la orden
-        this.router.navigate(['/orders', response.data.id]);
+        this.router.navigate(['/purchase-order']);
       },
       error: (error) => {
         console.error('❌ Error al crear orden:', error);
