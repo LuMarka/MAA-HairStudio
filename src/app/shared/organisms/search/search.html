@@ -1,5 +1,6 @@
 <section class="search">
   <div class="search__container">
+    <!-- Barra de búsqueda -->
     <div class="search__bar">
       <app-search-bar
         placeholder="Buscar productos..."
@@ -7,85 +8,88 @@
       />
     </div>
 
-<div class="search__actions" role="toolbar" aria-label="Acciones rápidas">
-  @for (action of actions; track action.label) {
-    @if (action.label === 'Cuenta' || action.label === 'Mi Cuenta') {
-      <!-- Special handling for user action with dropdown menu -->
-      <div class="search__user-wrapper" [class.search__user-wrapper--open]="isUserMenuOpen()">
-        <button
-          type="button"
-          class="search__action search__action--user"
-          (click)="isAuthenticated() ? toggleUserMenu() : router.navigate(['/login'])"
-          [attr.aria-label]="action.label"
-          [title]="action.label"
-        >
-          @if (isAuthenticated()) {
-            <div class="search__user-info">
-              <span class="search__user-icon">{{ action.icon }}</span>
-              <div class="search__user-details">
-                <span class="search__user-greeting">¡Bienvenido/a!</span>
-                <span class="search__user-name">{{ authService.isAdmin() ? 'Admin' : authService.currentUser()?.name }}</span>
-              </div>
-            </div>
-          } @else {
-            <span class="search__action-icon">{{ action.icon }}</span>
-          }
-        </button>
+    <!-- Acciones del header -->
+    <div class="search__actions" role="toolbar" aria-label="Acciones rápidas">
+      @for (action of actions(); track action.label) {
+        @if (action.label === 'Cuenta' || action.label === 'Mi Cuenta') {
+          <!-- Menú de usuario con dropdown -->
+          <div
+            class="search__user-wrapper"
+            [class.search__user-wrapper--open]="isUserMenuOpen()">
 
-        <!-- User menu dropdown -->
-        @if (isAuthenticated() && isUserMenuOpen()) {
-          <div class="search__user-menu">
             <button
               type="button"
-              class="search__user-menu-item search__user-menu-item--logout"
-              (click)="logout()"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-              <span>Cerrar sesión</span>
-            </button>
-          </div>
-        }
-      </div>
-    } @else {
-      <button
-        type="button"
-        class="search__action"
-        [class.search__action--cart]="action.label === 'Carrito'"
-        (click)="action.action()"
-        [attr.aria-label]="action.label"
-        [title]="action.label"
-      >
-        <span class="search__action-icon">{{ action.icon }}</span>
-        @if (action.label === 'Carrito' && cartItemCount() > 0) {
-          <span class="search__action-badge">{{ cartItemCount() }}</span>
-        }
-      </button>
-    }
-  }
-</div>
-<!--     <div class="search__actions" role="toolbar" aria-label="Acciones rápidas">
-      @for (action of actions(); track action.label) {
-        <button
-          type="button"
-          class="search__action"
-          [class.search__action--has-badge]="action.showBadge"
-          (click)="action.action()"
-          [attr.aria-label]="action.label + (action.showBadge ? ': ' + action.badge + ' items' : '')"
-          [title]="action.label"
-        >
-          <span class="search__action-icon">{{ action.icon }}</span>
+              class="search__action search__action--user"
+              (click)="isAuthenticated() ? toggleUserMenu() : router.navigate(['/login'])"
+              [attr.aria-label]="action.label"
+              [attr.aria-expanded]="isUserMenuOpen()"
+              [title]="action.label">
 
-          @if (action.showBadge && action.badge > 0) {
-            <span class="search__action-badge">
-              {{ action.badge > 99 ? '99+' : action.badge }}
-            </span>
-          }
-        </button>
+              @if (isAuthenticated()) {
+                <div class="search__user-info">
+                  <span class="search__user-icon">{{ action.icon }}</span>
+                  <div class="search__user-details">
+                    <span class="search__user-greeting">¡Bienvenido/a!</span>
+                    <span class="search__user-name">
+                      {{ authService.isAdmin() ? 'Admin' : authService.currentUser()?.name }}
+                    </span>
+                  </div>
+                </div>
+              } @else {
+                <span class="search__action-icon">{{ action.icon }}</span>
+              }
+            </button>
+
+            <!-- Dropdown del menú de usuario -->
+            @if (isAuthenticated() && isUserMenuOpen()) {
+              <div class="search__user-menu" role="menu">
+                <button
+                  type="button"
+                  class="search__user-menu-item search__user-menu-item--logout"
+                  role="menuitem"
+                  (click)="logout()">
+                  <svg
+                    class="search__user-menu-icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
+                  <span>Cerrar sesión</span>
+                </button>
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Botones normales (Favoritos, Carrito, WhatsApp) -->
+          <button
+            type="button"
+            class="search__action"
+            [class.search__action--favorites]="action.label === 'Favoritos'"
+            [class.search__action--cart]="action.label === 'Carrito'"
+            [class.search__action--whatsapp]="action.label === 'Agendar (WhatsApp)'"
+            [class.search__action--has-badge]="action.showBadge"
+            (click)="action.action()"
+            [attr.aria-label]="action.label + (action.showBadge ? ': ' + action.badge + ' items' : '')"
+            [title]="action.label">
+
+            <span class="search__action-icon">{{ action.icon }}</span>
+
+            @if (action.showBadge && action.badge > 0) {
+              <span class="search__action-badge" [attr.aria-label]="action.badge + ' items'">
+                {{ action.badge > 99 ? '99+' : action.badge }}
+              </span>
+            }
+          </button>
+        }
       }
-    </div> -->
+    </div>
   </div>
 </section>
