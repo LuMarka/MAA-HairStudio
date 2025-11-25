@@ -151,7 +151,11 @@
               (click)="addToCart()"
               [disabled]="!inStock()"
             >
+            @if (isProductInCart()) {
+              agregado al carrito
+            } @else {
               Añadir al carrito
+            }
             </button>
           </div>
         }
