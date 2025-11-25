@@ -3,7 +3,6 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { OrderService } from '../../../core/services/order.service';
-import { AddressService } from '../../../core/services/address.service';
 import { Paginator, PaginationEvent } from '../../molecules/paginator/paginator';
 import type { CartInterface, Datum } from '../../../core/models/interfaces/cart.interface';
 import type { DeliveryType } from '../../../core/models/interfaces/order.interface';
@@ -20,16 +19,8 @@ export class ShoppingCart {
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
   private readonly router = inject(Router);
-  // ✅ NUEVO: Inyectar servicios necesarios para checkout
   private readonly orderService = inject(OrderService);
-  private readonly addressService = inject(AddressService);
 
-  readonly showDeliveryOptions = signal(false);
-  readonly selectedDeliveryOption = signal<DeliveryType | null>(null);
-
-  /* readonly items = computed(() => this.cartService.items());
-  readonly totalItems = computed(() => this.cartService.totalItems()); */
-  readonly cartTotal = computed(() => this.cartService.totalAmount()/1.21);
   // ========== INPUTS ==========
   readonly dataApi = input<CartInterface | null>();
   readonly isProcessing = input<boolean>(false);
@@ -43,6 +34,11 @@ export class ShoppingCart {
   readonly cartCleared = output<void>();
   readonly checkoutInitiated = output<void>();
   readonly shoppingContinued = output<void>();
+
+  // ========== SIGNALS - Estado del carrito ==========
+  readonly showDeliveryOptions = signal(false);
+  readonly selectedDeliveryOption = signal<DeliveryType | null>(null);
+  readonly checkoutError = signal<string | null>(null);
 
   // ========== COMPUTED - Data ==========
   readonly cartData = computed(() => this.dataApi());
@@ -63,18 +59,12 @@ export class ShoppingCart {
   readonly estimatedTax = computed(() => this.summary()?.estimatedTax ?? 0);
   readonly estimatedShipping = computed(() => this.summary()?.estimatedShipping ?? 0);
   readonly estimatedTotal = computed(() => this.summary()?.estimatedTotal ?? 0);
+  readonly cartTotal = computed(() => this.cartService.totalAmount() / 1.21);
 
   // ========== COMPUTED - UI ==========
   readonly hasUnavailableItems = computed(() =>
     this.items().some(item => !this.isAvailable(item))
   );
-
-  // ========== SIGNALS - CHECKOUT ==========
-  /* readonly showDeliveryOptions = signal(false);
-  readonly selectedDeliveryOption = signal<DeliveryType | null>(null); */
-  // ✅ NUEVO: Signals para manejo de estado de checkout
-  readonly isCreatingOrder = signal(false);
-  readonly checkoutError = signal<string | null>(null);
 
   // ========== COMPUTED - CHECKOUT ==========
   readonly deliveryText = computed(() => {
@@ -91,15 +81,13 @@ export class ShoppingCart {
       : 'Podrás retirar tu pedido en nuestro local';
   });
 
-  // ✅ NUEVO: Computed para validar si puede proceder
   readonly canProceedToCheckout = computed(() => {
-    return this.hasItems() &&
-           !this.hasUnavailableItems() &&
-           !this.isCreatingOrder();
+    return this.hasItems() && !this.hasUnavailableItems() && !this.isProcessing();
   });
 
-  // ✅ NUEVO: Effect para limpiar errores
+  // ========== EFFECTS ==========
   constructor() {
+    // Limpiar errores al cambiar opción de entrega
     effect(() => {
       this.selectedDeliveryOption();
       this.checkoutError.set(null);
@@ -170,6 +158,9 @@ export class ShoppingCart {
 
   // ========== MÉTODOS PÚBLICOS - CHECKOUT ==========
 
+  /**
+   * Inicia el proceso de selección de tipo de entrega
+   */
   onStartCheckout(): void {
     if (!this.verifyAuthentication()) return;
     if (!this.canProceedToCheckout()) return;
@@ -179,12 +170,18 @@ export class ShoppingCart {
     console.log('🛒 Iniciando checkout...');
   }
 
+  /**
+   * Selecciona el tipo de entrega
+   */
   onSelectDeliveryOption(option: DeliveryType): void {
     this.selectedDeliveryOption.set(option);
     this.checkoutError.set(null);
     console.log('📦 Tipo de entrega seleccionado:', option);
   }
 
+  /**
+   * Cancela la selección de entrega y cierra el modal
+   */
   onCancelDeliverySelection(): void {
     this.showDeliveryOptions.set(false);
     this.selectedDeliveryOption.set(null);
@@ -192,7 +189,10 @@ export class ShoppingCart {
     console.log('❌ Cancelando selección de entrega');
   }
 
-  // ✅ NUEVO: Método principal de checkout con lógica completa
+  /**
+   * ✅ REFACTORIZADO: Solo guarda el estado y redirige a purchase-order
+   * Ya NO crea la orden aquí
+   */
   onProceedToCheckout(): void {
     const deliveryType = this.selectedDeliveryOption();
 
@@ -203,14 +203,16 @@ export class ShoppingCart {
 
     if (!this.verifyAuthentication()) return;
 
-    this.isCreatingOrder.set(true);
-    this.checkoutError.set(null);
+    // 1. Guardar el estado de checkout en el servicio
+    this.orderService.initCheckout(deliveryType);
+    console.log('✅ Estado de checkout guardado:', deliveryType);
 
-    if (deliveryType === 'pickup') {
-      this.handleStorePickup();
-    } else {
-      this.handleHomeDelivery();
-    }
+    // 2. Redirigir a purchase-order donde se manejará todo
+    console.log('🚀 Redirigiendo a purchase-order...');
+    this.router.navigate(['/purchase-order']);
+
+    // 3. Cerrar el modal de opciones de entrega
+    this.showDeliveryOptions.set(false);
   }
 
   // ========== MÉTODOS AUXILIARES ==========
@@ -243,108 +245,6 @@ export class ShoppingCart {
 
   isProcessingItem(productId: string): boolean {
     return this.processingItemId() === productId;
-  }
-
-  // ========== MÉTODOS PRIVADOS - CHECKOUT LOGIC ==========
-
-  /**
-   * ✅ NUEVO: Maneja el checkout con retiro en tienda
-   */
-  private handleStorePickup(): void {
-    console.log('🏪 Procesando retiro en tienda...');
-
-    this.orderService.createOrderFromCart({
-      deliveryType: 'pickup',
-      notes: 'Retiro en tienda'
-    }).subscribe({
-      next: (response) => {
-        console.log('✅ Orden creada exitosamente:', response.data.orderNumber);
-
-        // Emitir evento para que el padre limpie el carrito
-        this.cartCleared.emit();
-
-        // Redirigir a la página de la orden
-      this.router.navigate(['/purchase-order']);
-      },
-      error: (error) => {
-        console.error('❌ Error al crear orden:', error);
-        this.checkoutError.set(error.message || 'Error al crear la orden');
-        this.isCreatingOrder.set(false);
-      },
-      complete: () => {
-        this.isCreatingOrder.set(false);
-      }
-    });
-  }
-
-  /**
-   * ✅ NUEVO: Maneja el checkout con envío a domicilio
-   */
-  private handleHomeDelivery(): void {
-    console.log('🚚 Procesando envío a domicilio...');
-
-    this.addressService.getAddresses().subscribe({
-      next: (addressResponse) => {
-        const addresses = addressResponse.data;
-
-        if (addresses.length === 0) {
-          console.log('📍 Sin direcciones. Redirigiendo a crear dirección...');
-          this.router.navigate(['/addresses/new'], {
-            queryParams: { returnUrl: '/cart', action: 'checkout' }
-          });
-          this.isCreatingOrder.set(false);
-          return;
-        }
-
-        const defaultAddress = addresses.find(addr => addr.isDefault);
-
-        if (defaultAddress) {
-          this.createOrderWithAddress(defaultAddress.id);
-        } else {
-          console.log('📍 Sin dirección por defecto. Redirigiendo a seleccionar...');
-          this.router.navigate(['/addresses/select'], {
-            queryParams: { returnUrl: '/cart', action: 'checkout' }
-          });
-          this.isCreatingOrder.set(false);
-        }
-      },
-      error: (error) => {
-        console.error('❌ Error al obtener direcciones:', error);
-        this.checkoutError.set('Error al verificar direcciones. Intenta nuevamente.');
-        this.isCreatingOrder.set(false);
-      }
-    });
-  }
-
-  /**
-   * ✅ NUEVO: Crea una orden con una dirección específica
-   */
-  private createOrderWithAddress(addressId: string): void {
-    console.log('📦 Creando orden con dirección:', addressId);
-
-    this.orderService.createOrderFromCart({
-      deliveryType: 'delivery',
-      shippingAddressId: addressId,
-      notes: 'Envío a domicilio'
-    }).subscribe({
-      next: (response) => {
-        console.log('✅ Orden creada exitosamente:', response.data.orderNumber);
-
-        // Emitir evento para que el padre limpie el carrito
-        this.cartCleared.emit();
-
-        // Redirigir a la página de la orden
-        this.router.navigate(['/purchase-order']);
-      },
-      error: (error) => {
-        console.error('❌ Error al crear orden:', error);
-        this.checkoutError.set(error.message || 'Error al crear la orden');
-        this.isCreatingOrder.set(false);
-      },
-      complete: () => {
-        this.isCreatingOrder.set(false);
-      }
-    });
   }
 
   private verifyAuthentication(): boolean {
