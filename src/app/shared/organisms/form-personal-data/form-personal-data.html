@@ -7,7 +7,7 @@
           <h2 class="form-title">Información de Contacto y Entrega</h2>
           <div class="delivery-badge">
             <span class="delivery-badge__icon">
-              @if (selectedDeliveryOption() === 'pickup') {
+              @if (deliveryOption() === 'pickup') {
               🏪
               } @else {
               🚚
@@ -95,83 +95,80 @@
             </div>
           </div>
 
-          <!-- Dirección de entrega (solo para delivery) -->
-          @if (selectedDeliveryOption() === 'delivery') {
+          <!-- Sección de dirección - SOLO para delivery -->
+          @if (isDelivery()) {
           <div class="form-section">
-            <div class="form-section__header">
-              <h3 class="form-section__title">
-                <span class="form-section__icon">🚚</span>
-                Dirección de Entrega
-              </h3>
-              <p class="form-section__description">¿Dónde quieres recibir tu pedido?</p>
-            </div>
+            <h3 class="form-title">
+              <span class="form-icon">📍</span>
+              Dirección de Entrega
+            </h3>
 
             <div class="form-grid">
+              <!-- Dirección completa -->
               <div class="form-group form-group--full">
                 <label for="address" class="form-label">
-                  Dirección Completa <span class="required">*</span>
+                  Dirección completa *
                 </label>
                 <div class="form-input-wrapper">
-                  <input type="text" id="address" formControlName="address" class="form-control"
-                    [class.form-control--error]="isFieldInvalid('address')"
-                    placeholder="Calle, número, piso, departamento">
+                  <input id="address" type="text" formControlName="address" class="form-control"
+                    [class.form-control--invalid]="isFieldInvalid('address')"
+                    placeholder="Calle, número, piso, depto..." autocomplete="street-address">
                   @if (isFieldInvalid('address')) {
-                  <span class="form-error">
-                    <span class="form-error__icon">⚠️</span>
-                    {{ getFieldError('address') }}
-                  </span>
+                  <span class="form-error">{{ getFieldError('address') }}</span>
                   }
                 </div>
               </div>
 
+              <!-- Ciudad -->
               <div class="form-group">
                 <label for="city" class="form-label">
-                  Ciudad <span class="required">*</span>
+                  Ciudad *
                 </label>
                 <div class="form-input-wrapper">
-                  <input type="text" id="city" formControlName="city" class="form-control"
-                    [class.form-control--error]="isFieldInvalid('city')" placeholder="Ciudad">
+                  <input id="city" type="text" formControlName="city" class="form-control"
+                    [class.form-control--invalid]="isFieldInvalid('city')" placeholder="Tu ciudad"
+                    autocomplete="address-level2">
                   @if (isFieldInvalid('city')) {
-                  <span class="form-error">
-                    <span class="form-error__icon">⚠️</span>
-                    {{ getFieldError('city') }}
-                  </span>
+                  <span class="form-error">{{ getFieldError('city') }}</span>
                   }
                 </div>
               </div>
 
+              <!-- Código Postal -->
               <div class="form-group">
-                <label for="postalCode" class="form-label">Código Postal</label>
+                <label for="postalCode" class="form-label">
+                  Código Postal
+                </label>
                 <div class="form-input-wrapper">
-                  <input type="text" id="postalCode" formControlName="postalCode" class="form-control"
-                    placeholder="1234">
+                  <input id="postalCode" type="text" formControlName="postalCode" class="form-control"
+                    placeholder="Código postal" autocomplete="postal-code">
                 </div>
               </div>
             </div>
           </div>
           }
 
-          <!-- Información Adicional -->
+          <!-- Notas adicionales - Siempre visible -->
           <div class="form-section">
-            <div class="form-section__header">
-              <h3 class="form-section__title">
-                <span class="form-section__icon">📝</span>
-                Información Adicional
-              </h3>
-              <p class="form-section__description">
-                @if (selectedDeliveryOption() === 'delivery') {
-                Incluye horarios preferidos para la entrega, referencias del domicilio, etc.
-                } @else {
-                Incluye horarios preferidos para el retiro, comentarios especiales, etc.
-                }
-              </p>
-            </div>
+            <h3 class="form-title">
+              <span class="form-icon">📝</span>
+              Información Adicional
+            </h3>
 
             <div class="form-group form-group--full">
-              <label for="notes" class="form-label">Notas del Pedido</label>
+              <label for="notes" class="form-label">
+                Notas para el pedido (opcional)
+              </label>
               <div class="form-input-wrapper">
-                <textarea id="notes" formControlName="notes" class="form-control form-control--textarea" rows="4"
-                  placeholder="Comentarios especiales, instrucciones de entrega, horarios de preferencia, etc."></textarea>
+                <textarea id="notes" formControlName="notes" class="form-control form-control--textarea"
+                  placeholder="Indicaciones especiales, horarios de entrega, etc..." rows="4"></textarea>
+                <span class="form-helper">
+                  @if (isDelivery()) {
+                  Incluye referencias para encontrar tu domicilio más fácilmente
+                  } @else {
+                  Indícanos tu horario preferido para el retiro
+                  }
+                </span>
               </div>
             </div>
           </div>
@@ -183,7 +180,7 @@
               <span class="btn__text">Editar Carrito</span>
             </button>
 
-            <button type="submit" class="btn btn--primary" [disabled]="!isStep1Valid()">
+            <button type="submit" class="btn btn--primary" [disabled]="!formValid()">
               <span class="btn__text">Continuar</span>
               <span class="btn__icon">→</span>
             </button>
@@ -222,7 +219,7 @@
             <div class="total-row">
               <span>Envío:</span>
               <span>
-                @if (selectedDeliveryOption() === 'pickup') {
+                @if (deliveryOption() === 'pickup') {
                 Gratis
                 } @else {
                 A convenir
@@ -244,7 +241,7 @@
               <span class="delivery-info__label">Modalidad:</span>
               <span class="delivery-info__value">{{ deliveryOptionText() }}</span>
             </div>
-            @if (selectedDeliveryOption() === 'delivery') {
+            @if (deliveryOption() === 'delivery') {
             <div class="delivery-info__item">
               <span class="delivery-info__label">Tiempo estimado:</span>
               <span class="delivery-info__value">3-5 días hábiles</span>
@@ -259,7 +256,7 @@
 
           <!-- Validation status -->
           <div class="validation-status">
-            @if (isStep1Valid()) {
+            @if (formValid()) {
             <div class="validation-status__success">
               <span class="validation-status__icon">✅</span>
               <span class="validation-status__text">Información completa</span>
@@ -268,7 +265,7 @@
             <div class="validation-status__pending">
               <span class="validation-status__icon">⚠️</span>
               <span class="validation-status__text">
-                @if (selectedDeliveryOption() === 'delivery') {
+                @if (deliveryOption() === 'delivery') {
                 Completa nombre, email, teléfono, dirección y ciudad
                 } @else {
                 Completa nombre, email y teléfono

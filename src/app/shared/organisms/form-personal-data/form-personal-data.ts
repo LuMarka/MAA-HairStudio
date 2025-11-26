@@ -2,9 +2,22 @@ import { Component, ChangeDetectionStrategy, input, output, computed, signal, ef
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 
+type DeliveryType = 'pickup' | 'delivery';
+
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
+  notes?: string;
+}
+
 /**
  * Organismo para el formulario de datos personales y dirección de entrega
- * 
+ *
  * @responsibility Capturar información del cliente y dirección según tipo de entrega
  * @input deliveryOption - Tipo de entrega ('pickup' | 'delivery')
  * @input initialData - Datos iniciales del formulario (opcional)
@@ -24,31 +37,11 @@ export class FormPersonalData {
   private readonly fb = new FormBuilder();
 
   // ========== INPUTS ==========
-  readonly deliveryOption = input.required<'pickup' | 'delivery'>();
-  
-  readonly initialData = input<{
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    phone?: string;
-    address?: string;
-    city?: string;
-    postalCode?: string;
-    notes?: string;
-  }>({});
+  readonly deliveryOption = input.required<DeliveryType>();
+  readonly initialData = input<Partial<FormData>>({});
 
   // ========== OUTPUTS ==========
-  readonly formDataChange = output<{
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    address?: string;
-    city?: string;
-    postalCode?: string;
-    notes?: string;
-  }>();
-
+  readonly formDataChange = output<FormData>();
   readonly formValidChange = output<boolean>();
   readonly editCart = output<void>();
   readonly continue = output<void>();
@@ -57,13 +50,16 @@ export class FormPersonalData {
   readonly formValid = signal(false);
 
   // ========== COMPUTED ==========
-  readonly selectedDeliveryOption = computed(() => this.deliveryOption());
-  
-  readonly deliveryOptionText = computed(() => 
-    this.deliveryOption() === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio'
+  readonly isDelivery = computed(() => this.deliveryOption() === 'delivery');
+  readonly isPickup = computed(() => this.deliveryOption() === 'pickup');
+
+  readonly deliveryOptionText = computed(() =>
+    this.isDelivery() ? 'Envío a domicilio' : 'Retiro en tienda'
   );
 
-  readonly isStep1Valid = computed(() => this.formValid());
+  readonly deliveryBadgeText = computed(() =>
+    this.isDelivery() ? '🚚 Envío' : '🏪 Retiro'
+  );
 
   // ========== FORM ==========
   readonly orderForm: FormGroup = this.fb.group({
@@ -83,6 +79,11 @@ export class FormPersonalData {
     effect(() => {
       const deliveryOption = this.deliveryOption();
       this.updateFormValidators(deliveryOption);
+
+      // Si es pickup, limpiar campos de dirección
+      if (deliveryOption === 'pickup') {
+        this.clearAddressFields();
+      }
     });
 
     // Effect para cargar datos iniciales
@@ -106,20 +107,30 @@ export class FormPersonalData {
   }
 
   // ========== MÉTODOS PRIVADOS ==========
-  private updateFormValidators(deliveryOption: 'pickup' | 'delivery'): void {
+  private updateFormValidators(deliveryOption: DeliveryType): void {
     const addressControl = this.orderForm.get('address');
     const cityControl = this.orderForm.get('city');
 
     if (deliveryOption === 'delivery') {
+      // Para delivery, dirección y ciudad son obligatorios
       addressControl?.setValidators([Validators.required, Validators.minLength(5)]);
       cityControl?.setValidators([Validators.required, Validators.minLength(2)]);
     } else {
+      // Para pickup, no son necesarios
       addressControl?.clearValidators();
       cityControl?.clearValidators();
     }
 
     addressControl?.updateValueAndValidity({ emitEvent: false });
     cityControl?.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private clearAddressFields(): void {
+    this.orderForm.patchValue({
+      address: '',
+      city: '',
+      postalCode: ''
+    }, { emitEvent: false });
   }
 
   private checkFormValidity(): void {
@@ -153,16 +164,22 @@ export class FormPersonalData {
   private emitFormData(): void {
     if (this.formValid()) {
       const formValue = this.orderForm.value;
-      this.formDataChange.emit({
+      const data: FormData = {
         firstName: formValue.firstName || '',
         lastName: formValue.lastName || '',
         email: formValue.email || '',
         phone: formValue.phone || '',
-        address: formValue.address || undefined,
-        city: formValue.city || undefined,
-        postalCode: formValue.postalCode || undefined,
         notes: formValue.notes || undefined
-      });
+      };
+
+      // Solo incluir dirección si es delivery
+      if (this.isDelivery()) {
+        data.address = formValue.address || undefined;
+        data.city = formValue.city || undefined;
+        data.postalCode = formValue.postalCode || undefined;
+      }
+
+      this.formDataChange.emit(data);
     }
   }
 
@@ -174,7 +191,7 @@ export class FormPersonalData {
 
   getFieldError(fieldName: string): string {
     const field = this.orderForm.get(fieldName);
-    
+
     if (!field?.errors || (!field.dirty && !field.touched)) {
       return '';
     }
@@ -193,16 +210,16 @@ export class FormPersonalData {
     if (field.errors['required']) {
       return `${fieldLabel} es requerido`;
     }
-    
+
     if (field.errors['email']) {
       return 'Ingresa un email válido';
     }
-    
+
     if (field.errors['minlength']) {
       const minLength = field.errors['minlength'].requiredLength;
       return `${fieldLabel} debe tener al menos ${minLength} caracteres`;
     }
-    
+
     if (field.errors['pattern']) {
       return 'Formato de teléfono inválido';
     }
@@ -228,33 +245,21 @@ export class FormPersonalData {
   }
 
   // ========== MÉTODOS PÚBLICOS - API ==========
-  /**
-   * Resetea el formulario a su estado inicial
-   */
   reset(): void {
     this.orderForm.reset();
     this.formValid.set(false);
   }
 
-  /**
-   * Marca todos los campos como touched (útil para validación)
-   */
   markAllAsTouched(): void {
     this.orderForm.markAllAsTouched();
     this.checkFormValidity();
   }
 
-  /**
-   * Obtiene los valores actuales del formulario
-   */
-  getFormValue() {
+  getFormValue(): FormData {
     return this.orderForm.value;
   }
 
-  /**
-   * Establece valores en el formulario
-   */
-  setFormValue(data: Partial<typeof this.initialData>): void {
+  setFormValue(data: Partial<FormData>): void {
     this.orderForm.patchValue(data);
   }
 }

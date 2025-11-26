@@ -4,6 +4,9 @@ import { CommonModule } from '@angular/common';
 import { FormPersonalData } from "../../organisms/form-personal-data/form-personal-data";
 import { MethodePay } from "../../organisms/methode-pay/methode-pay";
 import { Confirmation } from "../../organisms/confirmation/confirmation";
+import { OrderService } from "../../../core/services/order.service";
+import { CartService } from "../../../core/services/cart.service";
+import type { DeliveryType } from "../../../core/models/interfaces/order.interface";
 
 type PaymentMethod = 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
 
@@ -20,7 +23,7 @@ interface OrderData {
   lastName: string;
   email: string;
   phone: string;
-  deliveryOption: 'pickup' | 'delivery';
+  deliveryOption: DeliveryType;
   address?: string;
   city?: string;
   postalCode?: string;
@@ -28,6 +31,14 @@ interface OrderData {
   paymentMethod: PaymentMethod;
 }
 
+/**
+ * Template para el flujo completo de compra (3 pasos)
+ *
+ * @responsibility Orquestar el proceso de checkout desde datos personales hasta confirmación
+ * @step1 FormPersonalData - Recolectar información del cliente
+ * @step2 MethodePay - Seleccionar método de pago
+ * @step3 Confirmation - Revisar y finalizar pedido
+ */
 @Component({
   selector: 'app-purchase-order-template',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,12 +53,14 @@ interface OrderData {
 })
 export class PurchaseOrderTemplate {
   private readonly router = inject(Router);
+  private readonly orderService = inject(OrderService);
+  private readonly cartService = inject(CartService);
 
   // ========== STATE SIGNALS ==========
   readonly currentStep = signal(1);
   readonly orderData = signal<OrderData | null>(null);
   readonly selectedPaymentMethod = signal<PaymentMethod | null>(null);
-  readonly selectedDeliveryOption = signal<'pickup' | 'delivery'>('delivery');
+  readonly selectedDeliveryOption = signal<DeliveryType>('delivery');
   readonly orderSent = signal(false);
   readonly isProcessing = signal(false);
   readonly personalFormData = signal<Omit<OrderData, 'paymentMethod' | 'deliveryOption'> | null>(null);
@@ -55,15 +68,22 @@ export class PurchaseOrderTemplate {
   private readonly WHATSAPP_NUMBER = '5492616984285';
   private readonly totalSteps = 3;
 
-  // Mock data - Replace with actual service
-  readonly cartItems = signal<CartItem[]>([
-    { id: '1', name: 'Shampoo Profesional', brand: 'Loreal', quantity: 2, price: 25000 },
-    { id: '2', name: 'Acondicionador', brand: 'Pantene', quantity: 1, price: 18000 }
-  ]);
+  // ========== COMPUTED VALUES - CART ==========
+  readonly cartItems = computed(() => {
+    const cart = this.cartService.cart();
+    if (!cart?.data) return [];
 
-  // ========== COMPUTED VALUES ==========
+    return cart.data.map(item => ({
+      id: item.product.id,
+      name: item.product.name,
+      brand: item.product.brand,
+      quantity: item.quantity,
+      price: item.product.finalPrice
+    }));
+  });
+
   readonly subtotal = computed(() => {
-    return this.cartItems().reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return this.cartService.totalAmount() / 1.21; // Sin IVA
   });
 
   readonly ivaAmount = computed(() => {
@@ -71,8 +91,23 @@ export class PurchaseOrderTemplate {
   });
 
   readonly totalWithIva = computed(() => {
-    return this.subtotal() + this.ivaAmount();
+    return this.cartService.totalAmount(); // Ya incluye IVA
   });
+
+  // ========== CONSTRUCTOR ==========
+  constructor() {
+    // Cargar deliveryType desde OrderService al inicializar
+    effect(() => {
+      const checkoutState = this.orderService.checkoutState();
+      if (checkoutState?.deliveryType) {
+        this.selectedDeliveryOption.set(checkoutState.deliveryType);
+        console.log('📦 Tipo de entrega cargado:', checkoutState.deliveryType);
+      } else {
+        console.warn('⚠️ No hay tipo de entrega seleccionado, redirigiendo al carrito...');
+        this.router.navigate(['/cart']);
+      }
+    });
+  }
 
   // ========== NAVIGATION METHODS ==========
   onNextStep(): void {
@@ -99,7 +134,7 @@ export class PurchaseOrderTemplate {
   onPersonalFormDataChange(data: Omit<OrderData, 'paymentMethod' | 'deliveryOption'>): void {
     this.personalFormData.set(data);
 
-    // Update orderData with current payment method
+    // Update orderData with current delivery option and payment method
     this.orderData.set({
       ...data,
       deliveryOption: this.selectedDeliveryOption(),
@@ -107,7 +142,7 @@ export class PurchaseOrderTemplate {
     });
   }
 
-  onPersonalFormValidChange(isValid: boolean): void {
+  onPersonalFormValidChange(_isValid: boolean): void {
     // FormPersonalData handles its own validation
     // Just listen for validity changes if needed
   }
@@ -167,6 +202,8 @@ export class PurchaseOrderTemplate {
   }
 
   onBackToHome(): void {
+    // Limpiar estado de checkout
+    /* this.orderService.clearCheckout(); */
     this.router.navigate(['/']);
   }
 
@@ -250,6 +287,12 @@ export class PurchaseOrderTemplate {
   private handleOrderSuccess(): void {
     this.isProcessing.set(false);
     this.orderSent.set(true);
+
+    // Limpiar carrito después de orden exitosa
+    this.cartService.clearCart();
+
+    // Limpiar estado de checkout
+    /* this.orderService.clearCheckout(); */
   }
 
   private copyToClipboard(message: string): void {

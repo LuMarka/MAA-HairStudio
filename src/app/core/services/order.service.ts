@@ -455,7 +455,7 @@ export class OrderService {
     return this.http.patch<OrderInterface>(`${this.apiUrl}/${orderId}/confirm`, confirmDto).pipe(
       tap((response) => {
         this._currentOrder$.next(response.data);
-        
+
         const currentOrders = this._orders$.value;
         const updatedOrders = currentOrders.map(order =>
           order.id === orderId ? response.data : order
@@ -605,7 +605,7 @@ export class OrderService {
     return this.http.patch<OrderInterface>(`${this.apiUrl}/${orderId}/status`, statusData).pipe(
       tap((response) => {
         this._currentOrder$.next(response.data);
-        
+
         const currentOrders = this._orders$.value;
         const updatedOrders = currentOrders.map(order =>
           order.id === orderId ? response.data : order
