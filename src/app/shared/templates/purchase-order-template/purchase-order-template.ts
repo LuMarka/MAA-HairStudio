@@ -1,8 +1,11 @@
-import { Component, signal, inject, ChangeDetectionStrategy, computed, OnInit, effect } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-/* import { CartService } from '../../../core/services/cartOld.service'; */
+import { Component, signal, inject, ChangeDetectionStrategy, computed, effect } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormPersonalData } from "../../organisms/form-personal-data/form-personal-data";
+import { MethodePay } from "../../organisms/methode-pay/methode-pay";
+import { Confirmation } from "../../organisms/confirmation/confirmation";
+
+type PaymentMethod = 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
 
 interface CartItem {
   id: string;
@@ -22,7 +25,7 @@ interface OrderData {
   city?: string;
   postalCode?: string;
   notes?: string;
-  paymentMethod: 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
+  paymentMethod: PaymentMethod;
 }
 
 @Component({
@@ -30,187 +33,53 @@ interface OrderData {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
-    ReactiveFormsModule
+    FormPersonalData,
+    MethodePay,
+    Confirmation
   ],
   templateUrl: './purchase-order-template.html',
   styleUrl: './purchase-order-template.scss'
 })
-export class PurchaseOrderTemplate implements OnInit {
-  /* private readonly cartService = inject(CartService); */
+export class PurchaseOrderTemplate {
   private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
-  private readonly fb = inject(FormBuilder);
 
+  // ========== STATE SIGNALS ==========
   readonly currentStep = signal(1);
-  readonly totalSteps = signal(3);
   readonly orderData = signal<OrderData | null>(null);
-  readonly selectedPaymentMethod = signal<OrderData['paymentMethod'] | null>(null);
+  readonly selectedPaymentMethod = signal<PaymentMethod | null>(null);
   readonly selectedDeliveryOption = signal<'pickup' | 'delivery'>('delivery');
-  readonly formValid = signal(false);
   readonly orderSent = signal(false);
   readonly isProcessing = signal(false);
+  readonly personalFormData = signal<Omit<OrderData, 'paymentMethod' | 'deliveryOption'> | null>(null);
 
-private readonly WHATSAPP_NUMBER = '5492616984285';
-/*    private readonly WHATSAPP_NUMBER = '5493534015655'; */
+  private readonly WHATSAPP_NUMBER = '5492616984285';
+  private readonly totalSteps = 3;
 
-  /* readonly cartItems = computed(() => this.cartService.items());
-  readonly cartTotal = computed(() => this.cartService.total()); */
+  // Mock data - Replace with actual service
+  readonly cartItems = signal<CartItem[]>([
+    { id: '1', name: 'Shampoo Profesional', brand: 'Loreal', quantity: 2, price: 25000 },
+    { id: '2', name: 'Acondicionador', brand: 'Pantene', quantity: 1, price: 18000 }
+  ]);
 
-  /* readonly subtotal = computed(() => {
-    const total = this.cartTotal();
-    return total / 1.21; // Descontar el IVA del total
-  }); */
+  // ========== COMPUTED VALUES ==========
+  readonly subtotal = computed(() => {
+    return this.cartItems().reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  });
 
-  /* readonly ivaAmount = computed(() => {
-    return this.subtotal() * 0.21; // 21% de IVA
-  }); */
+  readonly ivaAmount = computed(() => {
+    return this.subtotal() * 0.21;
+  });
 
-  /* readonly totalWithIva = computed(() => {
+  readonly totalWithIva = computed(() => {
     return this.subtotal() + this.ivaAmount();
-  }); */
-
-  readonly deliveryOptionText = computed(() => {
-    return this.selectedDeliveryOption() === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio';
   });
 
-  // Computed for selected payment method text
-  readonly selectedPaymentMethodText = computed(() => {
-    const method = this.selectedPaymentMethod();
-    return method ? this.getPaymentMethodText(method) : '';
-  });
-
-  // Reactive form
-  readonly orderForm = this.fb.group({
-    firstName: ['', [Validators.required]],
-    lastName: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required]],
-    address: [''],
-    city: [''],
-    postalCode: [''],
-    notes: ['']
-  });
-
-  readonly isStep1Valid = computed(() => {
-    return this.formValid();
-  });
-
-  readonly isOrderComplete = computed(() => {
-    const data = this.orderData();
-    const paymentMethod = this.selectedPaymentMethod();
-    return data !== null && paymentMethod !== null && this.isStep1Valid();
-  });
-
-  constructor() {
-    // Effect para actualizar la validación del formulario
-    effect(() => {
-      const deliveryOption = this.selectedDeliveryOption();
-      this.updateFormValidators(deliveryOption);
-      this.checkFormValidity();
-    });
-  }
-
-  ngOnInit(): void {
-    // Get delivery option from query params
-    /* this.route.queryParams.subscribe(params => {
-      const deliveryOption = params['deliveryOption'] as 'pickup' | 'delivery';
-      if (deliveryOption) {
-        this.selectedDeliveryOption.set(deliveryOption);
-      }
-    }); */
-
-    // Check if cart is empty
-    /* if (this.cartItems().length === 0) {
-      this.router.navigate(['/cart']);
-    } */
-
-    // Subscribe to form changes
-    this.orderForm.valueChanges.subscribe(() => {
-      this.checkFormValidity();
-      this.updateOrderData();
-    });
-
-    // Subscribe to form status changes
-    this.orderForm.statusChanges.subscribe(() => {
-      this.checkFormValidity();
-    });
-
-    // Initial validation check
-    this.updateFormValidators(this.selectedDeliveryOption());
-    this.checkFormValidity();
-  }
-
-  private updateFormValidators(deliveryOption: 'pickup' | 'delivery'): void {
-    const addressControl = this.orderForm.get('address');
-    const cityControl = this.orderForm.get('city');
-
-    if (deliveryOption === 'delivery') {
-      addressControl?.setValidators([Validators.required]);
-      cityControl?.setValidators([Validators.required]);
-    } else {
-      addressControl?.clearValidators();
-      cityControl?.clearValidators();
-    }
-
-    addressControl?.updateValueAndValidity({ emitEvent: false });
-    cityControl?.updateValueAndValidity({ emitEvent: false });
-  }
-
-  private checkFormValidity(): void {
-    const form = this.orderForm;
-    const deliveryOption = this.selectedDeliveryOption();
-
-    // Check basic required fields
-    const firstNameValid = form.get('firstName')?.valid ?? false;
-    const lastNameValid = form.get('lastName')?.valid ?? false;
-    const emailValid = form.get('email')?.valid ?? false;
-    const phoneValid = form.get('phone')?.valid ?? false;
-
-    let isValid = firstNameValid && lastNameValid && emailValid && phoneValid;
-
-    // For delivery, also check address fields
-    if (deliveryOption === 'delivery') {
-      const addressValid = form.get('address')?.valid ?? false;
-      const cityValid = form.get('city')?.valid ?? false;
-      isValid = isValid && addressValid && cityValid;
-    }
-
-    this.formValid.set(isValid);
-  }
-
-  private updateOrderData(): void {
-    if (this.isStep1Valid()) {
-      const formValue = this.orderForm.value;
-      this.orderData.set({
-        firstName: formValue.firstName || '',
-        lastName: formValue.lastName || '',
-        email: formValue.email || '',
-        phone: formValue.phone || '',
-        deliveryOption: this.selectedDeliveryOption(),
-        address: formValue.address || '',
-        city: formValue.city || '',
-        postalCode: formValue.postalCode || '',
-        notes: formValue.notes || '',
-        paymentMethod: 'cash'
-      } as OrderData);
-    }
-  }
-
+  // ========== NAVIGATION METHODS ==========
   onNextStep(): void {
     const currentStepValue = this.currentStep();
 
-    if (currentStepValue < this.totalSteps()) {
-      // Step 1: Validate form
-      if (currentStepValue === 1) {
-        this.orderForm.markAllAsTouched();
-        this.checkFormValidity();
-
-        if (!this.isStep1Valid()) {
-          return;
-        }
-      }
-
-      // Step 2: Validate payment method
+    if (currentStepValue < this.totalSteps) {
+      // Step 2 requires payment method
       if (currentStepValue === 2 && !this.selectedPaymentMethod()) {
         return;
       }
@@ -226,92 +95,82 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
     }
   }
 
-  onPaymentMethodChange(method: OrderData['paymentMethod']): void {
+  // ========== STEP 1: FORM PERSONAL DATA HANDLERS ==========
+  onPersonalFormDataChange(data: Omit<OrderData, 'paymentMethod' | 'deliveryOption'>): void {
+    this.personalFormData.set(data);
+
+    // Update orderData with current payment method
+    this.orderData.set({
+      ...data,
+      deliveryOption: this.selectedDeliveryOption(),
+      paymentMethod: this.selectedPaymentMethod() || 'cash'
+    });
+  }
+
+  onPersonalFormValidChange(isValid: boolean): void {
+    // FormPersonalData handles its own validation
+    // Just listen for validity changes if needed
+  }
+
+  onEditCartFromForm(): void {
+    this.router.navigate(['/cart']);
+  }
+
+  onContinueFromForm(): void {
+    this.currentStep.set(2);
+  }
+
+  // ========== STEP 2: PAYMENT METHOD HANDLERS ==========
+  onPaymentMethodChange(method: PaymentMethod): void {
     this.selectedPaymentMethod.set(method);
 
-    const currentData = this.orderData();
+    // Update orderData with selected payment method
+    const currentData = this.personalFormData();
     if (currentData) {
       this.orderData.set({
         ...currentData,
+        deliveryOption: this.selectedDeliveryOption(),
         paymentMethod: method
       });
     }
   }
 
+  // ========== STEP 3: CONFIRMATION HANDLERS ==========
   onEditCart(): void {
     this.router.navigate(['/cart']);
-  }
-
-  // Form helper methods
-  isFieldInvalid(fieldName: string): boolean {
-    const field = this.orderForm.get(fieldName);
-    return !!(field && field.invalid && field.touched);
-  }
-
-  getFieldError(fieldName: string): string {
-    const field = this.orderForm.get(fieldName);
-    if (field?.errors && field.touched) {
-      if (field.errors['required']) {
-        const fieldLabels: Record<string, string> = {
-          firstName: 'El nombre',
-          lastName: 'El apellido',
-          email: 'El email',
-          phone: 'El teléfono',
-          address: 'La dirección',
-          city: 'La ciudad'
-        };
-        return `${fieldLabels[fieldName] || 'Este campo'} es requerido`;
-      }
-      if (field.errors['email']) {
-        return 'Ingresa un email válido';
-      }
-    }
-    return '';
-  }
-
-  // Private method for payment method text (no null handling needed)
-  private getPaymentMethodText(method: OrderData['paymentMethod']): string {
-    const paymentMethods: Record<OrderData['paymentMethod'], string> = {
-      'mercadopago-card': 'Tarjeta de Crédito/Débito (Mercado Pago)',
-      'mercadopago': 'Mercado Pago',
-      'transfer': 'Transferencia Bancaria',
-      'cash': 'Efectivo en la entrega'
-    };
-
-    return paymentMethods[method] || 'No especificado';
   }
 
   onFinalizeOrder(): void {
     const data = this.orderData();
     const paymentMethod = this.selectedPaymentMethod();
-    /* const cartItems = this.cartItems();
-    const total = this.cartTotal(); */
+    const cartItems = this.cartItems();
+    const total = this.totalWithIva();
 
     if (!data || !paymentMethod) {
-      alert('Por favor complete todos los datos requeridos');
+      console.error('Datos del pedido incompletos');
       return;
     }
 
-   /*  if (cartItems.length === 0) {
-      alert('El carrito está vacío');
+    if (cartItems.length === 0) {
+      console.error('El carrito está vacío');
       this.router.navigate(['/cart']);
       return;
     }
 
     if (total <= 0) {
-      alert('Total inválido');
+      console.error('Total inválido');
       return;
-    } */
-
-    const completeOrderData: OrderData = {
-      ...data,
-      paymentMethod
-    };
+    }
 
     this.isProcessing.set(true);
-    /* this.sendToWhatsApp(completeOrderData, cartItems, total); */
+    this.sendToWhatsApp(data, cartItems, total);
   }
 
+  onBackToHome(): void {
+    this.router.navigate(['/']);
+  }
+
+  // ========== WHATSAPP INTEGRATION ==========
   private sendToWhatsApp(orderData: OrderData, cartItems: CartItem[], total: number): void {
     const message = this.buildWhatsAppMessage(orderData, cartItems, total);
 
@@ -336,31 +195,6 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
       alert('Hubo un error al abrir WhatsApp. El mensaje se ha copiado al portapapeles.');
       window.open(`https://wa.me/${this.WHATSAPP_NUMBER}`, '_blank');
       this.handleOrderSuccess();
-    }
-  }
-
-  private handleOrderSuccess(): void {
-    this.isProcessing.set(false);
-    this.orderSent.set(true);
-    /* this.cartService.clearCart(); */
-
-    // Auto redirect after 60 seconds
-    setTimeout(() => {
-      this.router.navigate(['/']);
-    }, 60000);
-  }
-
-  onBackToHome(): void {
-    this.router.navigate(['/']);
-  }
-
-  private copyToClipboard(message: string): void {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(message).then(() => {
-        console.log('Message copied to clipboard');
-      }).catch(err => {
-        console.error('Failed to copy message:', err);
-      });
     }
   }
 
@@ -401,5 +235,28 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
     message += '\n¡Gracias por tu pedido! 🎉';
 
     return message;
+  }
+
+  private getPaymentMethodText(method: PaymentMethod): string {
+    const paymentMethods: Record<PaymentMethod, string> = {
+      'mercadopago-card': 'Tarjeta de Crédito/Débito (Mercado Pago)',
+      'mercadopago': 'Mercado Pago',
+      'transfer': 'Transferencia Bancaria',
+      'cash': 'Efectivo en la entrega'
+    };
+    return paymentMethods[method] || 'No especificado';
+  }
+
+  private handleOrderSuccess(): void {
+    this.isProcessing.set(false);
+    this.orderSent.set(true);
+  }
+
+  private copyToClipboard(message: string): void {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(message).catch(err => {
+        console.error('Failed to copy message:', err);
+      });
+    }
   }
 }

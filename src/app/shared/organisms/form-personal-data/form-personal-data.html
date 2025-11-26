@@ -1,0 +1,284 @@
+<div class="purchase-order__content">
+  <div class="container">
+    <div class="form-layout">
+      <!-- Datos de la persona - Columna izquierda (más ancha) -->
+      <div class="customer-form-section">
+        <div class="form-header">
+          <h2 class="form-title">Información de Contacto y Entrega</h2>
+          <div class="delivery-badge">
+            <span class="delivery-badge__icon">
+              @if (selectedDeliveryOption() === 'pickup') {
+              🏪
+              } @else {
+              🚚
+              }
+            </span>
+            <span class="delivery-badge__text">{{ deliveryOptionText() }}</span>
+          </div>
+        </div>
+
+        <form [formGroup]="orderForm" (ngSubmit)="onNextStep()" class="purchase-form" novalidate>
+          <!-- Información Personal -->
+          <div class="form-section">
+            <div class="form-section__header">
+              <h3 class="form-section__title">
+                <span class="form-section__icon">👤</span>
+                Información Personal
+              </h3>
+              <p class="form-section__description">Datos necesarios para contactarte</p>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="firstName" class="form-label">
+                  Nombre <span class="required">*</span>
+                </label>
+                <div class="form-input-wrapper">
+                  <input type="text" id="firstName" formControlName="firstName" class="form-control"
+                    [class.form-control--error]="isFieldInvalid('firstName')" placeholder="Ingresa tu nombre">
+                  @if (isFieldInvalid('firstName')) {
+                  <span class="form-error">
+                    <span class="form-error__icon">⚠️</span>
+                    {{ getFieldError('firstName') }}
+                  </span>
+                  }
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="lastName" class="form-label">
+                  Apellido <span class="required">*</span>
+                </label>
+                <div class="form-input-wrapper">
+                  <input type="text" id="lastName" formControlName="lastName" class="form-control"
+                    [class.form-control--error]="isFieldInvalid('lastName')" placeholder="Ingresa tu apellido">
+                  @if (isFieldInvalid('lastName')) {
+                  <span class="form-error">
+                    <span class="form-error__icon">⚠️</span>
+                    {{ getFieldError('lastName') }}
+                  </span>
+                  }
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="email" class="form-label">
+                  Correo Electrónico <span class="required">*</span>
+                </label>
+                <div class="form-input-wrapper">
+                  <input type="email" id="email" formControlName="email" class="form-control"
+                    [class.form-control--error]="isFieldInvalid('email')" placeholder="ejemplo@correo.com">
+                  @if (isFieldInvalid('email')) {
+                  <span class="form-error">
+                    <span class="form-error__icon">⚠️</span>
+                    {{ getFieldError('email') }}
+                  </span>
+                  }
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="phone" class="form-label">
+                  Teléfono <span class="required">*</span>
+                </label>
+                <div class="form-input-wrapper">
+                  <input type="tel" id="phone" formControlName="phone" class="form-control"
+                    [class.form-control--error]="isFieldInvalid('phone')" placeholder="+54 9 11 1234-5678">
+                  @if (isFieldInvalid('phone')) {
+                  <span class="form-error">
+                    <span class="form-error__icon">⚠️</span>
+                    {{ getFieldError('phone') }}
+                  </span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dirección de entrega (solo para delivery) -->
+          @if (selectedDeliveryOption() === 'delivery') {
+          <div class="form-section">
+            <div class="form-section__header">
+              <h3 class="form-section__title">
+                <span class="form-section__icon">🚚</span>
+                Dirección de Entrega
+              </h3>
+              <p class="form-section__description">¿Dónde quieres recibir tu pedido?</p>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group form-group--full">
+                <label for="address" class="form-label">
+                  Dirección Completa <span class="required">*</span>
+                </label>
+                <div class="form-input-wrapper">
+                  <input type="text" id="address" formControlName="address" class="form-control"
+                    [class.form-control--error]="isFieldInvalid('address')"
+                    placeholder="Calle, número, piso, departamento">
+                  @if (isFieldInvalid('address')) {
+                  <span class="form-error">
+                    <span class="form-error__icon">⚠️</span>
+                    {{ getFieldError('address') }}
+                  </span>
+                  }
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="city" class="form-label">
+                  Ciudad <span class="required">*</span>
+                </label>
+                <div class="form-input-wrapper">
+                  <input type="text" id="city" formControlName="city" class="form-control"
+                    [class.form-control--error]="isFieldInvalid('city')" placeholder="Ciudad">
+                  @if (isFieldInvalid('city')) {
+                  <span class="form-error">
+                    <span class="form-error__icon">⚠️</span>
+                    {{ getFieldError('city') }}
+                  </span>
+                  }
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="postalCode" class="form-label">Código Postal</label>
+                <div class="form-input-wrapper">
+                  <input type="text" id="postalCode" formControlName="postalCode" class="form-control"
+                    placeholder="1234">
+                </div>
+              </div>
+            </div>
+          </div>
+          }
+
+          <!-- Información Adicional -->
+          <div class="form-section">
+            <div class="form-section__header">
+              <h3 class="form-section__title">
+                <span class="form-section__icon">📝</span>
+                Información Adicional
+              </h3>
+              <p class="form-section__description">
+                @if (selectedDeliveryOption() === 'delivery') {
+                Incluye horarios preferidos para la entrega, referencias del domicilio, etc.
+                } @else {
+                Incluye horarios preferidos para el retiro, comentarios especiales, etc.
+                }
+              </p>
+            </div>
+
+            <div class="form-group form-group--full">
+              <label for="notes" class="form-label">Notas del Pedido</label>
+              <div class="form-input-wrapper">
+                <textarea id="notes" formControlName="notes" class="form-control form-control--textarea" rows="4"
+                  placeholder="Comentarios especiales, instrucciones de entrega, horarios de preferencia, etc."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de navegación -->
+          <div class="form-actions">
+            <button type="button" class="btn btn--secondary" (click)="onEditCart()">
+              <span class="btn__icon">←</span>
+              <span class="btn__text">Editar Carrito</span>
+            </button>
+
+            <button type="submit" class="btn btn--primary" [disabled]="!isStep1Valid()">
+              <span class="btn__text">Continuar</span>
+              <span class="btn__icon">→</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Resumen del carrito - Columna derecha -->
+      <div class="order-sidebar">
+        <div class="order-summary-card">
+          <h3 class="summary-title">Resumen del Pedido</h3>
+
+          <div class="summary-section">
+            <!-- <h4 class="summary-subtitle">Productos ({{ cartItems().length }})</h4> -->
+            <div class="summary-items">
+              <!-- @for (item of cartItems(); track item.id) {
+                    <div class="summary-item">
+                      <div class="item-details">
+                        <span class="item-name">{{ item.name }}</span>
+                        @if (item.brand) {
+                          <span class="item-brand">{{ item.brand }}</span>
+                        }
+                      </div>
+                      <div class="item-quantity">x{{ item.quantity }}</div>
+                      <div class="item-price">${{ (item.price * item.quantity).toFixed(2) }}</div>
+                    </div>
+                  } -->
+            </div>
+          </div>
+
+          <div class="summary-totals">
+            <div class="total-row">
+              <span>Subtotal:</span>
+              <!--  <span>${{ subtotal().toFixed(2) }}</span> -->
+            </div>
+            <div class="total-row">
+              <span>Envío:</span>
+              <span>
+                @if (selectedDeliveryOption() === 'pickup') {
+                Gratis
+                } @else {
+                A convenir
+                }
+              </span>
+            </div>
+            <div class="total-row">
+              <span>IVA (21%):</span>
+              <!-- <span>${{ ivaAmount().toFixed(2) }}</span> -->
+            </div>
+            <div class="total-row total-row--final">
+              <span>Total:</span>
+              <!-- <span>${{ totalWithIva().toFixed(2) }}</span> -->
+            </div>
+          </div>
+
+          <div class="delivery-info">
+            <div class="delivery-info__item">
+              <span class="delivery-info__label">Modalidad:</span>
+              <span class="delivery-info__value">{{ deliveryOptionText() }}</span>
+            </div>
+            @if (selectedDeliveryOption() === 'delivery') {
+            <div class="delivery-info__item">
+              <span class="delivery-info__label">Tiempo estimado:</span>
+              <span class="delivery-info__value">3-5 días hábiles</span>
+            </div>
+            } @else {
+            <div class="delivery-info__item">
+              <span class="delivery-info__label">Disponible:</span>
+              <span class="delivery-info__value">Lunes a Viernes</span>
+            </div>
+            }
+          </div>
+
+          <!-- Validation status -->
+          <div class="validation-status">
+            @if (isStep1Valid()) {
+            <div class="validation-status__success">
+              <span class="validation-status__icon">✅</span>
+              <span class="validation-status__text">Información completa</span>
+            </div>
+            } @else {
+            <div class="validation-status__pending">
+              <span class="validation-status__icon">⚠️</span>
+              <span class="validation-status__text">
+                @if (selectedDeliveryOption() === 'delivery') {
+                Completa nombre, email, teléfono, dirección y ciudad
+                } @else {
+                Completa nombre, email y teléfono
+                }
+              </span>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

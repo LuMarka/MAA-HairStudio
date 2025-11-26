@@ -1,0 +1,200 @@
+<div class="purchase-order__content">
+  <div class="container">
+    <div class="step-content">
+      <h2 class="step-title">Método de Pago</h2>
+      <p class="step-subtitle">Selecciona cómo quieres pagar tu pedido</p>
+
+      <!-- Métodos de pago -->
+      <div class="payment-methods-section">
+        <h3 class="section-title">
+          <span class="section-icon">💳</span>
+          Opciones de Pago
+        </h3>
+        <div class="payment-methods">
+          <label class="payment-option" [class.payment-option--selected]="selectedPaymentMethod() === 'cash'">
+            <input type="radio" name="paymentMethod" value="cash" (change)="onPaymentMethodChange('cash')"
+              class="payment-option__input">
+            <div class="payment-option__card">
+              <span class="payment-option__icon">💵</span>
+              <div class="payment-option__content">
+                <strong class="payment-option__title">Efectivo</strong>
+                <span class="payment-option__subtitle">
+                  @if (selectedDeliveryOption() === 'delivery') {
+                  Paga al momento de la entrega
+                  } @else {
+                  Paga al momento del retiro
+                  }
+                </span>
+              </div>
+              <div class="payment-option__check">✓</div>
+            </div>
+          </label>
+
+          <label class="payment-option" [class.payment-option--selected]="selectedPaymentMethod() === 'transfer'">
+            <input type="radio" name="paymentMethod" value="transfer" (change)="onPaymentMethodChange('transfer')"
+              class="payment-option__input">
+            <div class="payment-option__card">
+              <span class="payment-option__icon">🏦</span>
+              <div class="payment-option__content">
+                <strong class="payment-option__title">Transferencia bancaria</strong>
+                <span class="payment-option__subtitle">Te enviaremos los datos bancarios</span>
+              </div>
+              <div class="payment-option__check">✓</div>
+            </div>
+          </label>
+
+          <label class="payment-option" [class.payment-option--selected]="selectedPaymentMethod() === 'mercadopago'">
+            <input type="radio" name="paymentMethod" value="mercadopago" (change)="onPaymentMethodChange('mercadopago')"
+              class="payment-option__input">
+            <div class="payment-option__card">
+              <span class="payment-option__icon">💳</span>
+              <div class="payment-option__content">
+                <strong class="payment-option__title">Mercado Pago</strong>
+                <span class="payment-option__subtitle">Pago online seguro</span>
+              </div>
+              <div class="payment-option__check">✓</div>
+            </div>
+          </label>
+
+          <label class="payment-option"
+            [class.payment-option--selected]="selectedPaymentMethod() === 'mercadopago-card'">
+            <input type="radio" name="paymentMethod" value="mercadopago-card"
+              (change)="onPaymentMethodChange('mercadopago-card')" class="payment-option__input">
+            <div class="payment-option__card">
+              <span class="payment-option__icon">💳</span>
+              <div class="payment-option__content">
+                <strong class="payment-option__title">Tarjeta (Mercado Pago)</strong>
+                <span class="payment-option__subtitle">Crédito o débito</span>
+              </div>
+              <div class="payment-option__check">✓</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Layout para datos del cliente y resumen -->
+      <div class="payment-summary-layout">
+        <!-- Datos del Cliente - Columna izquierda -->
+        <div class="customer-data-section">
+          @if (orderData(); as data) {
+          <div class="customer-summary-card">
+            <h3 class="card-title">
+              <span class="card-icon">👤</span>
+              Datos del Cliente
+            </h3>
+            <div class="customer-data">
+              <div class="data-item">
+                <span class="data-label">Cliente:</span>
+                <span class="data-value">{{ data.firstName }} {{ data.lastName }}</span>
+              </div>
+              <div class="data-item">
+                <span class="data-label">Email:</span>
+                <span class="data-value">{{ data.email }}</span>
+              </div>
+              <div class="data-item">
+                <span class="data-label">Teléfono:</span>
+                <span class="data-value">{{ data.phone }}</span>
+              </div>
+
+              @if (data.deliveryOption === 'delivery') {
+              <div class="data-item data-item--address">
+                <span class="data-label">Dirección:</span>
+                <div class="data-value">
+                  <div>{{ data.address }}</div>
+                  <div>{{ data.city }}@if (data.postalCode) { ({{ data.postalCode }}) }</div>
+                </div>
+              </div>
+              } @else {
+              <div class="data-item">
+                <span class="data-label">Modalidad:</span>
+                <span class="data-value">Retiro en tienda</span>
+              </div>
+              }
+
+              @if (data.notes) {
+              <div class="data-item data-item--notes">
+                <span class="data-label">Notas:</span>
+                <span class="data-value">{{ data.notes }}</span>
+              </div>
+              }
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- Resumen de Compra - Columna derecha -->
+        <div class="order-summary-section">
+          <div class="order-summary-card">
+            <h3 class="card-title">
+              <span class="card-icon">🛒</span>
+              Resumen de Compra
+            </h3>
+
+            <div class="order-items">
+              <!--  @for (item of cartItems(); track item.id) {
+                    <div class="order-item">
+                      <div class="item-info">
+                        <h4 class="item-name">{{ item.name }}</h4>
+                        @if (item.brand) {
+                          <span class="item-brand">{{ item.brand }}</span>
+                        }
+                      </div>
+                      <div class="item-quantity">x{{ item.quantity }}</div>
+                      <div class="item-total">${{ (item.price * item.quantity).toFixed(2) }}</div>
+                    </div>
+                  } -->
+            </div>
+
+            <div class="order-totals">
+              <div class="total-line">
+                <span>Subtotal:</span>
+                <!-- <span>${{ subtotal().toFixed(2) }}</span> -->
+              </div>
+              <div class="total-line">
+                <span>Envío:</span>
+                <span>
+                  @if (selectedDeliveryOption() === 'pickup') {
+                  Gratis
+                  } @else {
+                  A convenir
+                  }
+                </span>
+              </div>
+              <div class="total-line">
+                <span>IVA (21%):</span>
+                <!-- <span>${{ ivaAmount().toFixed(2) }}</span> -->
+              </div>
+              <div class="total-line total-line--final">
+                <span>Total:</span>
+                <!--  <span>${{ totalWithIva().toFixed(2) }}</span> -->
+              </div>
+            </div>
+
+            @if (selectedPaymentMethod()) {
+            <div class="payment-selected">
+              <div class="payment-selected__icon">💳</div>
+              <div class="payment-selected__content">
+                <span class="payment-selected__label">Método de pago:</span>
+                <span class="payment-selected__value">{{ selectedPaymentMethodText() }}</span>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation buttons -->
+      <div class="form-actions">
+        <button type="button" class="btn btn--secondary" (click)="onPreviousStep()">
+          <span class="btn__icon">←</span>
+          <span class="btn__text">Volver</span>
+        </button>
+
+        <button type="button" class="btn btn--primary" [disabled]="!selectedPaymentMethod()" (click)="onNextStep()">
+          <span class="btn__text">Continuar</span>
+          <span class="btn__icon">→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
