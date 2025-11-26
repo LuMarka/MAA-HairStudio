@@ -1,18 +1,12 @@
 <div class="purchase-order__content">
   <div class="container">
     <div class="form-layout">
-      <!-- Datos de la persona - Columna izquierda (más ancha) -->
+      <!-- Formulario - Columna izquierda -->
       <div class="customer-form-section">
         <div class="form-header">
           <h2 class="form-title">Información de Contacto y Entrega</h2>
           <div class="delivery-badge">
-            <span class="delivery-badge__icon">
-              @if (deliveryOption() === 'pickup') {
-              🏪
-              } @else {
-              🚚
-              }
-            </span>
+            <span class="delivery-badge__icon">{{ deliveryBadgeText() }}</span>
             <span class="delivery-badge__text">{{ deliveryOptionText() }}</span>
           </div>
         </div>
@@ -29,163 +23,232 @@
             </div>
 
             <div class="form-grid">
+              <!-- Nombre -->
               <div class="form-group">
                 <label for="firstName" class="form-label">
                   Nombre <span class="required">*</span>
                 </label>
                 <div class="form-input-wrapper">
-                  <input type="text" id="firstName" formControlName="firstName" class="form-control"
-                    [class.form-control--error]="isFieldInvalid('firstName')" placeholder="Ingresa tu nombre">
+                  <input
+                    type="text"
+                    id="firstName"
+                    formControlName="firstName"
+                    class="form-control"
+                    [class.form-control--error]="isFieldInvalid('firstName')"
+                    placeholder="Ingresa tu nombre"
+                    autocomplete="given-name">
                   @if (isFieldInvalid('firstName')) {
-                  <span class="form-error">
-                    <span class="form-error__icon">⚠️</span>
-                    {{ getFieldError('firstName') }}
-                  </span>
+                    <span class="form-error">
+                      <span class="form-error__icon">⚠️</span>
+                      {{ getFieldError('firstName') }}
+                    </span>
                   }
                 </div>
               </div>
 
+              <!-- Apellido -->
               <div class="form-group">
                 <label for="lastName" class="form-label">
                   Apellido <span class="required">*</span>
                 </label>
                 <div class="form-input-wrapper">
-                  <input type="text" id="lastName" formControlName="lastName" class="form-control"
-                    [class.form-control--error]="isFieldInvalid('lastName')" placeholder="Ingresa tu apellido">
+                  <input
+                    type="text"
+                    id="lastName"
+                    formControlName="lastName"
+                    class="form-control"
+                    [class.form-control--error]="isFieldInvalid('lastName')"
+                    placeholder="Ingresa tu apellido"
+                    autocomplete="family-name">
                   @if (isFieldInvalid('lastName')) {
-                  <span class="form-error">
-                    <span class="form-error__icon">⚠️</span>
-                    {{ getFieldError('lastName') }}
-                  </span>
+                    <span class="form-error">
+                      <span class="form-error__icon">⚠️</span>
+                      {{ getFieldError('lastName') }}
+                    </span>
                   }
                 </div>
               </div>
 
+              <!-- Email -->
               <div class="form-group">
                 <label for="email" class="form-label">
                   Correo Electrónico <span class="required">*</span>
                 </label>
                 <div class="form-input-wrapper">
-                  <input type="email" id="email" formControlName="email" class="form-control"
-                    [class.form-control--error]="isFieldInvalid('email')" placeholder="ejemplo@correo.com">
+                  <input
+                    type="email"
+                    id="email"
+                    formControlName="email"
+                    class="form-control"
+                    [class.form-control--error]="isFieldInvalid('email')"
+                    placeholder="ejemplo@correo.com"
+                    autocomplete="email">
                   @if (isFieldInvalid('email')) {
-                  <span class="form-error">
-                    <span class="form-error__icon">⚠️</span>
-                    {{ getFieldError('email') }}
-                  </span>
+                    <span class="form-error">
+                      <span class="form-error__icon">⚠️</span>
+                      {{ getFieldError('email') }}
+                    </span>
                   }
                 </div>
               </div>
 
+              <!-- Teléfono -->
               <div class="form-group">
                 <label for="phone" class="form-label">
                   Teléfono <span class="required">*</span>
                 </label>
                 <div class="form-input-wrapper">
-                  <input type="tel" id="phone" formControlName="phone" class="form-control"
-                    [class.form-control--error]="isFieldInvalid('phone')" placeholder="+54 9 11 1234-5678">
+                  <input
+                    type="tel"
+                    id="phone"
+                    formControlName="phone"
+                    class="form-control"
+                    [class.form-control--error]="isFieldInvalid('phone')"
+                    placeholder="+54 9 11 1234-5678"
+                    autocomplete="tel">
                   @if (isFieldInvalid('phone')) {
-                  <span class="form-error">
-                    <span class="form-error__icon">⚠️</span>
-                    {{ getFieldError('phone') }}
-                  </span>
+                    <span class="form-error">
+                      <span class="form-error__icon">⚠️</span>
+                      {{ getFieldError('phone') }}
+                    </span>
                   }
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Sección de dirección - SOLO para delivery -->
+          <!-- Dirección de Entrega - SOLO para delivery -->
           @if (isDelivery()) {
-          <div class="form-section">
-            <h3 class="form-title">
-              <span class="form-icon">📍</span>
-              Dirección de Entrega
-            </h3>
-
-            <div class="form-grid">
-              <!-- Dirección completa -->
-              <div class="form-group form-group--full">
-                <label for="address" class="form-label">
-                  Dirección completa *
-                </label>
-                <div class="form-input-wrapper">
-                  <input id="address" type="text" formControlName="address" class="form-control"
-                    [class.form-control--invalid]="isFieldInvalid('address')"
-                    placeholder="Calle, número, piso, depto..." autocomplete="street-address">
-                  @if (isFieldInvalid('address')) {
-                  <span class="form-error">{{ getFieldError('address') }}</span>
-                  }
-                </div>
+            <div class="form-section">
+              <div class="form-section__header">
+                <h3 class="form-section__title">
+                  <span class="form-section__icon">📍</span>
+                  Dirección de Entrega
+                </h3>
+                <p class="form-section__description">Datos de envío del pedido</p>
               </div>
 
-              <div class="form-group">
-                <label for="province" class="form-label">
-                  Provincia *
-                </label>
-                <div class="form-input-wrapper">
-                  <input id="province" type="text" formControlName="province" class="form-control"
-                    [class.form-control--invalid]="isFieldInvalid('province')" placeholder="Tu provincia"
-                    autocomplete="address-level1">
-                  @if (isFieldInvalid('province')) {
-                  <span class="form-error">{{ getFieldError('province') }}</span>
-                  }
+              <div class="form-grid">
+                <!-- Provincia -->
+                <div class="form-group">
+                  <label for="province" class="form-label">
+                    Provincia <span class="required">*</span>
+                  </label>
+                  <div class="form-input-wrapper">
+                    <input
+                      id="province"
+                      type="text"
+                      formControlName="province"
+                      class="form-control"
+                      [class.form-control--error]="isFieldInvalid('province')"
+                      placeholder="Tu provincia"
+                      autocomplete="address-level1">
+                    @if (isFieldInvalid('province')) {
+                      <span class="form-error">
+                        <span class="form-error__icon">⚠️</span>
+                        {{ getFieldError('province') }}
+                      </span>
+                    }
+                  </div>
                 </div>
-              </div>
 
-              <!-- Ciudad -->
-              <div class="form-group">
-                <label for="city" class="form-label">
-                  Ciudad *
-                </label>
-                <div class="form-input-wrapper">
-                  <input id="city" type="text" formControlName="city" class="form-control"
-                    [class.form-control--invalid]="isFieldInvalid('city')" placeholder="Tu ciudad"
-                    autocomplete="address-level2">
-                  @if (isFieldInvalid('city')) {
-                  <span class="form-error">{{ getFieldError('city') }}</span>
-                  }
+                <!-- Ciudad -->
+                <div class="form-group">
+                  <label for="city" class="form-label">
+                    Ciudad <span class="required">*</span>
+                  </label>
+                  <div class="form-input-wrapper">
+                    <input
+                      id="city"
+                      type="text"
+                      formControlName="city"
+                      class="form-control"
+                      [class.form-control--error]="isFieldInvalid('city')"
+                      placeholder="Tu ciudad"
+                      autocomplete="address-level2">
+                    @if (isFieldInvalid('city')) {
+                      <span class="form-error">
+                        <span class="form-error__icon">⚠️</span>
+                        {{ getFieldError('city') }}
+                      </span>
+                    }
+                  </div>
                 </div>
-              </div>
 
-              <!-- Código Postal -->
-              <div class="form-group">
-                <label for="postalCode" class="form-label">
-                  Código Postal
-                </label>
-                <div class="form-input-wrapper">
-                  <input id="postalCode" type="text" formControlName="postalCode" class="form-control"
-                    [class.form-control--invalid]="isFieldInvalid('postalCode')" placeholder="Código postal"
-                    autocomplete="postal-code">
-                  @if (isFieldInvalid('postalCode')) {
-                  <span class="form-error">{{ getFieldError('postalCode') }}</span>
-                  }
+                <!-- Dirección completa -->
+                <div class="form-group form-group--full">
+                  <label for="address" class="form-label">
+                    Dirección completa <span class="required">*</span>
+                  </label>
+                  <div class="form-input-wrapper">
+                    <input
+                      id="address"
+                      type="text"
+                      formControlName="address"
+                      class="form-control"
+                      [class.form-control--error]="isFieldInvalid('address')"
+                      placeholder="Calle, número, piso, depto..."
+                      autocomplete="street-address">
+                    @if (isFieldInvalid('address')) {
+                      <span class="form-error">
+                        <span class="form-error__icon">⚠️</span>
+                        {{ getFieldError('address') }}
+                      </span>
+                    }
+                  </div>
+                </div>
+
+                <!-- Código Postal -->
+                <div class="form-group">
+                  <label for="postalCode" class="form-label">
+                    Código Postal <span class="required">*</span>
+                  </label>
+                  <div class="form-input-wrapper">
+                    <input
+                      id="postalCode"
+                      type="text"
+                      formControlName="postalCode"
+                      class="form-control"
+                      [class.form-control--error]="isFieldInvalid('postalCode')"
+                      placeholder="Código postal"
+                      autocomplete="postal-code">
+                    @if (isFieldInvalid('postalCode')) {
+                      <span class="form-error">
+                        <span class="form-error__icon">⚠️</span>
+                        {{ getFieldError('postalCode') }}
+                      </span>
+                    }
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
           }
 
-          <!-- Notas adicionales - Siempre visible -->
+          <!-- Información Adicional -->
           <div class="form-section">
-            <h3 class="form-title">
-              <span class="form-icon">📝</span>
-              Información Adicional
-            </h3>
+            <div class="form-section__header">
+              <h3 class="form-section__title">
+                <span class="form-section__icon">📝</span>
+                Información Adicional
+              </h3>
+              <p class="form-section__description">Notas opcionales para tu pedido</p>
+            </div>
 
             <div class="form-group form-group--full">
               <label for="deliveryInstructions" class="form-label">
                 Notas para el pedido (opcional)
               </label>
               <div class="form-input-wrapper">
-                <textarea id="deliveryInstructions" formControlName="deliveryInstructions" class="form-control form-control--textarea"
-                  placeholder="Indicaciones especiales, horarios de entrega, etc..." rows="4"></textarea>
+                <textarea
+                  id="deliveryInstructions"
+                  formControlName="deliveryInstructions"
+                  class="form-control form-control--textarea"
+                  placeholder="Indicaciones especiales, horarios de entrega, etc..."
+                  rows="4"></textarea>
                 <span class="form-helper">
-                  @if (isDelivery()) {
-                  Incluye referencias para encontrar tu domicilio más fácilmente
-                  } @else {
-                  Indícanos tu horario preferido para el retiro
-                  }
+                  {{ isDelivery()
+                    ? 'Incluye referencias para encontrar tu domicilio más fácilmente'
+                    : 'Indícanos tu horario preferido para el retiro' }}
                 </span>
               </div>
             </div>
@@ -206,94 +269,84 @@
         </form>
       </div>
 
-      <!-- Resumen del carrito - Columna derecha -->
-      <div class="order-sidebar">
+      <!-- Resumen del Pedido - Columna derecha -->
+      <aside class="order-sidebar">
         <div class="order-summary-card">
           <h3 class="summary-title">Resumen del Pedido</h3>
 
-          <div class="summary-section">
-            <!-- <h4 class="summary-subtitle">Productos ({{ cartItems().length }})</h4> -->
-            <div class="summary-items">
-              <!-- @for (item of cartItems(); track item.id) {
-                    <div class="summary-item">
-                      <div class="item-details">
-                        <span class="item-name">{{ item.name }}</span>
-                        @if (item.brand) {
-                          <span class="item-brand">{{ item.brand }}</span>
-                        }
-                      </div>
-                      <div class="item-quantity">x{{ item.quantity }}</div>
-                      <div class="item-price">${{ (item.price * item.quantity).toFixed(2) }}</div>
+          <!-- Productos -->
+          @if (hasCartItems()) {
+            <div class="summary-section">
+              <h4 class="summary-subtitle">Productos ({{ cartItemsCount() }})</h4>
+              <div class="summary-items">
+                @for (item of cartItems(); track item.id) {
+                  <div class="summary-item">
+                    <div class="item-details">
+                      <span class="item-name">{{ item.name }}</span>
+                      @if (item.brand) {
+                        <span class="item-brand">{{ item.brand }}</span>
+                      }
                     </div>
-                  } -->
+                    <div class="item-quantity">x{{ item.quantity }}</div>
+                    <div class="item-price">${{ (item.price * item.quantity).toFixed(2) }}</div>
+                  </div>
+                }
+              </div>
             </div>
-          </div>
+          } @else {
+            <div class="summary-section summary-section--empty">
+              <p class="summary-empty">No hay productos en el carrito</p>
+            </div>
+          }
 
+          <!-- Totales -->
           <div class="summary-totals">
             <div class="total-row">
               <span>Subtotal:</span>
-              <!--  <span>${{ subtotal().toFixed(2) }}</span> -->
+              <span>${{ subtotal().toFixed(2) }}</span>
             </div>
             <div class="total-row">
               <span>Envío:</span>
-              <span>
-                @if (deliveryOption() === 'pickup') {
-                Gratis
-                } @else {
-                A convenir
-                }
-              </span>
+              <span>{{ shippingText() }}</span>
             </div>
             <div class="total-row">
               <span>IVA (21%):</span>
-              <!-- <span>${{ ivaAmount().toFixed(2) }}</span> -->
+              <span>${{ ivaAmount().toFixed(2) }}</span>
             </div>
             <div class="total-row total-row--final">
               <span>Total:</span>
-              <!-- <span>${{ totalWithIva().toFixed(2) }}</span> -->
+              <span>${{ totalWithIva().toFixed(2) }}</span>
             </div>
           </div>
 
+          <!-- Información de Entrega -->
           <div class="delivery-info">
             <div class="delivery-info__item">
               <span class="delivery-info__label">Modalidad:</span>
               <span class="delivery-info__value">{{ deliveryOptionText() }}</span>
             </div>
-            @if (deliveryOption() === 'delivery') {
             <div class="delivery-info__item">
-              <span class="delivery-info__label">Tiempo estimado:</span>
-              <span class="delivery-info__value">3-5 días hábiles</span>
+              <span class="delivery-info__label">{{ deliveryTimeLabel() }}</span>
+              <span class="delivery-info__value">{{ deliveryTimeText() }}</span>
             </div>
-            } @else {
-            <div class="delivery-info__item">
-              <span class="delivery-info__label">Disponible:</span>
-              <span class="delivery-info__value">Lunes a Viernes</span>
-            </div>
-            }
           </div>
 
-          <!-- Validation status -->
+          <!-- Estado de Validación -->
           <div class="validation-status">
             @if (formValid()) {
-            <div class="validation-status__success">
-              <span class="validation-status__icon">✅</span>
-              <span class="validation-status__text">Información completa</span>
-            </div>
+              <div class="validation-status__success">
+                <span class="validation-status__icon">✅</span>
+                <span class="validation-status__text">{{ validationMessage() }}</span>
+              </div>
             } @else {
-            <div class="validation-status__pending">
-              <span class="validation-status__icon">⚠️</span>
-              <span class="validation-status__text">
-                @if (deliveryOption() === 'delivery') {
-                Completa nombre, email, teléfono, dirección y ciudad
-                } @else {
-                Completa nombre, email y teléfono
-                }
-              </span>
-            </div>
+              <div class="validation-status__pending">
+                <span class="validation-status__icon">⚠️</span>
+                <span class="validation-status__text">{{ validationMessage() }}</span>
+              </div>
             }
           </div>
         </div>
-      </div>
+      </aside>
     </div>
   </div>
 </div>

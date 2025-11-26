@@ -2,8 +2,17 @@ import { Component, ChangeDetectionStrategy, input, output, computed, signal, ef
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
+import { CartService } from '../../../core/services/cart.service';
 
 type DeliveryType = 'pickup' | 'delivery';
+
+interface CartItem {
+  id: string;
+  name: string;
+  brand?: string;
+  quantity: number;
+  price: number;
+}
 
 interface FormData {
   firstName: string;
@@ -21,12 +30,11 @@ interface FormData {
  * Organismo para el formulario de datos personales y dirección de entrega
  *
  * @responsibility Capturar información del cliente y dirección según tipo de entrega
- * @input deliveryOption - Tipo de entrega ('pickup' | 'delivery')
- * @input initialData - Datos iniciales del formulario (opcional)
- * @output formDataChange - Emite cuando los datos del formulario cambian
- * @output formValidChange - Emite cuando cambia la validez del formulario
- * @output editCart - Emite cuando se presiona volver al carrito
- * @output continue - Emite cuando se presiona continuar (formulario válido)
+ * @features
+ * - Validación dinámica según tipo de entrega (pickup/delivery)
+ * - Prellenado automático con datos del usuario autenticado
+ * - Resumen del carrito en tiempo real
+ * - Cálculos de totales con IVA
  */
 @Component({
   selector: 'app-form-personal-data',
@@ -36,8 +44,9 @@ interface FormData {
   styleUrl: './form-personal-data.scss'
 })
 export class FormPersonalData {
-  private readonly fb = new FormBuilder();
+  private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly cartService = inject(CartService);
 
   // ========== INPUTS ==========
   readonly deliveryOption = input.required<DeliveryType>();
@@ -52,7 +61,7 @@ export class FormPersonalData {
   // ========== SIGNALS ==========
   readonly formValid = signal(false);
 
-  // ========== COMPUTED ==========
+  // ========== COMPUTED - DELIVERY OPTIONS ==========
   readonly isDelivery = computed(() => this.deliveryOption() === 'delivery');
   readonly isPickup = computed(() => this.deliveryOption() === 'pickup');
 
@@ -63,6 +72,59 @@ export class FormPersonalData {
   readonly deliveryBadgeText = computed(() =>
     this.isDelivery() ? '🚚 Envío' : '🏪 Retiro'
   );
+
+  // ========== COMPUTED - CART DATA ==========
+  readonly cartItems = computed<CartItem[]>(() => {
+    const cart = this.cartService.cart();
+    if (!cart?.data) return [];
+
+    return cart.data.map(item => ({
+      id: item.product.id,
+      name: item.product.name,
+      brand: item.product.brand,
+      quantity: item.quantity,
+      price: item.product.finalPrice
+    }));
+  });
+
+  readonly hasCartItems = computed(() => this.cartItems().length > 0);
+  readonly cartItemsCount = computed(() => this.cartItems().length);
+
+  // ========== COMPUTED - TOTALS ==========
+  readonly subtotal = computed(() => {
+    return this.cartService.subtotal();
+  });
+
+  readonly ivaAmount = computed(() => {
+    return this.subtotal() * 0.21;
+  });
+
+  readonly totalWithIva = computed(() => {
+    return this.cartService.totalAmount();
+  });
+
+  readonly shippingText = computed(() => {
+    return this.isDelivery() ? 'A convenir' : 'Gratis';
+  });
+
+  readonly deliveryTimeText = computed(() => {
+    return this.isDelivery() ? '3-5 días hábiles' : 'Lunes a Viernes';
+  });
+
+  readonly deliveryTimeLabel = computed(() => {
+    return this.isDelivery() ? 'Tiempo estimado:' : 'Disponible:';
+  });
+
+  // ========== COMPUTED - VALIDATION ==========
+  readonly validationMessage = computed(() => {
+    if (this.formValid()) {
+      return 'Información completa';
+    }
+
+    return this.isDelivery()
+      ? 'Completa nombre, email, teléfono, dirección y ciudad'
+      : 'Completa nombre, email y teléfono';
+  });
 
   // ========== FORM ==========
   readonly orderForm: FormGroup = this.fb.group({
@@ -84,7 +146,6 @@ export class FormPersonalData {
       const deliveryOption = this.deliveryOption();
       this.updateFormValidators(deliveryOption);
 
-      // Si es pickup, limpiar campos de dirección
       if (deliveryOption === 'pickup') {
         this.clearAddressFields();
       }
@@ -104,13 +165,12 @@ export class FormPersonalData {
       this.emitFormData();
     });
 
-    // Subscribe a cambios de estado del formulario
     this.orderForm.statusChanges.subscribe(() => {
       this.checkFormValidity();
     });
   }
 
-  // ========== MÉTODOS PRIVADOS ==========
+  // ========== MÉTODOS PRIVADOS - VALIDACIÓN ==========
   private updateFormValidators(deliveryOption: DeliveryType): void {
     const addressControl = this.orderForm.get('address');
     const provinceControl = this.orderForm.get('province');
@@ -118,14 +178,11 @@ export class FormPersonalData {
     const postalCodeControl = this.orderForm.get('postalCode');
 
     if (deliveryOption === 'delivery') {
-      // Para delivery, dirección y ciudad son obligatorios
       addressControl?.setValidators([Validators.required, Validators.minLength(5)]);
       provinceControl?.setValidators([Validators.required, Validators.minLength(2)]);
       cityControl?.setValidators([Validators.required, Validators.minLength(2)]);
       postalCodeControl?.setValidators([Validators.required, Validators.minLength(4)]);
-      
     } else {
-      // Para pickup, no son necesarios
       addressControl?.clearValidators();
       provinceControl?.clearValidators();
       cityControl?.clearValidators();
@@ -151,7 +208,6 @@ export class FormPersonalData {
     const form = this.orderForm;
     const deliveryOption = this.deliveryOption();
 
-    // Campos básicos requeridos
     const firstNameValid = form.get('firstName')?.valid ?? false;
     const lastNameValid = form.get('lastName')?.valid ?? false;
     const emailValid = form.get('email')?.valid ?? false;
@@ -159,20 +215,18 @@ export class FormPersonalData {
 
     let isValid = firstNameValid && lastNameValid && emailValid && phoneValid;
 
-    // Para delivery, validar también dirección
     if (deliveryOption === 'delivery') {
       const addressValid = form.get('address')?.valid ?? false;
       const provinceValid = form.get('province')?.valid ?? false;
       const cityValid = form.get('city')?.valid ?? false;
       const postalCodeValid = form.get('postalCode')?.valid ?? false;
-      
+
       isValid = isValid && addressValid && provinceValid && cityValid && postalCodeValid;
     }
 
     const previousValid = this.formValid();
     this.formValid.set(isValid);
 
-    // Solo emitir si cambió el estado de validez
     if (previousValid !== isValid) {
       this.formValidChange.emit(isValid);
     }
@@ -189,14 +243,12 @@ export class FormPersonalData {
         deliveryInstructions: formValue.deliveryInstructions || undefined
       };
 
-      // Solo incluir dirección si es delivery
       if (this.isDelivery()) {
         data.address = formValue.address || undefined;
         data.city = formValue.city || undefined;
         data.postalCode = formValue.postalCode || undefined;
         data.province = formValue.province || undefined;
       }
-      console.log('Emitting form data:', data);
 
       this.formDataChange.emit(data);
     }
@@ -254,7 +306,6 @@ export class FormPersonalData {
   }
 
   onNextStep(): void {
-    // Marcar todos los campos como touched para mostrar errores
     this.orderForm.markAllAsTouched();
     this.checkFormValidity();
 
