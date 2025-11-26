@@ -1,6 +1,7 @@
-import { Component, ChangeDetectionStrategy, input, output, computed, signal, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { AuthService } from '../../../core/services/auth.service';
 
 type DeliveryType = 'pickup' | 'delivery';
 
@@ -11,8 +12,9 @@ interface FormData {
   phone: string;
   address?: string;
   city?: string;
+  province?: string;
   postalCode?: string;
-  notes?: string;
+  deliveryInstructions?: string;
 }
 
 /**
@@ -35,6 +37,7 @@ interface FormData {
 })
 export class FormPersonalData {
   private readonly fb = new FormBuilder();
+  private readonly authService = inject(AuthService);
 
   // ========== INPUTS ==========
   readonly deliveryOption = input.required<DeliveryType>();
@@ -63,14 +66,15 @@ export class FormPersonalData {
 
   // ========== FORM ==========
   readonly orderForm: FormGroup = this.fb.group({
-    firstName: ['', [Validators.required, Validators.minLength(2)]],
+    firstName: [this.authService.currentUser()?.name || '', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
-    email: ['', [Validators.required, Validators.email]],
+    email: [this.authService.currentUser()?.email || '', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.pattern(/^[\d\s\+\-\(\)]+$/)]],
+    province: [''],
     address: [''],
     city: [''],
     postalCode: [''],
-    notes: ['']
+    deliveryInstructions: ['']
   });
 
   // ========== CONSTRUCTOR ==========
@@ -109,25 +113,35 @@ export class FormPersonalData {
   // ========== MÉTODOS PRIVADOS ==========
   private updateFormValidators(deliveryOption: DeliveryType): void {
     const addressControl = this.orderForm.get('address');
+    const provinceControl = this.orderForm.get('province');
     const cityControl = this.orderForm.get('city');
+    const postalCodeControl = this.orderForm.get('postalCode');
 
     if (deliveryOption === 'delivery') {
       // Para delivery, dirección y ciudad son obligatorios
       addressControl?.setValidators([Validators.required, Validators.minLength(5)]);
+      provinceControl?.setValidators([Validators.required, Validators.minLength(2)]);
       cityControl?.setValidators([Validators.required, Validators.minLength(2)]);
+      postalCodeControl?.setValidators([Validators.required, Validators.minLength(4)]);
+      
     } else {
       // Para pickup, no son necesarios
       addressControl?.clearValidators();
+      provinceControl?.clearValidators();
       cityControl?.clearValidators();
+      postalCodeControl?.clearValidators();
     }
 
     addressControl?.updateValueAndValidity({ emitEvent: false });
+    provinceControl?.updateValueAndValidity({ emitEvent: false });
     cityControl?.updateValueAndValidity({ emitEvent: false });
+    postalCodeControl?.updateValueAndValidity({ emitEvent: false });
   }
 
   private clearAddressFields(): void {
     this.orderForm.patchValue({
       address: '',
+      province: '',
       city: '',
       postalCode: ''
     }, { emitEvent: false });
@@ -148,8 +162,11 @@ export class FormPersonalData {
     // Para delivery, validar también dirección
     if (deliveryOption === 'delivery') {
       const addressValid = form.get('address')?.valid ?? false;
+      const provinceValid = form.get('province')?.valid ?? false;
       const cityValid = form.get('city')?.valid ?? false;
-      isValid = isValid && addressValid && cityValid;
+      const postalCodeValid = form.get('postalCode')?.valid ?? false;
+      
+      isValid = isValid && addressValid && provinceValid && cityValid && postalCodeValid;
     }
 
     const previousValid = this.formValid();
@@ -169,7 +186,7 @@ export class FormPersonalData {
         lastName: formValue.lastName || '',
         email: formValue.email || '',
         phone: formValue.phone || '',
-        notes: formValue.notes || undefined
+        deliveryInstructions: formValue.deliveryInstructions || undefined
       };
 
       // Solo incluir dirección si es delivery
@@ -177,7 +194,9 @@ export class FormPersonalData {
         data.address = formValue.address || undefined;
         data.city = formValue.city || undefined;
         data.postalCode = formValue.postalCode || undefined;
+        data.province = formValue.province || undefined;
       }
+      console.log('Emitting form data:', data);
 
       this.formDataChange.emit(data);
     }
@@ -200,9 +219,11 @@ export class FormPersonalData {
       firstName: 'El nombre',
       lastName: 'El apellido',
       email: 'El email',
+      province: 'La provincia',
       phone: 'El teléfono',
       address: 'La dirección',
-      city: 'La ciudad'
+      city: 'La ciudad',
+      postalCode: 'El código postal'
     };
 
     const fieldLabel = fieldLabels[fieldName] || 'Este campo';

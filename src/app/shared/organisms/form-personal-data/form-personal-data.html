@@ -119,6 +119,20 @@
                 </div>
               </div>
 
+              <div class="form-group">
+                <label for="province" class="form-label">
+                  Provincia *
+                </label>
+                <div class="form-input-wrapper">
+                  <input id="province" type="text" formControlName="province" class="form-control"
+                    [class.form-control--invalid]="isFieldInvalid('province')" placeholder="Tu provincia"
+                    autocomplete="address-level1">
+                  @if (isFieldInvalid('province')) {
+                  <span class="form-error">{{ getFieldError('province') }}</span>
+                  }
+                </div>
+              </div>
+
               <!-- Ciudad -->
               <div class="form-group">
                 <label for="city" class="form-label">
@@ -141,7 +155,11 @@
                 </label>
                 <div class="form-input-wrapper">
                   <input id="postalCode" type="text" formControlName="postalCode" class="form-control"
-                    placeholder="Código postal" autocomplete="postal-code">
+                    [class.form-control--invalid]="isFieldInvalid('postalCode')" placeholder="Código postal"
+                    autocomplete="postal-code">
+                  @if (isFieldInvalid('postalCode')) {
+                  <span class="form-error">{{ getFieldError('postalCode') }}</span>
+                  }
                 </div>
               </div>
             </div>
@@ -156,11 +174,11 @@
             </h3>
 
             <div class="form-group form-group--full">
-              <label for="notes" class="form-label">
+              <label for="deliveryInstructions" class="form-label">
                 Notas para el pedido (opcional)
               </label>
               <div class="form-input-wrapper">
-                <textarea id="notes" formControlName="notes" class="form-control form-control--textarea"
+                <textarea id="deliveryInstructions" formControlName="deliveryInstructions" class="form-control form-control--textarea"
                   placeholder="Indicaciones especiales, horarios de entrega, etc..." rows="4"></textarea>
                 <span class="form-helper">
                   @if (isDelivery()) {

@@ -65,7 +65,7 @@ export class PurchaseOrderTemplate {
   readonly isProcessing = signal(false);
   readonly personalFormData = signal<Omit<OrderData, 'paymentMethod' | 'deliveryOption'> | null>(null);
 
-  private readonly WHATSAPP_NUMBER = '5492616984285';
+  private readonly WHATSAPP_NUMBER = '573185539506';
   private readonly totalSteps = 3;
 
   // ========== COMPUTED VALUES - CART ==========
@@ -289,7 +289,7 @@ export class PurchaseOrderTemplate {
     this.orderSent.set(true);
 
     // Limpiar carrito después de orden exitosa
-    this.cartService.clearCart();
+    /* this.cartService.clearCart(); */
 
     // Limpiar estado de checkout
     /* this.orderService.clearCheckout(); */
