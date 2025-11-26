@@ -6,7 +6,7 @@ import { MethodePay } from "../../organisms/methode-pay/methode-pay";
 import { Confirmation } from "../../organisms/confirmation/confirmation";
 import { OrderService } from "../../../core/services/order.service";
 import { CartService } from "../../../core/services/cart.service";
-import type { DeliveryType } from "../../../core/models/interfaces/order.interface";
+import type { DeliveryType, CreateOrderDto } from "../../../core/models/interfaces/order.interface";
 
 type PaymentMethod = 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
 
@@ -26,8 +26,9 @@ interface OrderData {
   deliveryOption: DeliveryType;
   address?: string;
   city?: string;
+  province?: string;
   postalCode?: string;
-  notes?: string;
+  deliveryInstructions?: string;
   paymentMethod: PaymentMethod;
 }
 
@@ -60,7 +61,7 @@ export class PurchaseOrderTemplate {
   readonly currentStep = signal(1);
   readonly orderData = signal<OrderData | null>(null);
   readonly selectedPaymentMethod = signal<PaymentMethod | null>(null);
-  readonly selectedDeliveryOption = signal<DeliveryType>('delivery');
+  readonly selectedDeliveryOption = signal<DeliveryType>('pickup'); // Cambiado a 'pickup' por defecto
   readonly orderSent = signal(false);
   readonly isProcessing = signal(false);
   readonly personalFormData = signal<Omit<OrderData, 'paymentMethod' | 'deliveryOption'> | null>(null);
@@ -83,7 +84,7 @@ export class PurchaseOrderTemplate {
   });
 
   readonly subtotal = computed(() => {
-    return this.cartService.totalAmount() / 1.21; // Sin IVA
+    return this.cartService.subtotal();
   });
 
   readonly ivaAmount = computed(() => {
@@ -91,7 +92,7 @@ export class PurchaseOrderTemplate {
   });
 
   readonly totalWithIva = computed(() => {
-    return this.cartService.totalAmount(); // Ya incluye IVA
+    return this.cartService.totalAmount();
   });
 
   // ========== CONSTRUCTOR ==========
@@ -103,8 +104,9 @@ export class PurchaseOrderTemplate {
         this.selectedDeliveryOption.set(checkoutState.deliveryType);
         console.log('📦 Tipo de entrega cargado:', checkoutState.deliveryType);
       } else {
-        console.warn('⚠️ No hay tipo de entrega seleccionado, redirigiendo al carrito...');
-        this.router.navigate(['/cart']);
+        console.warn('⚠️ No hay tipo de entrega seleccionado en checkout');
+        // Usar pickup por defecto si no hay estado de checkout
+        this.selectedDeliveryOption.set('pickup');
       }
     });
   }
@@ -144,7 +146,6 @@ export class PurchaseOrderTemplate {
 
   onPersonalFormValidChange(_isValid: boolean): void {
     // FormPersonalData handles its own validation
-    // Just listen for validity changes if needed
   }
 
   onEditCartFromForm(): void {
@@ -182,34 +183,87 @@ export class PurchaseOrderTemplate {
     const total = this.totalWithIva();
 
     if (!data || !paymentMethod) {
-      console.error('Datos del pedido incompletos');
+      console.error('❌ Datos del pedido incompletos');
       return;
     }
 
     if (cartItems.length === 0) {
-      console.error('El carrito está vacío');
+      console.error('❌ El carrito está vacío');
       this.router.navigate(['/cart']);
       return;
     }
 
     if (total <= 0) {
-      console.error('Total inválido');
+      console.error('❌ Total inválido');
       return;
     }
 
     this.isProcessing.set(true);
-    this.sendToWhatsApp(data, cartItems, total);
+
+    // Preparar DTO para crear la orden - Por defecto pickup
+    const createOrderDto: CreateOrderDto = {
+      deliveryType: 'pickup',
+      notes: data.deliveryInstructions || undefined
+    };
+
+    console.log('📦 Creando orden con datos:', createOrderDto);
+
+    // Crear la orden en el backend
+    this.orderService.createOrderFromCart(createOrderDto).subscribe({
+      next: (response) => {
+        console.log('✅ Orden creada exitosamente:', {
+          orderNumber: response.data.orderNumber,
+          id: response.data.id,
+          total: response.data.total
+        });
+
+        // Limpiar el carrito después de crear la orden
+        this.cartService.clearCart().subscribe({
+          next: () => {
+            console.log('✅ Carrito limpiado exitosamente');
+
+            // Enviar mensaje a WhatsApp con el número de orden generado
+            this.sendToWhatsApp(data, cartItems, total, response.data.orderNumber);
+
+            // Limpiar estado de checkout
+            this.orderService.clearCheckoutState();
+
+            // Marcar como procesado exitosamente
+            this.handleOrderSuccess();
+          },
+          error: (error) => {
+            console.error('⚠️ Error al limpiar carrito:', error);
+            // Aún así continuar con el flujo de WhatsApp
+            this.sendToWhatsApp(data, cartItems, total, response.data.orderNumber);
+            this.orderService.clearCheckoutState();
+            this.handleOrderSuccess();
+          }
+        });
+      },
+      error: (error) => {
+        console.error('❌ Error al crear orden:', error);
+        this.isProcessing.set(false);
+
+        // Mostrar mensaje de error al usuario
+        alert('Hubo un error al crear tu pedido. Por favor intenta nuevamente.');
+      }
+    });
   }
 
   onBackToHome(): void {
     // Limpiar estado de checkout
-    /* this.orderService.clearCheckout(); */
+    this.orderService.clearCheckoutState();
     this.router.navigate(['/']);
   }
 
   // ========== WHATSAPP INTEGRATION ==========
-  private sendToWhatsApp(orderData: OrderData, cartItems: CartItem[], total: number): void {
-    const message = this.buildWhatsAppMessage(orderData, cartItems, total);
+  private sendToWhatsApp(
+    orderData: OrderData,
+    cartItems: CartItem[],
+    total: number,
+    orderNumber: string
+  ): void {
+    const message = this.buildWhatsAppMessage(orderData, cartItems, total, orderNumber);
 
     try {
       const encodedMessage = encodeURIComponent(message);
@@ -219,30 +273,35 @@ export class PurchaseOrderTemplate {
         this.copyToClipboard(message);
         alert('El mensaje es muy largo. Se ha copiado al portapapeles. Por favor, pégalo en WhatsApp.');
         window.open(`https://wa.me/${this.WHATSAPP_NUMBER}`, '_blank');
-        this.handleOrderSuccess();
         return;
       }
 
       window.open(whatsappUrl, '_blank');
-      this.handleOrderSuccess();
 
     } catch (error) {
-      console.error('Error sending to WhatsApp:', error);
+      console.error('❌ Error al abrir WhatsApp:', error);
       this.copyToClipboard(message);
       alert('Hubo un error al abrir WhatsApp. El mensaje se ha copiado al portapapeles.');
       window.open(`https://wa.me/${this.WHATSAPP_NUMBER}`, '_blank');
-      this.handleOrderSuccess();
     }
   }
 
-  private buildWhatsAppMessage(data: OrderData, items: CartItem[], total: number): string {
+  private buildWhatsAppMessage(
+    data: OrderData,
+    items: CartItem[],
+    total: number,
+    orderNumber: string
+  ): string {
     let message = '🛍️ NUEVO PEDIDO - MAA Hair Studio\n\n';
 
-    message += '📋 PRODUCTOS:\n';
+    message += `📋 ORDEN: ${orderNumber}\n\n`;
+
+    message += '🛒 PRODUCTOS:\n';
     items.forEach((item, index) => {
       const itemTotal = item.price * item.quantity;
       const brand = item.brand ? ` (${item.brand})` : '';
-      message += `${index + 1}. ${item.name}${brand} x${item.quantity} - $${itemTotal.toFixed(2)}\n`;
+      message += `${index + 1}. ${item.name}${brand}\n`;
+      message += `   Cantidad: x${item.quantity} - Subtotal: $${itemTotal.toFixed(2)}\n`;
     });
 
     message += `\n💰 TOTAL: $${total.toFixed(2)}\n\n`;
@@ -254,19 +313,18 @@ export class PurchaseOrderTemplate {
 
     if (data.deliveryOption === 'delivery') {
       message += '🚚 DIRECCIÓN DE ENTREGA:\n';
-      message += `Dirección: ${data.address}\n`;
-      message += `Ciudad: ${data.city}\n`;
-      if (data.postalCode) {
-        message += `Código Postal: ${data.postalCode}\n`;
-      }
+      if (data.province) message += `Provincia: ${data.province}\n`;
+      if (data.city) message += `Ciudad: ${data.city}\n`;
+      if (data.address) message += `Dirección: ${data.address}\n`;
+      if (data.postalCode) message += `Código Postal: ${data.postalCode}\n`;
     } else {
       message += '🏪 RETIRO EN TIENDA\n';
     }
 
     message += `\n💳 MÉTODO DE PAGO: ${this.getPaymentMethodText(data.paymentMethod)}\n`;
 
-    if (data.notes?.trim()) {
-      message += `\n📝 Notas: ${data.notes}\n`;
+    if (data.deliveryInstructions?.trim()) {
+      message += `\n📝 Notas: ${data.deliveryInstructions}\n`;
     }
 
     message += '\n¡Gracias por tu pedido! 🎉';
@@ -287,18 +345,13 @@ export class PurchaseOrderTemplate {
   private handleOrderSuccess(): void {
     this.isProcessing.set(false);
     this.orderSent.set(true);
-
-    // Limpiar carrito después de orden exitosa
-    /* this.cartService.clearCart(); */
-
-    // Limpiar estado de checkout
-    /* this.orderService.clearCheckout(); */
+    console.log('🎉 Orden procesada exitosamente');
   }
 
   private copyToClipboard(message: string): void {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(message).catch(err => {
-        console.error('Failed to copy message:', err);
+        console.error('❌ Error al copiar al portapapeles:', err);
       });
     }
   }

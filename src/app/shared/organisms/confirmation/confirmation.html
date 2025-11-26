@@ -114,7 +114,7 @@
 
           <div class="confirmation-section__content">
             <div class="order-items-list">
-              <!-- @for (item of cartItems(); track item.id) {
+              @for (item of cartItems(); track item.id) {
                       <div class="order-item-card">
                         <div class="order-item-card__info">
                           <h4 class="order-item-card__name">{{ item.name }}</h4>
@@ -125,13 +125,13 @@
                         <div class="order-item-card__quantity">x{{ item.quantity }}</div>
                         <div class="order-item-card__price">${{ (item.price * item.quantity).toFixed(2) }}</div>
                       </div>
-                    } -->
+                    }
             </div>
 
             <!-- Order totals -->
             <div class="confirmation-item">
               <span class="confirmation-item__label">Subtotal:</span>
-              <!-- <span class="confirmation-item__value">${{ subtotal().toFixed(2) }}</span> -->
+              <span class="confirmation-item__value">${{ subtotal().toFixed(2) }}</span>
             </div>
             <div class="confirmation-item">
               <span class="confirmation-item__label">Envío:</span>
@@ -145,11 +145,11 @@
             </div>
             <div class="confirmation-item">
               <span class="confirmation-item__label">IVA (21%):</span>
-              <!-- <span class="confirmation-item__value">${{ ivaAmount().toFixed(2) }}</span> -->
+              <span class="confirmation-item__value">${{ ivaAmount().toFixed(2) }}</span>
             </div>
             <div class="confirmation-item confirmation-item--total">
               <span class="confirmation-item__label">Total:</span>
-              <!-- <span class="confirmation-item__value">${{ totalWithIva().toFixed(2) }}</span> -->
+              <span class="confirmation-item__value">${{ totalWithIva().toFixed(2) }}</span>
             </div>
           </div>
         </div>

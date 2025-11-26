@@ -131,7 +131,7 @@
             </h3>
 
             <div class="order-items">
-              <!--  @for (item of cartItems(); track item.id) {
+               @for (item of cartItems(); track item.id) {
                     <div class="order-item">
                       <div class="item-info">
                         <h4 class="item-name">{{ item.name }}</h4>
@@ -142,13 +142,13 @@
                       <div class="item-quantity">x{{ item.quantity }}</div>
                       <div class="item-total">${{ (item.price * item.quantity).toFixed(2) }}</div>
                     </div>
-                  } -->
+                  }
             </div>
 
             <div class="order-totals">
               <div class="total-line">
                 <span>Subtotal:</span>
-                <!-- <span>${{ subtotal().toFixed(2) }}</span> -->
+                <span>${{ subtotal().toFixed(2) }}</span>
               </div>
               <div class="total-line">
                 <span>Envío:</span>
@@ -162,11 +162,11 @@
               </div>
               <div class="total-line">
                 <span>IVA (21%):</span>
-                <!-- <span>${{ ivaAmount().toFixed(2) }}</span> -->
+                <span>${{ ivaAmount().toFixed(2) }}</span>
               </div>
               <div class="total-line total-line--final">
                 <span>Total:</span>
-                <!--  <span>${{ totalWithIva().toFixed(2) }}</span> -->
+                 <span>${{ totalWithIva().toFixed(2) }}</span>
               </div>
             </div>
 

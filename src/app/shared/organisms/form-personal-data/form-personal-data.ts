@@ -240,7 +240,7 @@ export class FormPersonalData {
         lastName: formValue.lastName || '',
         email: formValue.email || '',
         phone: formValue.phone || '',
-        deliveryInstructions: formValue.deliveryInstructions || undefined
+        deliveryInstructions: formValue.deliveryInstructions || ''
       };
 
       if (this.isDelivery()) {

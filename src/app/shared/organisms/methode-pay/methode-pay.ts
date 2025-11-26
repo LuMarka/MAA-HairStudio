@@ -1,20 +1,41 @@
-import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CartService } from '../../../core/services/cart.service';
+
+type PaymentMethod = 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
+type DeliveryType = 'pickup' | 'delivery';
+
+interface CartItem {
+  id: string;
+  name: string;
+  brand?: string;
+  quantity: number;
+  price: number;
+}
+
+interface OrderData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  deliveryOption: DeliveryType;
+  address?: string;
+  city?: string;
+  province?: string;
+  postalCode?: string;
+  notes?: string;
+}
 
 /**
  * Organismo para la selección del método de pago (Paso 2)
- * 
+ *
  * @responsibility Gestionar la selección del método de pago y mostrar resumen del pedido
- * @input orderData - Datos del pedido del paso anterior
- * @input selectedPaymentMethod - Método de pago actualmente seleccionado
- * @input selectedDeliveryOption - Tipo de entrega ('pickup' | 'delivery')
- * @input cartItems - Items del carrito para mostrar en resumen
- * @input subtotal - Subtotal sin IVA
- * @input ivaAmount - Monto del IVA (21%)
- * @input totalWithIva - Total final con IVA
- * @output paymentMethodChange - Emite cuando cambia el método de pago seleccionado
- * @output previousStep - Emite cuando se presiona volver
- * @output nextStep - Emite cuando se presiona continuar (con método seleccionado)
+ * @features
+ * - Selección de método de pago con validación
+ * - Resumen de datos del cliente del paso anterior
+ * - Resumen completo del carrito con totales
+ * - Cálculo automático de IVA y totales
+ * - Navegación entre pasos del checkout
  */
 @Component({
   selector: 'app-methode-pay',
@@ -24,64 +45,100 @@ import { CommonModule } from '@angular/common';
   styleUrl: './methode-pay.scss'
 })
 export class MethodePay {
+  private readonly cartService = inject(CartService);
+
   // ========== INPUTS ==========
-  readonly orderData = input<{
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    deliveryOption: 'pickup' | 'delivery';
-    address?: string;
-    city?: string;
-    postalCode?: string;
-    notes?: string;
-  } | null>(null);
-
-  readonly selectedPaymentMethod = input<'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card' | null>(null);
-  readonly selectedDeliveryOption = input.required<'pickup' | 'delivery'>();
-  
-  readonly cartItems = input<Array<{
-    id: string;
-    name: string;
-    brand?: string;
-    quantity: number;
-    price: number;
-  }>>([]);
-
-  readonly subtotal = input.required<number>();
-  readonly ivaAmount = input.required<number>();
-  readonly totalWithIva = input.required<number>();
+  readonly orderData = input<OrderData | null>(null);
+  readonly selectedPaymentMethod = input<PaymentMethod | null>(null);
+  readonly selectedDeliveryOption = input.required<DeliveryType>();
 
   // ========== OUTPUTS ==========
-  readonly paymentMethodChange = output<'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card'>();
+  readonly paymentMethodChange = output<PaymentMethod>();
   readonly previousStep = output<void>();
   readonly nextStep = output<void>();
 
-  // ========== COMPUTED ==========
+  // ========== COMPUTED - CART DATA ==========
+  readonly cartItems = computed<CartItem[]>(() => {
+    const cart = this.cartService.cart();
+    if (!cart?.data) return [];
+
+    return cart.data.map(item => ({
+      id: item.product.id,
+      name: item.product.name,
+      brand: item.product.brand,
+      quantity: item.quantity,
+      price: item.product.finalPrice
+    }));
+  });
+
+  readonly hasCartItems = computed(() => this.cartItems().length > 0);
+  readonly cartItemsCount = computed(() => this.cartItems().length);
+
+  // ========== COMPUTED - TOTALS ==========
+  readonly subtotal = computed(() => {
+    return this.cartService.subtotal();
+  });
+
+  readonly ivaAmount = computed(() => {
+    return this.subtotal() * 0.21;
+  });
+
+  readonly totalWithIva = computed(() => {
+    return this.cartService.totalAmount();
+  });
+
+  readonly shippingCost = computed(() => {
+    return this.selectedDeliveryOption() === 'pickup' ? 0 : 0; // A convenir
+  });
+
+  readonly shippingText = computed(() => {
+    return this.selectedDeliveryOption() === 'pickup' ? 'Gratis' : 'A convenir';
+  });
+
+  // ========== COMPUTED - PAYMENT METHOD ==========
   readonly selectedPaymentMethodText = computed(() => {
     const method = this.selectedPaymentMethod();
     if (!method) return '';
 
-    const paymentMethods: Record<typeof method, string> = {
+    const paymentMethods: Record<PaymentMethod, string> = {
       'mercadopago-card': 'Tarjeta de Crédito/Débito (Mercado Pago)',
       'mercadopago': 'Mercado Pago',
       'transfer': 'Transferencia Bancaria',
-      'cash': 'Efectivo en la entrega'
+      'cash': 'Efectivo'
     };
 
     return paymentMethods[method] || 'No especificado';
   });
 
   readonly canContinue = computed(() => {
-    return this.selectedPaymentMethod() !== null;
+    return this.selectedPaymentMethod() !== null && this.hasCartItems();
   });
 
+  // ========== COMPUTED - DELIVERY ==========
   readonly deliveryText = computed(() => {
-    return this.selectedDeliveryOption() === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio';
+    return this.selectedDeliveryOption() === 'pickup'
+      ? 'Retiro en tienda'
+      : 'Envío a domicilio';
   });
 
-  // ========== MÉTODOS PÚBLICOS ==========
-  onPaymentMethodChange(method: 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card'): void {
+  readonly deliveryBadgeText = computed(() => {
+    return this.selectedDeliveryOption() === 'pickup' ? '🏪 Retiro' : '🚚 Envío';
+  });
+
+  // ========== COMPUTED - CUSTOMER DATA ==========
+  readonly customerName = computed(() => {
+    const data = this.orderData();
+    if (!data) return '';
+    return `${data.firstName} ${data.lastName}`;
+  });
+
+  readonly hasDeliveryAddress = computed(() => {
+    const data = this.orderData();
+    return data?.deliveryOption === 'delivery' && !!data.address;
+  });
+
+  // ========== MÉTODOS PÚBLICOS - EVENTOS ==========
+  onPaymentMethodChange(method: PaymentMethod): void {
     this.paymentMethodChange.emit(method);
   }
 
@@ -91,22 +148,33 @@ export class MethodePay {
 
   onNextStep(): void {
     if (!this.canContinue()) {
+      console.warn('⚠️ No se puede continuar: método de pago no seleccionado o carrito vacío');
       return;
     }
     this.nextStep.emit();
   }
 
-  // ========== HELPERS ==========
+  // ========== MÉTODOS PÚBLICOS - HELPERS ==========
+
+  /**
+   * Formatea un precio a formato de moneda
+   */
   formatPrice(price: number): string {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 2
-    }).format(price);
+    return price.toFixed(2);
   }
 
-  getPaymentMethodIcon(method: string): string {
-    const icons: Record<string, string> = {
+  /**
+   * Calcula el subtotal de un item
+   */
+  getItemSubtotal(item: CartItem): number {
+    return item.price * item.quantity;
+  }
+
+  /**
+   * Obtiene el ícono del método de pago
+   */
+  getPaymentMethodIcon(method: PaymentMethod): string {
+    const icons: Record<PaymentMethod, string> = {
       'cash': '💵',
       'transfer': '🏦',
       'mercadopago': '💳',
@@ -115,8 +183,11 @@ export class MethodePay {
     return icons[method] || '💳';
   }
 
-  getPaymentMethodTitle(method: string): string {
-    const titles: Record<string, string> = {
+  /**
+   * Obtiene el título del método de pago
+   */
+  getPaymentMethodTitle(method: PaymentMethod): string {
+    const titles: Record<PaymentMethod, string> = {
       'cash': 'Efectivo',
       'transfer': 'Transferencia bancaria',
       'mercadopago': 'Mercado Pago',
@@ -125,18 +196,38 @@ export class MethodePay {
     return titles[method] || 'Método de pago';
   }
 
-  getPaymentMethodSubtitle(method: string): string {
+  /**
+   * Obtiene el subtítulo del método de pago según tipo de entrega
+   */
+  getPaymentMethodSubtitle(method: PaymentMethod): string {
     const deliveryOption = this.selectedDeliveryOption();
-    
-    const subtitles: Record<string, string> = {
-      'cash': deliveryOption === 'delivery' 
-        ? 'Paga al momento de la entrega' 
+
+    const subtitles: Record<PaymentMethod, string> = {
+      'cash': deliveryOption === 'delivery'
+        ? 'Paga al momento de la entrega'
         : 'Paga al momento del retiro',
       'transfer': 'Te enviaremos los datos bancarios',
       'mercadopago': 'Pago online seguro',
       'mercadopago-card': 'Crédito o débito'
     };
-    
+
     return subtitles[method] || '';
+  }
+
+  /**
+   * Formatea la dirección completa de entrega
+   */
+  getFullAddress(): string {
+    const data = this.orderData();
+    if (!data || data.deliveryOption !== 'delivery') return '';
+
+    const parts = [
+      data.address,
+      data.city,
+      data.province,
+      data.postalCode
+    ].filter(Boolean);
+
+    return parts.join(', ');
   }
 }
