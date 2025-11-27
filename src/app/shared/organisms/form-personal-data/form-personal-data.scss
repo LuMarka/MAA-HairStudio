@@ -575,3 +575,122 @@
     border-width: 2px;
   }
 }
+
+// ==========================
+// ADDRESS LOADING
+// ==========================
+.address-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid v.color('gray1');
+  border-top-color: v.color('primary');
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin: 0;
+  color: v.color('text-muted');
+  font-size: 0.875rem;
+}
+
+// ==========================
+// ADDRESS ERROR
+// ==========================
+.address-error {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 3px solid #ef4444;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.error-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.error-text {
+  margin: 0;
+  color: #dc2626;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+// ==========================
+// FORM LABEL ENHANCEMENTS
+// ==========================
+.form-label__icon {
+  margin-right: 0.5rem;
+}
+
+.form-label__count {
+  margin-left: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  background: v.color('primary');
+  color: v.color('surface');
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+// ==========================
+// SELECT CONTROL
+// ==========================
+.form-control--select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 3rem;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: v.color('primary');
+    box-shadow: 0 0 0 3px rgba(106, 191, 142, 0.1);
+  }
+}
+
+// ==========================
+// FORM DIVIDER
+// ==========================
+.form-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem 0;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: v.color('gray1');
+  }
+
+  &__text {
+    padding: 0 1rem;
+    color: v.color('text-muted');
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+}

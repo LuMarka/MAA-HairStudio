@@ -125,9 +125,66 @@
                   <span class="form-section__icon">📍</span>
                   Dirección de Entrega
                 </h3>
-                <p class="form-section__description">Datos de envío del pedido</p>
+                <p class="form-section__description">Selecciona una dirección guardada o ingresa una nueva</p>
               </div>
 
+              <!-- Loading state -->
+              @if (isLoadingAddresses()) {
+                <div class="address-loading">
+                  <div class="loading-spinner"></div>
+                  <p class="loading-text">Cargando direcciones...</p>
+                </div>
+              }
+
+              <!-- Error state -->
+              @if (addressesError()) {
+                <div class="address-error">
+                  <span class="error-icon">⚠️</span>
+                  <p class="error-text">{{ addressesError() }}</p>
+                </div>
+              }
+
+              <!-- Selector de direcciones guardadas -->
+              @if (showAddressSelector() && !isLoadingAddresses()) {
+                <div class="form-group form-group--full">
+                  <label for="savedAddress" class="form-label">
+                    <span class="form-label__icon">📋</span>
+                    Direcciones guardadas
+                    <span class="form-label__count">({{ savedAddresses().length }})</span>
+                  </label>
+                  <div class="form-input-wrapper">
+                    <select
+                      id="savedAddress"
+                      class="form-control form-control--select"
+                      [value]="selectedAddressId() || ''"
+                      (change)="onAddressChange($event)">
+                      <option value="">-- Ingresar dirección manualmente --</option>
+                      @for (address of savedAddresses(); track address.id) {
+                        <option [value]="address.id">
+                          {{ formatAddressForSelect(address) }}
+                          @if (address.isDefault) {
+                            (Predeterminada)
+                          }
+                        </option>
+                      }
+                    </select>
+                    <span class="form-helper">
+                      @if (selectedAddressId()) {
+                        ✅ Dirección seleccionada
+                      } @else {
+                        💡 Selecciona una dirección o completa los campos abajo
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Separador visual -->
+                <div class="form-divider">
+                  <span class="form-divider__text">o completa manualmente</span>
+                </div>
+              }
+
+              <!-- Campos de dirección manual -->
               <div class="form-grid">
                 <!-- Provincia -->
                 <div class="form-group">

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
+import { AddressService } from '../../../core/services/address.service';
+import type { Datum as AddressData } from '../../../core/models/interfaces/address.interface';
 
 type DeliveryType = 'pickup' | 'delivery';
 
@@ -19,6 +21,7 @@ interface FormData {
   lastName: string;
   email: string;
   phone: string;
+  addressId?: string; // ID de dirección guardada seleccionada
   address?: string;
   city?: string;
   province?: string;
@@ -31,6 +34,8 @@ interface FormData {
  *
  * @responsibility Capturar información del cliente y dirección según tipo de entrega
  * @features
+ * - Carga automática de direcciones guardadas para usuarios autenticados
+ * - Selector de direcciones guardadas con prellenado automático
  * - Validación dinámica según tipo de entrega (pickup/delivery)
  * - Prellenado automático con datos del usuario autenticado
  * - Resumen del carrito en tiempo real
@@ -47,6 +52,7 @@ export class FormPersonalData {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
+  private readonly addressService = inject(AddressService);
 
   // ========== INPUTS ==========
   readonly deliveryOption = input.required<DeliveryType>();
@@ -60,6 +66,7 @@ export class FormPersonalData {
 
   // ========== SIGNALS ==========
   readonly formValid = signal(false);
+  readonly selectedAddressId = signal<string | null>(null);
 
   // ========== COMPUTED - DELIVERY OPTIONS ==========
   readonly isDelivery = computed(() => this.deliveryOption() === 'delivery');
@@ -72,6 +79,24 @@ export class FormPersonalData {
   readonly deliveryBadgeText = computed(() =>
     this.isDelivery() ? '🚚 Envío' : '🏪 Retiro'
   );
+
+  // ========== COMPUTED - ADDRESSES ==========
+  readonly savedAddresses = computed(() => this.addressService.addresses());
+  readonly hasAddresses = computed(() => this.addressService.hasAddresses());
+  readonly isLoadingAddresses = computed(() => this.addressService.isLoading());
+  readonly addressesError = computed(() => this.addressService.errorMessage());
+
+  readonly selectedAddress = computed(() => {
+    const addressId = this.selectedAddressId();
+    if (!addressId) return null;
+    return this.savedAddresses().find(addr => addr.id === addressId) ?? null;
+  });
+
+  readonly isAuthenticated = computed(() => this.authService.isAuthenticated());
+
+  readonly showAddressSelector = computed(() => {
+    return this.isDelivery() && this.isAuthenticated() && this.hasAddresses();
+  });
 
   // ========== COMPUTED - CART DATA ==========
   readonly cartItems = computed<CartItem[]>(() => {
@@ -91,35 +116,16 @@ export class FormPersonalData {
   readonly cartItemsCount = computed(() => this.cartItems().length);
 
   // ========== COMPUTED - TOTALS ==========
-  readonly subtotal = computed(() => {
-    return this.cartService.subtotal();
-  });
-
-  readonly ivaAmount = computed(() => {
-    return this.subtotal() * 0.21;
-  });
-
-  readonly totalWithIva = computed(() => {
-    return this.cartService.totalAmount();
-  });
-
-  readonly shippingText = computed(() => {
-    return this.isDelivery() ? 'A convenir' : 'Gratis';
-  });
-
-  readonly deliveryTimeText = computed(() => {
-    return this.isDelivery() ? '3-5 días hábiles' : 'Lunes a Viernes';
-  });
-
-  readonly deliveryTimeLabel = computed(() => {
-    return this.isDelivery() ? 'Tiempo estimado:' : 'Disponible:';
-  });
+  readonly subtotal = computed(() => this.cartService.subtotal());
+  readonly ivaAmount = computed(() => this.subtotal() * 0.21);
+  readonly totalWithIva = computed(() => this.cartService.totalAmount());
+  readonly shippingText = computed(() => this.isDelivery() ? 'A convenir' : 'Gratis');
+  readonly deliveryTimeText = computed(() => this.isDelivery() ? '3-5 días hábiles' : 'Lunes a Viernes');
+  readonly deliveryTimeLabel = computed(() => this.isDelivery() ? 'Tiempo estimado:' : 'Disponible:');
 
   // ========== COMPUTED - VALIDATION ==========
   readonly validationMessage = computed(() => {
-    if (this.formValid()) {
-      return 'Información completa';
-    }
+    if (this.formValid()) return 'Información completa';
 
     return this.isDelivery()
       ? 'Completa nombre, email, teléfono, dirección y ciudad'
@@ -141,17 +147,53 @@ export class FormPersonalData {
 
   // ========== CONSTRUCTOR ==========
   constructor() {
-    // Effect para actualizar validadores según tipo de entrega
+    // Effect: Cargar direcciones cuando es delivery y usuario autenticado
+    effect(() => {
+      if (this.isDelivery() && this.isAuthenticated()) {
+        console.log('📍 Cargando direcciones guardadas...');
+        this.addressService.getAddresses().subscribe({
+          next: () => {
+            const defaultAddr = this.addressService.defaultAddress();
+            if (defaultAddr) {
+              this.selectedAddressId.set(defaultAddr.id);
+              console.log('✅ Dirección predeterminada seleccionada:', defaultAddr.id);
+            }
+          },
+          error: (error) => {
+            console.error('❌ Error cargando direcciones:', error);
+          }
+        });
+      }
+    });
+
+    // Effect: Prellenar formulario con dirección seleccionada
+    effect(() => {
+      const selectedAddr = this.selectedAddress();
+      if (selectedAddr) {
+        this.orderForm.patchValue({
+          phone: selectedAddr.phone || '',
+          province: selectedAddr.province,
+          address: selectedAddr.streetAddress,
+          city: selectedAddr.city,
+          postalCode: selectedAddr.postalCode,
+          deliveryInstructions: selectedAddr.deliveryInstructions || ''
+        }, { emitEvent: false });
+        console.log('📝 Formulario prellenado con dirección:', selectedAddr.id);
+      }
+    });
+
+    // Effect: Actualizar validadores según tipo de entrega
     effect(() => {
       const deliveryOption = this.deliveryOption();
       this.updateFormValidators(deliveryOption);
 
       if (deliveryOption === 'pickup') {
         this.clearAddressFields();
+        this.selectedAddressId.set(null);
       }
     });
 
-    // Effect para cargar datos iniciales
+    // Effect: Cargar datos iniciales
     effect(() => {
       const data = this.initialData();
       if (data && Object.keys(data).length > 0) {
@@ -159,7 +201,7 @@ export class FormPersonalData {
       }
     });
 
-    // Subscribe a cambios del formulario
+    // Subscribe: Cambios del formulario
     this.orderForm.valueChanges.subscribe(() => {
       this.checkFormValidity();
       this.emitFormData();
@@ -168,6 +210,42 @@ export class FormPersonalData {
     this.orderForm.statusChanges.subscribe(() => {
       this.checkFormValidity();
     });
+  }
+
+  // ========== MÉTODOS PÚBLICOS - GESTIÓN DE DIRECCIONES ==========
+
+  /**
+   * Maneja el cambio de dirección seleccionada
+   */
+  onAddressChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const addressId = selectElement.value;
+
+    if (addressId === '') {
+      // Sin dirección seleccionada
+      this.selectedAddressId.set(null);
+      this.clearAddressFields();
+      console.log('📍 Sin dirección seleccionada');
+    } else {
+      // Dirección seleccionada
+      this.selectedAddressId.set(addressId);
+      console.log('📍 Dirección seleccionada:', addressId);
+    }
+
+    this.checkFormValidity();
+  }
+
+  /**
+   * Formatea una dirección para mostrar en el selector
+   */
+  formatAddressForSelect(address: AddressData): string {
+    const parts = [
+      address.streetAddress,
+      address.city,
+      address.province
+    ].filter(Boolean);
+
+    return parts.join(', ');
   }
 
   // ========== MÉTODOS PRIVADOS - VALIDACIÓN ==========
@@ -200,7 +278,8 @@ export class FormPersonalData {
       address: '',
       province: '',
       city: '',
-      postalCode: ''
+      postalCode: '',
+      deliveryInstructions: ''
     }, { emitEvent: false });
   }
 
@@ -240,14 +319,22 @@ export class FormPersonalData {
         lastName: formValue.lastName || '',
         email: formValue.email || '',
         phone: formValue.phone || '',
-        deliveryInstructions: formValue.deliveryInstructions || ''
+        deliveryInstructions: formValue.deliveryInstructions || undefined
       };
 
       if (this.isDelivery()) {
-        data.address = formValue.address || undefined;
-        data.city = formValue.city || undefined;
-        data.postalCode = formValue.postalCode || undefined;
-        data.province = formValue.province || undefined;
+        const selectedAddr = this.selectedAddress();
+
+        // Si hay dirección guardada seleccionada, enviar solo el ID
+        if (selectedAddr) {
+          data.addressId = selectedAddr.id;
+        } else {
+          // Si no hay dirección seleccionada, enviar campos manuales
+          data.address = formValue.address || undefined;
+          data.city = formValue.city || undefined;
+          data.postalCode = formValue.postalCode || undefined;
+          data.province = formValue.province || undefined;
+        }
       }
 
       this.formDataChange.emit(data);
@@ -320,6 +407,7 @@ export class FormPersonalData {
   reset(): void {
     this.orderForm.reset();
     this.formValid.set(false);
+    this.selectedAddressId.set(null);
   }
 
   markAllAsTouched(): void {
