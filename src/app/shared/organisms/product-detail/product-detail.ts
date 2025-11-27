@@ -1,7 +1,9 @@
 import { Component, computed, effect, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, CurrencyPipe, Location } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ProductsService } from '../../../core/services/products.service';
+import { CartService } from '../../../core/services/cart.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Datum } from '../../../core/models/interfaces/Product.interface';
 
 type ProductTab = 'details' | 'specs';
@@ -16,7 +18,10 @@ type ProductTab = 'details' | 'specs';
 export class ProductDetail implements OnInit {
   private readonly location = inject(Location);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly productsService = inject(ProductsService);
+  private readonly cartService = inject(CartService);
+  private readonly authService = inject(AuthService);
 
   readonly product = signal<Datum | null>(null);
   readonly loading = signal(false);
@@ -25,6 +30,7 @@ export class ProductDetail implements OnInit {
   readonly selectedImage = signal('');
   readonly activeTab = signal<ProductTab>('details');
   readonly imageLoadError = signal(false);
+  readonly addingToCart = signal(false);
 
   readonly priceWithoutTax = computed(() => {
     const currentProduct = this.product();
@@ -163,7 +169,58 @@ export class ProductDetail implements OnInit {
     const currentProduct = this.product();
     if (!currentProduct || !this.inStock()) return;
 
-    // TODO: Implementar servicio de carrito
+    // Verificar autenticación
+    if (!this.authService.isAuthenticated() || !this.authService.hasValidToken()) {
+      console.log('⚠️ Usuario no autenticado, redirigiendo a login...');
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url }
+      });
+      return;
+    }
+
+    const qty = this.quantity();
+
+    if (qty < 1 || qty > currentProduct.stock) {
+      alert(`Cantidad no válida. Stock disponible: ${currentProduct.stock}`);
+      return;
+    }
+
+    this.addingToCart.set(true);
+
+    console.log('🛒 Agregando al carrito:', {
+      productId: currentProduct.id,
+      productName: currentProduct.name,
+      quantity: qty
+    });
+
+    this.cartService.addToCart({
+      productId: currentProduct.id,
+      quantity: qty
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ Producto agregado al carrito:', response.message);
+
+        // Mostrar mensaje de éxito
+        alert(`${currentProduct.name} agregado al carrito (${qty} unidad${qty > 1 ? 'es' : ''})`);
+
+        // Resetear cantidad a 1
+        this.quantity.set(1);
+
+        // Opcional: preguntar si quiere ir al carrito o seguir comprando
+        const goToCart = confirm('¿Deseas ver tu carrito ahora?');
+        if (goToCart) {
+          this.router.navigate(['/cart']);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error al agregar al carrito:', error);
+        const errorMessage = error?.error?.message || error?.message || 'Error al agregar el producto al carrito';
+        alert(errorMessage);
+      },
+      complete: () => {
+        this.addingToCart.set(false);
+      }
+    });
   }
 
   goBack(): void {

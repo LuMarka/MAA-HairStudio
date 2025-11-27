@@ -149,9 +149,13 @@
               type="button"
               class="product-detail__add-to-cart"
               (click)="addToCart()"
-              [disabled]="!inStock()"
+              [disabled]="!inStock() || addingToCart()"
             >
-              Añadir al carrito
+              @if (addingToCart()) {
+                Agregando...
+              } @else {
+                Añadir al carrito
+              }
             </button>
           </div>
         }
