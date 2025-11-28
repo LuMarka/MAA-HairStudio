@@ -281,10 +281,14 @@
               </div>
 
               <!-- ✅ CHECKBOX PARA GUARDAR -->
-              @if (showSaveAddressOption()) {
+              @if (showSaveAddressOption() && isManualAddressComplete()) {
                 <div class="save-address-option">
                   <label class="checkbox-label">
-                    <input type="checkbox" formControlName="saveAddress" class="checkbox-input">
+                    <input
+                      type="checkbox"
+                      class="checkbox-input"
+                      [checked]="saveNewAddress()"
+                      (change)="onSaveAddressChange($event)">
                     <span class="checkbox-custom"></span>
                     <span class="checkbox-text">
                       <strong>💾 Guardar esta dirección</strong>
