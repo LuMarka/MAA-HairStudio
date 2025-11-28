@@ -120,6 +120,7 @@
           <!-- Dirección de Entrega - SOLO para delivery -->
           @if (isDelivery()) {
             <div class="form-section">
+              <!-- Header -->
               <div class="form-section__header">
                 <h3 class="form-section__title">
                   <span class="form-section__icon">📍</span>
@@ -278,6 +279,22 @@
                   </div>
                 </div>
               </div>
+
+              <!-- ✅ CHECKBOX PARA GUARDAR -->
+              @if (showSaveAddressOption()) {
+                <div class="save-address-option">
+                  <label class="checkbox-label">
+                    <input type="checkbox" formControlName="saveAddress" class="checkbox-input">
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-text">
+                      <strong>💾 Guardar esta dirección</strong>
+                      <span class="checkbox-description">
+                        Para usarla en futuros pedidos
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              }
             </div>
           }
 
