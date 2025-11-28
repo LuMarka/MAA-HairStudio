@@ -4,7 +4,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
 import { AddressService } from '../../../core/services/address.service';
-import type { Datum as AddressData } from '../../../core/models/interfaces/address.interface';
+import { OrderService } from '../../../core/services/order.service';
+import type { Datum as AddressData, CreateAddressDto } from '../../../core/models/interfaces/address.interface';
 
 type DeliveryType = 'pickup' | 'delivery';
 
@@ -21,7 +22,7 @@ interface FormData {
   lastName: string;
   email: string;
   phone: string;
-  addressId?: string; // ID de dirección guardada seleccionada
+  addressId?: string;
   address?: string;
   city?: string;
   province?: string;
@@ -36,6 +37,7 @@ interface FormData {
  * @features
  * - Carga automática de direcciones guardadas para usuarios autenticados
  * - Selector de direcciones guardadas con prellenado automático
+ * - Guardado de dirección seleccionada en CheckoutState del OrderService
  * - Validación dinámica según tipo de entrega (pickup/delivery)
  * - Prellenado automático con datos del usuario autenticado
  * - Resumen del carrito en tiempo real
@@ -53,6 +55,7 @@ export class FormPersonalData {
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
   private readonly addressService = inject(AddressService);
+  private readonly orderService = inject(OrderService);
 
   // ========== INPUTS ==========
   readonly deliveryOption = input.required<DeliveryType>();
@@ -67,6 +70,8 @@ export class FormPersonalData {
   // ========== SIGNALS ==========
   readonly formValid = signal(false);
   readonly selectedAddressId = signal<string | null>(null);
+  readonly saveNewAddress = signal(false);
+  readonly isSavingAddress = signal(false);
 
   // ========== COMPUTED - DELIVERY OPTIONS ==========
   readonly isDelivery = computed(() => this.deliveryOption() === 'delivery');
@@ -96,6 +101,22 @@ export class FormPersonalData {
 
   readonly showAddressSelector = computed(() => {
     return this.isDelivery() && this.isAuthenticated() && this.hasAddresses();
+  });
+
+  readonly showSaveAddressOption = computed(() => {
+    return this.isDelivery() &&
+           this.isAuthenticated() &&
+           !this.selectedAddressId();
+  });
+
+  readonly isManualAddressComplete = computed(() => {
+    const form = this.orderForm;
+    return !!(
+      form.get('address')?.value &&
+      form.get('city')?.value &&
+      form.get('province')?.value &&
+      form.get('postalCode')?.value
+    );
   });
 
   // ========== COMPUTED - CART DATA ==========
@@ -147,17 +168,22 @@ export class FormPersonalData {
 
   // ========== CONSTRUCTOR ==========
   constructor() {
+    // Effect: Cargar addressId desde CheckoutState al iniciar
+    effect(() => {
+      const checkoutState = this.orderService.checkoutState();
+      if (checkoutState?.selectedAddressId && this.isDelivery()) {
+        this.selectedAddressId.set(checkoutState.selectedAddressId);
+        console.log('✅ AddressId cargado desde CheckoutState:', checkoutState.selectedAddressId);
+      }
+    });
+
     // Effect: Cargar direcciones cuando es delivery y usuario autenticado
     effect(() => {
       if (this.isDelivery() && this.isAuthenticated()) {
         console.log('📍 Cargando direcciones guardadas...');
         this.addressService.getAddresses().subscribe({
           next: () => {
-            const defaultAddr = this.addressService.defaultAddress();
-            if (defaultAddr) {
-              this.selectedAddressId.set(defaultAddr.id);
-              console.log('✅ Dirección predeterminada seleccionada:', defaultAddr.id);
-            }
+            console.log('✅ Direcciones cargadas:', this.savedAddresses().length);
           },
           error: (error) => {
             console.error('❌ Error cargando direcciones:', error);
@@ -179,6 +205,10 @@ export class FormPersonalData {
           deliveryInstructions: selectedAddr.deliveryInstructions || ''
         }, { emitEvent: false });
         console.log('📝 Formulario prellenado con dirección:', selectedAddr.id);
+      } else {
+        if (this.isDelivery()) {
+          this.clearAddressFields();
+        }
       }
     });
 
@@ -190,6 +220,7 @@ export class FormPersonalData {
       if (deliveryOption === 'pickup') {
         this.clearAddressFields();
         this.selectedAddressId.set(null);
+        this.saveNewAddress.set(false);
       }
     });
 
@@ -198,6 +229,10 @@ export class FormPersonalData {
       const data = this.initialData();
       if (data && Object.keys(data).length > 0) {
         this.orderForm.patchValue(data, { emitEvent: false });
+
+        if (data.addressId) {
+          this.selectedAddressId.set(data.addressId);
+        }
       }
     });
 
@@ -222,17 +257,35 @@ export class FormPersonalData {
     const addressId = selectElement.value;
 
     if (addressId === '') {
-      // Sin dirección seleccionada
       this.selectedAddressId.set(null);
       this.clearAddressFields();
+      this.saveNewAddress.set(false);
+
+      // Limpiar addressId del CheckoutState
+      if (this.isDelivery()) {
+        this.orderService.updateCheckoutAddress('');
+      }
+
       console.log('📍 Sin dirección seleccionada');
     } else {
-      // Dirección seleccionada
       this.selectedAddressId.set(addressId);
-      console.log('📍 Dirección seleccionada:', addressId);
+      this.saveNewAddress.set(false);
+
+      // Actualizar CheckoutState con la dirección seleccionada
+      if (this.isDelivery()) {
+        this.orderService.updateCheckoutAddress(addressId);
+      }
+
+      console.log('📍 Dirección seleccionada y guardada en CheckoutState:', addressId);
     }
 
     this.checkFormValidity();
+  }
+
+  onSaveAddressChange(event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    this.saveNewAddress.set(checkbox.checked);
+    console.log('💾 Guardar dirección:', checkbox.checked);
   }
 
   /**
@@ -325,11 +378,9 @@ export class FormPersonalData {
       if (this.isDelivery()) {
         const selectedAddr = this.selectedAddress();
 
-        // Si hay dirección guardada seleccionada, enviar solo el ID
         if (selectedAddr) {
           data.addressId = selectedAddr.id;
         } else {
-          // Si no hay dirección seleccionada, enviar campos manuales
           data.address = formValue.address || undefined;
           data.city = formValue.city || undefined;
           data.postalCode = formValue.postalCode || undefined;
@@ -400,7 +451,67 @@ export class FormPersonalData {
       return;
     }
 
-    this.continue.emit();
+    if (this.saveNewAddress() && this.isManualAddressComplete() && !this.selectedAddressId()) {
+      this.saveAddressAndContinue();
+    } else {
+      this.continue.emit();
+    }
+  }
+
+  private saveAddressAndContinue(): void {
+    const formValue = this.orderForm.value;
+    const currentUser = this.authService.currentUser();
+
+    if (!currentUser) {
+      console.error('❌ No hay usuario autenticado');
+      this.continue.emit();
+      return;
+    }
+
+    this.isSavingAddress.set(true);
+
+    const createAddressDto: CreateAddressDto = {
+      recipientName: `${formValue.firstName} ${formValue.lastName}`.trim(),
+      phone: formValue.phone || '',
+      province: formValue.province || '',
+      city: formValue.city || '',
+      postalCode: formValue.postalCode || '',
+      streetAddress: formValue.address || '',
+      deliveryInstructions: formValue.deliveryInstructions || undefined,
+      isDefault: !this.hasAddresses()
+    };
+
+    console.log('💾 Guardando nueva dirección...', createAddressDto);
+
+    this.addressService.createAddress(createAddressDto).subscribe({
+      next: (response) => {
+        const newAddressId = response.data.id;
+        console.log('✅ Dirección guardada exitosamente:', newAddressId);
+
+        // Establecer dirección en el componente
+        this.selectedAddressId.set(newAddressId);
+
+        // Actualizar CheckoutState con la nueva dirección
+        if (this.isDelivery()) {
+          this.orderService.updateCheckoutAddress(newAddressId);
+          console.log('✅ Dirección guardada en CheckoutState:', newAddressId);
+        }
+
+        this.continue.emit();
+      },
+      error: (error) => {
+        console.error('❌ Error al guardar dirección:', error);
+        const continueAnyway = confirm(
+          'No se pudo guardar la dirección. ¿Deseas continuar de todos modos?'
+        );
+        if (continueAnyway) {
+          this.continue.emit();
+        }
+      },
+      complete: () => {
+        this.isSavingAddress.set(false);
+      }
+    });
   }
 
   // ========== MÉTODOS PÚBLICOS - API ==========
@@ -408,6 +519,8 @@ export class FormPersonalData {
     this.orderForm.reset();
     this.formValid.set(false);
     this.selectedAddressId.set(null);
+    this.saveNewAddress.set(false);
+    this.isSavingAddress.set(false);
   }
 
   markAllAsTouched(): void {

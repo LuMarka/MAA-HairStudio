@@ -145,7 +145,7 @@
               }
 
               <!-- Selector de direcciones guardadas -->
-              @if (showAddressSelector() && !isLoadingAddresses()) {
+              @if (!isLoadingAddresses()) {
                 <div class="form-group form-group--full">
                   <label for="savedAddress" class="form-label">
                     <span class="form-label__icon">📋</span>
