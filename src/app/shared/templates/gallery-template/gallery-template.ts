@@ -1,4 +1,11 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, signal, computed } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  signal,
+  computed,
+} from '@angular/core';
 import { GalleryImageComponent } from '../../organisms/gallery-image/gallery-image';
 import { ScrollAnimationService } from '../../../core/services/scroll-animation.service';
 
@@ -6,9 +13,8 @@ export interface GalleryImage {
   id: string;
   src: string;
   alt: string;
-  /* caption ?: string;*/
+  caption?: string;
 }
-
 
 @Component({
   selector: 'app-gallery-template',
@@ -36,55 +42,55 @@ export class GalleryTemplate implements AfterViewInit, OnDestroy {
     {
       id: '1',
       src: '/images/pelu-int.1.jpg',
-      alt: 'Trabajo de peinado profesional',
-      /* caption: 'Peinado elegante', */
+      alt: 'Vista interior del salón de MAA Hair Studio',
+      caption: '',
     },
     {
       id: '2',
       src: '/images/galeria/1.jpg',
-      alt: 'Corte y peinado moderno',
+      alt: 'Trabajo realizado',
       /* caption: 'Estilo moderno', */
     },
     {
       id: '3',
       src: '/images/galeria/2.jpg',
-      alt: 'Interior del salón',
+      alt: 'Nuestros Productos',
       /* caption : 'Nuestro salón',*/
     },
     {
       id: '4',
       src: '/images/galeria/3.jpg',
-      alt: 'Ambiente del salón',
+      alt: 'Trabajo realizado',
       /* caption : 'Ambiente acogedor',*/
     },
     {
       id: '5',
       src: '/images/galeria/4.jpg',
-      alt: 'Productos profesionales',
+      alt: 'Trabajo realizado',
       /* caption : 'Productos premium',*/
     },
     {
       id: '6',
       src: '/images/galeria/5.jpg',
-      alt: 'Historia del salón',
+      alt: 'Trabajo realizado',
       /* caption : 'Nuestra historia',*/
     },
     {
       id: '7',
       src: '/images/galeria/6.jpg',
-      alt: 'Profesional trabajando',
+      alt: 'Trabajo realizado',
       /* caption : 'Trabajo profesional',*/
     },
     {
       id: '8',
       src: '/images/galeria/7.jpg',
-      alt: 'Tratamiento nutritivo',
+      alt: 'Trabajo realizado',
       /* caption : 'Cuidado capilar',*/
     },
     {
       id: '9',
       src: '/images/galeria/8.jpg',
-      alt: 'Productos Kérastase',
+      alt: 'Trabajo realizado',
       /* caption : 'Línea Kérastase',*/
     },
     {
@@ -96,184 +102,207 @@ export class GalleryTemplate implements AfterViewInit, OnDestroy {
     {
       id: '11',
       src: '/images/galeria/10.jpg',
-      alt: 'Logo del salón',
+      alt: 'Trabajo realizado',
       /* caption : 'MAA Hair Studio',*/
     },
     {
       id: '12',
       src: '/images/galeria/11.jpg',
-      alt: 'Nuestra trayectoria',
+      alt: 'Trabajo realizado',
       /* caption : 'Experiencia y dedicación',*/
     },
     {
       id: '13',
       src: '/images/galeria/12.jpg',
-      alt: 'Transformación capilar',
+      alt: 'Trabajo realizado',
       /* caption : 'Resultado increíble',*/
     },
     {
       id: '14',
       src: '/images/galeria/13.jpg',
-      alt: 'Técnica avanzada',
+      alt: 'Trabajo realizado',
       /* caption : 'Innovación constante',*/
     },
     {
       id: '15',
       src: '/images/galeria/14.jpg',
-      alt: 'Espacio moderno',
+      alt: 'Trabajo realizado',
       /* caption : 'Ambiente único',*/
     },
     {
       id: '16',
       src: '/images/galeria/15.jpg',
-      alt: 'Experiencia completa',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
     },
     {
       id: '17',
       src: '/images/galeria/16.jpg',
-      alt: 'Experiencia completa',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
     },
     {
       id: '18',
       src: '/images/galeria/17.jpg',
-      alt: 'Experiencia completa',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
     },
     {
       id: '19',
       src: '/images/galeria/18.jpg',
-      alt: 'Experiencia completa',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
     },
     {
       id: '20',
       src: '/images/galeria/19.jpg',
-      alt: 'Experiencia completa',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
     },
     {
       id: '21',
       src: '/images/galeria/20.jpg',
-      alt: 'Experiencia completa',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
     },
     {
       id: '22',
       src: '/images/galeria/21.jpg',
-      alt: 'Experiencia completa',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
     },
     {
       id: '23',
       src: '/images/galeria/22.jpg',
-      alt: 'Experiencia completa',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
     },
     {
       id: '24',
       src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
     },
     {
       id: '25',
       src: '/images/galeria/24.jpg',
-      alt: 'Experiencia completa',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
     },
-        {
+    {
       id: '26',
       src: '/images/galeria/25.jpg',
-      alt: 'Experiencia completa',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '27',
       src: '/images/galeria/26.jpg',
-      alt: 'Experiencia completa',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '28',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/27.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '29',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/28.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '30',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/29.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '31',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/30.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '32',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/31.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '33',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/32.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '34',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/33.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '35',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/34.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '36',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/35.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '37',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/36.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '38',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/37.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '39',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/38.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '40',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/39.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '41',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/40.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '42',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/41.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },    {
+    },
+    {
       id: '43',
-      src: '/images/galeria/23.jpg',
-      alt: 'Experiencia completa',
+      src: '/images/galeria/42.jpg',
+      alt: 'Trabajo realizado',
       /* caption : 'Dedicación total',*/
-    },   
+    },
+    {
+      id: '44',
+      src: '/images/galeria/43.jpg',
+      alt: 'Trabajo realizado',
+      /*  caption : 'Dedicación total',*/
+    },
   ]);
 
   // Método para cargar más imágenes en el futuro
