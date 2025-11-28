@@ -6,7 +6,7 @@ export interface GalleryImage {
   id: string;
   src: string;
   alt: string;
-  caption?: string;
+  /* caption ?: string;*/
 }
 
 
@@ -35,148 +35,245 @@ export class GalleryTemplate implements AfterViewInit, OnDestroy {
   readonly imagenesParaLaGaleria = signal<GalleryImage[]>([
     {
       id: '1',
-      src: '/images/ale-pelu.jpg',
+      src: '/images/pelu-int.1.jpg',
       alt: 'Trabajo de peinado profesional',
-      caption: 'Peinado elegante',
+      /* caption: 'Peinado elegante', */
     },
     {
       id: '2',
-      src: '/images/alejandra.jpg',
+      src: '/images/galeria/1.jpg',
       alt: 'Corte y peinado moderno',
-      caption: 'Estilo moderno',
+      /* caption: 'Estilo moderno', */
     },
     {
       id: '3',
-      src: '/images/pelu-interior.jpg',
+      src: '/images/galeria/2.jpg',
       alt: 'Interior del salón',
-      caption: 'Nuestro salón',
+      /* caption : 'Nuestro salón',*/
     },
     {
       id: '4',
-      src: '/images/pelu-int.1.jpg',
+      src: '/images/galeria/3.jpg',
       alt: 'Ambiente del salón',
-      caption: 'Ambiente acogedor',
+      /* caption : 'Ambiente acogedor',*/
     },
     {
       id: '5',
-      src: '/images/pelu-productos.jpg',
+      src: '/images/galeria/4.jpg',
       alt: 'Productos profesionales',
-      caption: 'Productos premium',
+      /* caption : 'Productos premium',*/
     },
     {
       id: '6',
-      src: '/images/miHistoria.jpg',
+      src: '/images/galeria/5.jpg',
       alt: 'Historia del salón',
-      caption: 'Nuestra historia',
+      /* caption : 'Nuestra historia',*/
     },
     {
       id: '7',
-      src: '/images/ale.jpg',
+      src: '/images/galeria/6.jpg',
       alt: 'Profesional trabajando',
-      caption: 'Trabajo profesional',
+      /* caption : 'Trabajo profesional',*/
     },
     {
       id: '8',
-      src: '/images/ker_nutritive.jpg',
+      src: '/images/galeria/7.jpg',
       alt: 'Tratamiento nutritivo',
-      caption: 'Cuidado capilar',
+      /* caption : 'Cuidado capilar',*/
     },
     {
       id: '9',
-      src: '/images/kerastase.png',
+      src: '/images/galeria/8.jpg',
       alt: 'Productos Kérastase',
-      caption: 'Línea Kérastase',
+      /* caption : 'Línea Kérastase',*/
     },
     {
       id: '10',
-      src: '/images/1757106933.png',
+      src: '/images/galeria/9.jpg',
       alt: 'Trabajo realizado',
-      caption: 'Resultado profesional',
+      /* caption : 'Resultado profesional',*/
     },
     {
       id: '11',
-      src: '/images/IsologoBlanco.png',
+      src: '/images/galeria/10.jpg',
       alt: 'Logo del salón',
-      caption: 'MAA Hair Studio',
+      /* caption : 'MAA Hair Studio',*/
     },
     {
       id: '12',
-      src: '/images/mi_Historia.png',
+      src: '/images/galeria/11.jpg',
       alt: 'Nuestra trayectoria',
-      caption: 'Experiencia y dedicación',
+      /* caption : 'Experiencia y dedicación',*/
     },
     {
       id: '13',
-      src: '/images/ale-pelu.jpg',
+      src: '/images/galeria/12.jpg',
       alt: 'Transformación capilar',
-      caption: 'Resultado increíble',
+      /* caption : 'Resultado increíble',*/
     },
     {
       id: '14',
-      src: '/images/alejandra.jpg',
+      src: '/images/galeria/13.jpg',
       alt: 'Técnica avanzada',
-      caption: 'Innovación constante',
+      /* caption : 'Innovación constante',*/
     },
     {
       id: '15',
-      src: '/images/pelu-interior.jpg',
+      src: '/images/galeria/14.jpg',
       alt: 'Espacio moderno',
-      caption: 'Ambiente único',
+      /* caption : 'Ambiente único',*/
     },
     {
       id: '16',
-      src: '/images/pelu-int.1.jpg',
+      src: '/images/galeria/15.jpg',
       alt: 'Experiencia completa',
-      caption: 'Dedicación total',
+      /* caption : 'Dedicación total',*/
     },
     {
       id: '17',
-      src: '/images/pelu-int.1.jpg',
+      src: '/images/galeria/16.jpg',
       alt: 'Experiencia completa',
-      caption: 'Dedicación total',
+      /* caption : 'Dedicación total',*/
     },
     {
       id: '18',
-      src: '/images/pelu-int.1.jpg',
+      src: '/images/galeria/17.jpg',
       alt: 'Experiencia completa',
-      caption: 'Dedicación total',
+      /* caption : 'Dedicación total',*/
     },
     {
       id: '19',
-      src: '/images/pelu-int.1.jpg',
+      src: '/images/galeria/18.jpg',
       alt: 'Experiencia completa',
-      caption: 'Dedicación total',
+      /* caption : 'Dedicación total',*/
     },
     {
       id: '20',
-      src: '/images/pelu-int.1.jpg',
+      src: '/images/galeria/19.jpg',
       alt: 'Experiencia completa',
-      caption: 'Dedicación total',
+      /* caption : 'Dedicación total',*/
     },
     {
       id: '21',
-      src: '/images/pelu-int.1.jpg',
+      src: '/images/galeria/20.jpg',
       alt: 'Experiencia completa',
-      caption: 'Dedicación total',
+      /* caption : 'Dedicación total',*/
     },
     {
       id: '22',
-      src: '/images/pelu-int.1.jpg',
+      src: '/images/galeria/21.jpg',
       alt: 'Experiencia completa',
-      caption: 'Dedicación total',
+      /* caption : 'Dedicación total',*/
     },
     {
       id: '23',
-      src: '/images/pelu-int.1.jpg',
+      src: '/images/galeria/22.jpg',
       alt: 'Experiencia completa',
-      caption: 'Dedicación total',
+      /* caption : 'Dedicación total',*/
     },
     {
       id: '24',
-      src: '/images/pelu-int.1.jpg',
+      src: '/images/galeria/23.jpg',
       alt: 'Experiencia completa',
-      caption: 'Dedicación total',
+      /* caption : 'Dedicación total',*/
     },
+    {
+      id: '25',
+      src: '/images/galeria/24.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },
+        {
+      id: '26',
+      src: '/images/galeria/25.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '27',
+      src: '/images/galeria/26.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '28',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '29',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '30',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '31',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '32',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '33',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '34',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '35',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '36',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '37',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '38',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '39',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '40',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '41',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '42',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },    {
+      id: '43',
+      src: '/images/galeria/23.jpg',
+      alt: 'Experiencia completa',
+      /* caption : 'Dedicación total',*/
+    },   
   ]);
 
   // Método para cargar más imágenes en el futuro
