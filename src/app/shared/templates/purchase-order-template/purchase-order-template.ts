@@ -61,7 +61,7 @@ export class PurchaseOrderTemplate {
   readonly currentStep = signal(1);
   readonly orderData = signal<OrderData | null>(null);
   readonly selectedPaymentMethod = signal<PaymentMethod | null>(null);
-  readonly selectedDeliveryOption = signal<DeliveryType>('pickup'); // Cambiado a 'pickup' por defecto
+  readonly selectedDeliveryOption = signal<DeliveryType>('pickup');
   readonly orderSent = signal(false);
   readonly isProcessing = signal(false);
   readonly personalFormData = signal<Omit<OrderData, 'paymentMethod' | 'deliveryOption'> | null>(null);
@@ -83,29 +83,24 @@ export class PurchaseOrderTemplate {
     }));
   });
 
-  readonly subtotal = computed(() => {
-    return this.cartService.subtotal();
-  });
+  readonly subtotal = computed(() => this.cartService.subtotal());
+  readonly ivaAmount = computed(() => this.subtotal() * 0.21);
+  readonly totalWithIva = computed(() => this.cartService.totalAmount());
 
-  readonly ivaAmount = computed(() => {
-    return this.subtotal() * 0.21;
-  });
-
-  readonly totalWithIva = computed(() => {
-    return this.cartService.totalAmount();
-  });
+  // ========== COMPUTED VALUES - CHECKOUT STATE ==========
+  readonly checkoutState = computed(() => this.orderService.checkoutState());
+  readonly checkoutAddressId = computed(() => this.orderService.checkoutAddressId());
 
   // ========== CONSTRUCTOR ==========
   constructor() {
-    // Cargar deliveryType desde OrderService al inicializar
+    // Effect: Cargar deliveryType desde OrderService
     effect(() => {
-      const checkoutState = this.orderService.checkoutState();
+      const checkoutState = this.checkoutState();
       if (checkoutState?.deliveryType) {
         this.selectedDeliveryOption.set(checkoutState.deliveryType);
-        console.log('📦 Tipo de entrega cargado:', checkoutState.deliveryType);
+        console.log('📦 [PurchaseOrder] Tipo de entrega:', checkoutState.deliveryType);
       } else {
-        console.warn('⚠️ No hay tipo de entrega seleccionado en checkout');
-        // Usar pickup por defecto si no hay estado de checkout
+        console.warn('⚠️ [PurchaseOrder] No hay checkout state, usando pickup por defecto');
         this.selectedDeliveryOption.set('pickup');
       }
     });
@@ -116,19 +111,19 @@ export class PurchaseOrderTemplate {
     const currentStepValue = this.currentStep();
 
     if (currentStepValue < this.totalSteps) {
-      // Step 2 requires payment method
       if (currentStepValue === 2 && !this.selectedPaymentMethod()) {
+        console.warn('⚠️ [PurchaseOrder] Método de pago requerido');
         return;
       }
 
-      this.currentStep.set(currentStepValue + 1);
+      this.currentStep.update(step => step + 1);
     }
   }
 
   onPreviousStep(): void {
     const currentStepValue = this.currentStep();
     if (currentStepValue > 1) {
-      this.currentStep.set(currentStepValue - 1);
+      this.currentStep.update(step => step - 1);
     }
   }
 
@@ -136,7 +131,6 @@ export class PurchaseOrderTemplate {
   onPersonalFormDataChange(data: Omit<OrderData, 'paymentMethod' | 'deliveryOption'>): void {
     this.personalFormData.set(data);
 
-    // Update orderData with current delivery option and payment method
     this.orderData.set({
       ...data,
       deliveryOption: this.selectedDeliveryOption(),
@@ -145,7 +139,7 @@ export class PurchaseOrderTemplate {
   }
 
   onPersonalFormValidChange(_isValid: boolean): void {
-    // FormPersonalData handles its own validation
+    // FormPersonalData maneja su propia validación
   }
 
   onEditCartFromForm(): void {
@@ -160,7 +154,6 @@ export class PurchaseOrderTemplate {
   onPaymentMethodChange(method: PaymentMethod): void {
     this.selectedPaymentMethod.set(method);
 
-    // Update orderData with selected payment method
     const currentData = this.personalFormData();
     if (currentData) {
       this.orderData.set({
@@ -176,82 +169,124 @@ export class PurchaseOrderTemplate {
     this.router.navigate(['/cart']);
   }
 
+  /**
+   * Construye el DTO para crear la orden usando CheckoutState
+   */
+  private buildCreateOrderDto(): CreateOrderDto | null {
+    const orderData = this.orderData();
+    const checkoutState = this.checkoutState();
+
+    if (!orderData) {
+      console.error('❌ [PurchaseOrder] No hay datos de orden');
+      return null;
+    }
+
+    if (!checkoutState) {
+      console.error('❌ [PurchaseOrder] No hay checkout state');
+      return null;
+    }
+
+    const deliveryType = checkoutState.deliveryType;
+    const addressId = checkoutState.selectedAddressId;
+
+    // DTO base
+    const baseDto: CreateOrderDto = {
+      deliveryType,
+      notes: orderData.deliveryInstructions || undefined
+    };
+
+    // Si es delivery Y hay addressId guardado
+    if (deliveryType === 'delivery' && addressId) {
+      console.log('📦 [PurchaseOrder] Creando orden con addressId:', addressId);
+      return {
+        ...baseDto,
+        shippingAddressId: addressId
+      };
+    }
+
+    // Si es delivery sin addressId (dirección manual - caso futuro)
+    if (deliveryType === 'delivery' && !addressId) {
+      console.log('📦 [PurchaseOrder] Creando orden delivery sin addressId guardado');
+      // Aquí podrías agregar lógica para dirección manual si tu backend lo soporta
+      return baseDto;
+    }
+
+    // Si es pickup
+    console.log('🏪 [PurchaseOrder] Creando orden pickup');
+    return baseDto;
+  }
+
   onFinalizeOrder(): void {
-    const data = this.orderData();
+    const orderData = this.orderData();
     const paymentMethod = this.selectedPaymentMethod();
     const cartItems = this.cartItems();
     const total = this.totalWithIva();
 
-    if (!data || !paymentMethod) {
-      console.error('❌ Datos del pedido incompletos');
+    // Validaciones
+    if (!orderData || !paymentMethod) {
+      console.error('❌ [PurchaseOrder] Datos incompletos');
       return;
     }
 
     if (cartItems.length === 0) {
-      console.error('❌ El carrito está vacío');
+      console.error('❌ [PurchaseOrder] Carrito vacío');
       this.router.navigate(['/cart']);
       return;
     }
 
     if (total <= 0) {
-      console.error('❌ Total inválido');
+      console.error('❌ [PurchaseOrder] Total inválido');
+      return;
+    }
+
+    // Construir DTO
+    const createOrderDto = this.buildCreateOrderDto();
+
+    if (!createOrderDto) {
+      console.error('❌ [PurchaseOrder] No se pudo construir DTO');
       return;
     }
 
     this.isProcessing.set(true);
 
-    // Preparar DTO para crear la orden - Por defecto pickup
-    const createOrderDto: CreateOrderDto = {
-      deliveryType: 'pickup',
-      notes: data.deliveryInstructions || undefined
-    };
+    console.log('📦 [PurchaseOrder] Creando orden:', createOrderDto);
 
-    console.log('📦 Creando orden con datos:', createOrderDto);
-
-    // Crear la orden en el backend
+    // Crear orden en el backend
     this.orderService.createOrderFromCart(createOrderDto).subscribe({
       next: (response) => {
-        console.log('✅ Orden creada exitosamente:', {
+        console.log('✅ [PurchaseOrder] Orden creada:', {
           orderNumber: response.data.orderNumber,
           id: response.data.id,
-          total: response.data.total
+          total: response.data.total,
+          deliveryType: response.data.deliveryType,
+          hasShippingAddress: !!response.data.shippingAddress
         });
 
-        // Limpiar el carrito después de crear la orden
+        // Limpiar carrito
         this.cartService.clearCart().subscribe({
           next: () => {
-            console.log('✅ Carrito limpiado exitosamente');
-
-            // Enviar mensaje a WhatsApp con el número de orden generado
-            this.sendToWhatsApp(data, cartItems, total, response.data.orderNumber);
-
-            // Limpiar estado de checkout
+            console.log('✅ [PurchaseOrder] Carrito limpiado');
+            this.sendToWhatsApp(orderData, cartItems, total, response.data.orderNumber);
             this.orderService.clearCheckoutState();
-
-            // Marcar como procesado exitosamente
             this.handleOrderSuccess();
           },
           error: (error) => {
-            console.error('⚠️ Error al limpiar carrito:', error);
-            // Aún así continuar con el flujo de WhatsApp
-            this.sendToWhatsApp(data, cartItems, total, response.data.orderNumber);
+            console.error('⚠️ [PurchaseOrder] Error al limpiar carrito:', error);
+            this.sendToWhatsApp(orderData, cartItems, total, response.data.orderNumber);
             this.orderService.clearCheckoutState();
             this.handleOrderSuccess();
           }
         });
       },
       error: (error) => {
-        console.error('❌ Error al crear orden:', error);
+        console.error('❌ [PurchaseOrder] Error al crear orden:', error);
         this.isProcessing.set(false);
-
-        // Mostrar mensaje de error al usuario
         alert('Hubo un error al crear tu pedido. Por favor intenta nuevamente.');
       }
     });
   }
 
   onBackToHome(): void {
-    // Limpiar estado de checkout
     this.orderService.clearCheckoutState();
     this.router.navigate(['/']);
   }
@@ -277,7 +312,6 @@ export class PurchaseOrderTemplate {
       }
 
       window.open(whatsappUrl, '_blank');
-
     } catch (error) {
       console.error('❌ Error al abrir WhatsApp:', error);
       this.copyToClipboard(message);
@@ -293,7 +327,6 @@ export class PurchaseOrderTemplate {
     orderNumber: string
   ): string {
     let message = '🛍️ NUEVO PEDIDO - MAA Hair Studio\n\n';
-
     message += `📋 ORDEN: ${orderNumber}\n\n`;
 
     message += '🛒 PRODUCTOS:\n';
@@ -345,7 +378,7 @@ export class PurchaseOrderTemplate {
   private handleOrderSuccess(): void {
     this.isProcessing.set(false);
     this.orderSent.set(true);
-    console.log('🎉 Orden procesada exitosamente');
+    console.log('🎉 [PurchaseOrder] Orden procesada exitosamente');
   }
 
   private copyToClipboard(message: string): void {

@@ -77,12 +77,6 @@
   @if (currentStep() === 3) {
     <app-confirmation
       [orderData]="orderData()"
-      [selectedPaymentMethod]="selectedPaymentMethod()"
-      [selectedDeliveryOption]="selectedDeliveryOption()"
-      [cartItems]="cartItems()"
-      [subtotal]="subtotal()"
-      [ivaAmount]="ivaAmount()"
-      [totalWithIva]="totalWithIva()"
       [orderSent]="orderSent()"
       [isProcessing]="isProcessing()"
       (editCart)="onEditCart()"
