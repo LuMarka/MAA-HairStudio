@@ -158,11 +158,11 @@ export class FormPersonalData {
     firstName: [this.authService.currentUser()?.name || '', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
     email: [this.authService.currentUser()?.email || '', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required, Validators.pattern(/^[\d\s\+\-\(\)]+$/)]],
+    phone: ['', [Validators.required, Validators.pattern(/^\d+$/), Validators.minLength(10)]],
     province: [''],
     address: [''],
     city: [''],
-    postalCode: [''],
+    postalCode: ['', [Validators.pattern(/^\d+$/)]],
     deliveryInstructions: ['']
   });
 

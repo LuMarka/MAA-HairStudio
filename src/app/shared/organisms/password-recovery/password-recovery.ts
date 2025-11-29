@@ -1,8 +1,22 @@
 import { Component, inject, output, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { UsersService } from '../../../core/services/users.service';
-import { finalize, catchError, throwError } from 'rxjs';
 
+type RecoveryStep = 'email' | 'code' | 'password';
+
+/**
+ * Componente para recuperación de contraseña (3 pasos)
+ * 
+ * @responsibility Gestionar el flujo de recuperación de contraseña
+ * @step1 Email - Solicitar código de recuperación
+ * @step2 Code - Verificar código de 6 dígitos
+ * @step3 Password - Establecer nueva contraseña
+ * 
+ * @example
+ * ```html
+ * <app-password-recovery (goToLogin)="navigateToLogin()"></app-password-recovery>
+ * ```
+ */
 @Component({
   selector: 'app-password-recovery',
   imports: [ReactiveFormsModule],
@@ -18,46 +32,30 @@ export class PasswordRecovery {
   readonly goToLogin = output<void>();
 
   // ========== SIGNALS - Estado del flujo ==========
-  readonly step = signal<'email' | 'code' | 'password'>('email');
-  readonly loading = signal(false);
+  readonly step = signal<RecoveryStep>('email');
   readonly error = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
-  readonly emailSent = signal<string | null>(null); // Email al que se envió el código
+  readonly emailSent = signal<string | null>(null);
 
   // ========== SIGNALS - Visibilidad de contraseñas ==========
   readonly newPasswordVisible = signal(false);
   readonly confirmPasswordVisible = signal(false);
 
+  // ========== COMPUTED - Estado del servicio ==========
+  readonly loading = computed(() => this.usersService.isLoading());
+  readonly serviceError = computed(() => this.usersService.errorMessage());
+
   // ========== FORM ==========
   readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]],
+    code: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
     newPassword: ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', [Validators.required, Validators.minLength(8)]]
   });
 
   // ========== COMPUTED - Validaciones ==========
-  readonly isEmailValid = computed(() => {
-    const emailControl = this.form.get('email');
-    return emailControl?.valid || false;
-  });
-
-  readonly isCodeValid = computed(() => {
-    const codeControl = this.form.get('code');
-    return codeControl?.valid || false;
-  });
-
-  /**
- * Obtiene el número del paso actual para el progressbar
- */
-  getCurrentStepNumber(): number {
-    switch (this.step()) {
-      case 'email': return 1;
-      case 'code': return 2;
-      case 'password': return 3;
-      default: return 1;
-    }
-  }
+  readonly isEmailValid = computed(() => this.form.get('email')?.valid ?? false);
+  readonly isCodeValid = computed(() => this.form.get('code')?.valid ?? false);
 
   readonly isPasswordValid = computed(() => {
     const newPassword = this.form.get('newPassword');
@@ -76,19 +74,13 @@ export class PasswordRecovery {
     return newPassword.value === confirmPassword.value;
   });
 
-  readonly canSubmitEmail = computed(() => {
-    return this.isEmailValid() && !this.loading();
-  });
+  readonly canSubmitEmail = computed(() => this.isEmailValid() && !this.loading());
+  readonly canSubmitCode = computed(() => this.isCodeValid() && !this.loading());
+  readonly canSubmitPassword = computed(() => 
+    this.isPasswordValid() && this.passwordsMatch() && !this.loading()
+  );
 
-  readonly canSubmitCode = computed(() => {
-    return this.isCodeValid() && !this.loading();
-  });
-
-  readonly canSubmitPassword = computed(() => {
-    return this.isPasswordValid() && this.passwordsMatch() && !this.loading();
-  });
-
-  // ========== MÉTODOS PÚBLICOS - Paso 1: Solicitar código ==========
+  // ========== PASO 1: Solicitar código ==========
 
   /**
    * Envía el email para solicitar código de recuperación
@@ -102,43 +94,34 @@ export class PasswordRecovery {
       return;
     }
 
-    this.loading.set(true);
-    this.error.set(null);
-    this.successMessage.set(null);
-
     const email = emailControl.value;
     if (!email) {
       this.error.set('Email requerido');
-      this.loading.set(false);
       return;
     }
 
-    this.usersService.forgotPassword({ email })
-      .pipe(
-        finalize(() => this.loading.set(false)),
-        catchError((err) => {
-          const errorMsg = err?.error?.message || 'Error al enviar el código. Intenta nuevamente.';
-          this.error.set(errorMsg);
-          return throwError(() => err);
-        })
-      )
-      .subscribe({
-        next: (response) => {
-          console.log('✅ Código enviado:', response);
-          this.emailSent.set(email);
-          this.step.set('code');
-          this.successMessage.set(
-            `Se ha enviado un código de 6 dígitos a ${email}. Válido por ${response.expiresInMinutes} minutos.`
-          );
-          this.error.set(null);
-        },
-        error: (err) => {
-          console.error('❌ Error al solicitar código:', err);
-        }
-      });
+    this.error.set(null);
+    this.successMessage.set(null);
+
+    this.usersService.forgotPassword({ email }).subscribe({
+      next: (response) => {
+        console.log('✅ [PasswordRecovery] Código enviado:', response.message);
+        this.emailSent.set(email);
+        this.step.set('code');
+        this.successMessage.set(
+          `Se ha enviado un código de 6 dígitos a ${email}. Válido por ${response.expiresInMinutes} minutos.`
+        );
+        this.error.set(null);
+      },
+      error: (err) => {
+        const errorMsg = err?.error?.message || 'Error al enviar el código. Intenta nuevamente.';
+        this.error.set(errorMsg);
+        console.error('❌ [PasswordRecovery] Error al solicitar código:', err);
+      }
+    });
   }
 
-  // ========== MÉTODOS PÚBLICOS - Paso 2: Verificar código ==========
+  // ========== PASO 2: Verificar código ==========
 
   /**
    * Verifica si el código ingresado es válido
@@ -148,49 +131,40 @@ export class PasswordRecovery {
     
     if (!codeControl || codeControl.invalid) {
       codeControl?.markAsTouched();
-      this.error.set('El código debe tener exactamente 6 dígitos');
+      this.error.set('El código debe tener exactamente 6 dígitos numéricos');
       return;
     }
-
-    this.loading.set(true);
-    this.error.set(null);
-    this.successMessage.set(null);
 
     const code = codeControl.value;
     if (!code) {
       this.error.set('Código requerido');
-      this.loading.set(false);
       return;
     }
 
-    this.usersService.verifyResetCode({ code })
-      .pipe(
-        finalize(() => this.loading.set(false)),
-        catchError((err) => {
-          const errorMsg = err?.error?.message || 'Código inválido o expirado';
-          this.error.set(errorMsg);
-          return throwError(() => err);
-        })
-      )
-      .subscribe({
-        next: (response) => {
-          console.log('✅ Código verificado:', response);
-          
-          if (response.valid) {
-            this.step.set('password');
-            this.successMessage.set('Código verificado. Ahora ingresa tu nueva contraseña.');
-            this.error.set(null);
-          } else {
-            this.error.set('El código ingresado no es válido o ha expirado');
-          }
-        },
-        error: (err) => {
-          console.error('❌ Error al verificar código:', err);
+    this.error.set(null);
+    this.successMessage.set(null);
+
+    this.usersService.verifyResetCode({ code }).subscribe({
+      next: (response) => {
+        console.log('✅ [PasswordRecovery] Código verificado:', response.valid);
+        
+        if (response.valid) {
+          this.step.set('password');
+          this.successMessage.set('Código verificado. Ahora ingresa tu nueva contraseña.');
+          this.error.set(null);
+        } else {
+          this.error.set('El código ingresado no es válido o ha expirado');
         }
-      });
+      },
+      error: (err) => {
+        const errorMsg = err?.error?.message || 'Código inválido o expirado';
+        this.error.set(errorMsg);
+        console.error('❌ [PasswordRecovery] Error al verificar código:', err);
+      }
+    });
   }
 
-  // ========== MÉTODOS PÚBLICOS - Paso 3: Nueva contraseña ==========
+  // ========== PASO 3: Nueva contraseña ==========
 
   /**
    * Resetea la contraseña con el código verificado
@@ -201,6 +175,7 @@ export class PasswordRecovery {
     const codeControl = this.form.get('code');
 
     if (!newPasswordControl || !confirmPasswordControl || !codeControl) {
+      this.error.set('Error en el formulario');
       return;
     }
 
@@ -213,7 +188,7 @@ export class PasswordRecovery {
     }
 
     if (confirmPasswordControl.invalid) {
-      this.error.set('Confirma tu contraseña');
+      this.error.set('Confirma tu contraseña correctamente');
       return;
     }
 
@@ -230,37 +205,30 @@ export class PasswordRecovery {
       return;
     }
 
-    this.loading.set(true);
     this.error.set(null);
     this.successMessage.set(null);
 
-    this.usersService.resetPassword({ code, newPassword })
-      .pipe(
-        finalize(() => this.loading.set(false)),
-        catchError((err) => {
-          const errorMsg = err?.error?.message || 'Error al actualizar la contraseña';
-          this.error.set(errorMsg);
-          return throwError(() => err);
-        })
-      )
-      .subscribe({
-        next: (response) => {
-          console.log('✅ Contraseña actualizada:', response);
-          this.successMessage.set('¡Contraseña actualizada exitosamente! Redirigiendo al login...');
-          this.error.set(null);
+    this.usersService.resetPassword({ code, newPassword }).subscribe({
+      next: (response) => {
+        console.log('✅ [PasswordRecovery] Contraseña actualizada:', response.message);
+        this.successMessage.set('¡Contraseña actualizada exitosamente! Redirigiendo al login...');
+        this.error.set(null);
 
-          // Redirigir al login después de 2 segundos
-          setTimeout(() => {
-            this.onBackToLogin();
-          }, 2000);
-        },
-        error: (err) => {
-          console.error('❌ Error al resetear contraseña:', err);
-        }
-      });
+        this.usersService.clearError();
+
+        setTimeout(() => {
+          this.onBackToLogin();
+        }, 2000);
+      },
+      error: (err) => {
+        const errorMsg = err?.error?.message || 'Error al actualizar la contraseña';
+        this.error.set(errorMsg);
+        console.error('❌ [PasswordRecovery] Error al resetear contraseña:', err);
+      }
+    });
   }
 
-  // ========== MÉTODOS PÚBLICOS - Navegación ==========
+  // ========== NAVEGACIÓN ==========
 
   /**
    * Vuelve al paso anterior
@@ -268,11 +236,15 @@ export class PasswordRecovery {
   goToPreviousStep(): void {
     this.error.set(null);
     this.successMessage.set(null);
+    this.usersService.clearError();
 
     if (this.step() === 'code') {
       this.step.set('email');
+      this.form.get('code')?.reset();
     } else if (this.step() === 'password') {
       this.step.set('code');
+      this.form.get('newPassword')?.reset();
+      this.form.get('confirmPassword')?.reset();
     }
   }
 
@@ -288,36 +260,35 @@ export class PasswordRecovery {
       return;
     }
 
-    this.loading.set(true);
     this.error.set(null);
     this.successMessage.set(null);
 
-    this.usersService.forgotPassword({ email })
-      .pipe(
-        finalize(() => this.loading.set(false)),
-        catchError((err) => {
-          this.error.set('Error al reenviar el código');
-          return throwError(() => err);
-        })
-      )
-      .subscribe({
-        next: (response) => {
-          this.successMessage.set(
-            `Código reenviado a ${email}. Válido por ${response.expiresInMinutes} minutos.`
-          );
-        }
-      });
+    this.usersService.forgotPassword({ email }).subscribe({
+      next: (response) => {
+        this.successMessage.set(
+          `Código reenviado a ${email}. Válido por ${response.expiresInMinutes} minutos.`
+        );
+        this.error.set(null);
+        console.log('✅ [PasswordRecovery] Código reenviado exitosamente');
+      },
+      error: (err) => {
+        const errorMsg = err?.error?.message || 'Error al reenviar el código';
+        this.error.set(errorMsg);
+        console.error('❌ [PasswordRecovery] Error al reenviar código:', err);
+      }
+    });
   }
 
   /**
    * Regresa al login y resetea el formulario
    */
   onBackToLogin(): void {
-    this.goToLogin.emit();
     this.resetForm();
+    this.usersService.clearError();
+    this.goToLogin.emit();
   }
 
-  // ========== MÉTODOS PÚBLICOS - UI ==========
+  // ========== UI HELPERS ==========
 
   /**
    * Alterna visibilidad de la nueva contraseña
@@ -334,27 +305,32 @@ export class PasswordRecovery {
   }
 
   /**
-   * Valida que solo se ingresen números en el campo de código
+   * Valida y limita el input del código a 6 dígitos numéricos
    */
   onCodeInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const value = input.value.replace(/[^0-9]/g, '');
-    
-    if (value !== input.value) {
-      input.value = value;
-      this.form.get('code')?.setValue(value);
-    }
+    const value = input.value.replace(/\D/g, '');
+    const truncated = value.slice(0, 6);
 
-    // Limitar a 6 dígitos
-    if (value.length > 6) {
-      const truncated = value.slice(0, 6);
+    if (truncated !== input.value) {
       input.value = truncated;
-      this.form.get('code')?.setValue(truncated);
+      this.form.get('code')?.setValue(truncated, { emitEvent: false });
     }
   }
 
-  // ========== MÉTODOS PRIVADOS ==========
+  /**
+   * Obtiene el número del paso actual para el progressbar
+   */
+  getCurrentStepNumber(): number {
+    const stepMap: Record<RecoveryStep, number> = {
+      email: 1,
+      code: 2,
+      password: 3
+    };
+    return stepMap[this.step()];
+  }
 
+  // ========== PRIVATE METHODS ==========
   /**
    * Resetea el formulario al estado inicial
    */
@@ -366,6 +342,5 @@ export class PasswordRecovery {
     this.emailSent.set(null);
     this.newPasswordVisible.set(false);
     this.confirmPasswordVisible.set(false);
-    this.loading.set(false);
   }
 }

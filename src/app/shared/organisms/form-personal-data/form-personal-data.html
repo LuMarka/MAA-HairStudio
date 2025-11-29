@@ -104,7 +104,7 @@
                     formControlName="phone"
                     class="form-control"
                     [class.form-control--error]="isFieldInvalid('phone')"
-                    placeholder="+54 9 11 1234-5678"
+                    placeholder="3534015655"
                     autocomplete="tel">
                   @if (isFieldInvalid('phone')) {
                     <span class="form-error">
@@ -339,7 +339,7 @@
               <span class="btn__text">Editar Carrito</span>
             </button>
 
-            <button type="submit" class="btn btn--primary" [disabled]="!formValid()">
+            <button type="submit" class="btn btn--primary">
               <span class="btn__text">Continuar</span>
               <span class="btn__icon">→</span>
             </button>
