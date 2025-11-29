@@ -28,10 +28,11 @@
 			<input id="profile-address2" class="profile-template__input" type="text" placeholder="Dirección" [value]="user.address" [disabled]="!isEditing" />
 		</div>
 
+		<button type="submit" class="profile-template__button" [disabled]="!isEditing">Guardar cambios</button>
+
 		<div class="profile-template__actions-row">
 			<button type="button" class="profile-template__action profile-template__action--danger">Eliminar cuenta</button>
 			<button type="button" class="profile-template__action profile-template__action--secondary">Ver mis pedidos</button>
 		</div>
-		<button type="submit" class="profile-template__button" [disabled]="!isEditing">Guardar cambios</button>
 	</form>
 </section>
