@@ -11,7 +11,7 @@ export class ProfileTemplate {
     name: 'Nombre Apellido',
     email: 'usuario@email.com',
     phone: '1234567890',
-    address: 'Calle Falsa 123, CABA',
+    address: 'Calle Falsa 123, Villa María, Córdoba, Argentina',
   };
   isEditing = false;
 
