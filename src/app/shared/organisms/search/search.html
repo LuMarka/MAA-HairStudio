@@ -37,6 +37,17 @@
           <div class="search__user-menu">
             <button
               type="button"
+              class="search__user-menu-item search__user-menu-item--profile"
+              (click)="router.navigate(['/profile']); closeUserMenu()"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4 4-7 8-7s8 3 8 7" />
+              </svg>
+              <span>Ver perfil</span>
+            </button>
+            <button
+              type="button"
               class="search__user-menu-item search__user-menu-item--logout"
               (click)="logout()"
             >
