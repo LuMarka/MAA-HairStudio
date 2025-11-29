@@ -1,1 +1,37 @@
-<p>profile-template works!</p>
+<section class="profile-template">
+	<div class="profile-template__header">
+		<button type="button" class="profile-template__edit-toggle" (click)="toggleEdit()">
+			{{ isEditing ? 'Cancelar' : 'Editar perfil' }}
+		</button>
+		<h2 class="profile-template__title">Mi Perfil</h2>
+
+	</div>
+	<form class="profile-template__form" autocomplete="off">
+		<div class="profile-template__field-group">
+			<label for="profile-name" class="profile-template__label">Nombre</label>
+			<input id="profile-name" class="profile-template__input" type="text" placeholder="Nombre completo" [value]="user.name" [disabled]="!isEditing" />
+		</div>
+		<div class="profile-template__field-group">
+			<label for="profile-email" class="profile-template__label">Email</label>
+			<input id="profile-email" class="profile-template__input" type="email" placeholder="Correo electrónico" [value]="user.email" [disabled]="!isEditing" />
+		</div>
+		<div class="profile-template__field-group">
+			<label for="profile-phone" class="profile-template__label">Teléfono</label>
+			<input id="profile-phone" class="profile-template__input" type="tel" placeholder="Teléfono" [value]="user.phone" [disabled]="!isEditing" />
+		</div>
+		<div class="profile-template__field-group">
+			<label for="profile-address1" class="profile-template__label">Dirección 1</label>
+			<input id="profile-address1" class="profile-template__input" type="text" placeholder="Dirección" [value]="user.address" [disabled]="!isEditing" />
+		</div>
+		<div class="profile-template__field-group">
+			<label for="profile-address2" class="profile-template__label">Dirección 2</label>
+			<input id="profile-address2" class="profile-template__input" type="text" placeholder="Dirección" [value]="user.address" [disabled]="!isEditing" />
+		</div>
+
+		<div class="profile-template__actions-row">
+			<button type="button" class="profile-template__action profile-template__action--danger">Eliminar cuenta</button>
+			<button type="button" class="profile-template__action profile-template__action--secondary">Ver mis pedidos</button>
+		</div>
+		<button type="submit" class="profile-template__button" [disabled]="!isEditing">Guardar cambios</button>
+	</form>
+</section>

@@ -107,7 +107,7 @@ export const pagesRoutes: Routes = [
       {
         path: 'profile',
         component: Profile,
-        canActivate: [authGuard],
+        /* canActivate: [authGuard], */
         data: {
           title: "Perfil | MAA Hair Studio",
           description: "Perfil de usuario.",
