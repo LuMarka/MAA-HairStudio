@@ -57,14 +57,7 @@
         }
       </div>
 
-      <!-- Remember me checkbox -->
-      <div class="auth__form-group auth__checkbox-wrapper">
-        <label class="auth__checkbox">
-          <input type="checkbox" formControlName="remember" />
-          <span class="auth__checkbox-label">Recordarme</span>
-        </label>
-        <a (click)="onForgotPasswordClick()" class="auth__forgot-password">¿Olvidaste tu contraseña?</a>
-      </div>
+
 
       <!-- Error message -->
       @if (error()) {
@@ -81,6 +74,15 @@
       >
         {{ loading() ? 'Cargando...' : 'Entrar' }}
       </button>
+
+      <!-- Remember me checkbox -->
+      <div class="auth__form-group auth__checkbox-wrapper">
+        <label class="auth__checkbox">
+          <input type="checkbox" formControlName="remember" />
+          <span class="auth__checkbox-label">Recordarme</span>
+        </label>
+        <a (click)="onForgotPasswordClick()" class="auth__forgot-password">¿Olvidaste tu contraseña?</a>
+      </div>
 
       <!-- Registration link -->
       <p class="auth__footer">
