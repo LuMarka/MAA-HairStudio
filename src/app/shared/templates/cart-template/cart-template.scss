@@ -1,0 +1,52 @@
+
+.cart-template__loading,
+.cart-template__error {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 40vh;
+	text-align: center;
+}
+
+.cart-template__loading-text,
+.cart-template__error-title,
+.cart-template__error-message {
+	text-align: center;
+}
+
+.cart-template__error-icon {
+	font-size: 2.5rem;
+	margin-bottom: 1rem;
+}
+
+.cart-template__spinner {
+	width: 48px;
+	height: 48px;
+	border: 4px solid #e0e0e0;
+	border-top: 4px solid #5a735d;
+	border-radius: 50%;
+	animation: cart-spinner 1s linear infinite;
+	margin-bottom: 1.5rem;
+}
+
+@keyframes cart-spinner {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+.cart-template__error-btn {
+	margin-top: 1.5rem;
+	padding: 0.75rem 1.5rem;
+	background: #7da376;
+	color: #fff;
+	border: none;
+	border-radius: 0.5rem;
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+.cart-template__error-btn:hover {
+	background: #69966e;
+}
