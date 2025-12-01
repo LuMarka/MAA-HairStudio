@@ -123,64 +123,10 @@
         </div>
 
         <!-- Resumen de Compra - Columna derecha -->
-        <div class="order-summary-section">
-          <div class="order-summary-card">
-            <h3 class="card-title">
-              <span class="card-icon">🛒</span>
-              Resumen de Compra
-            </h3>
-
-            <div class="order-items">
-               @for (item of cartItems(); track item.id) {
-                    <div class="order-item">
-                      <div class="item-info">
-                        <h4 class="item-name">{{ item.name }}</h4>
-                        @if (item.brand) {
-                          <span class="item-brand">{{ item.brand }}</span>
-                        }
-                      </div>
-                      <div class="item-quantity">x{{ item.quantity }}</div>
-                      <div class="item-total">${{ (item.price * item.quantity).toFixed(2) }}</div>
-                    </div>
-                  }
-            </div>
-
-            <div class="order-totals">
-              <div class="total-line">
-                <span>Subtotal:</span>
-                <span>${{ subtotal().toFixed(2) }}</span>
-              </div>
-              <div class="total-line">
-                <span>Envío:</span>
-                <span>
-                  @if (selectedDeliveryOption() === 'pickup') {
-                  Gratis
-                  } @else {
-                  A convenir
-                  }
-                </span>
-              </div>
-              <div class="total-line">
-                <span>IVA (21%):</span>
-                <span>${{ ivaAmount().toFixed(2) }}</span>
-              </div>
-              <div class="total-line total-line--final">
-                <span>Total:</span>
-                 <span>${{ totalWithIva().toFixed(2) }}</span>
-              </div>
-            </div>
-
-            @if (selectedPaymentMethod()) {
-            <div class="payment-selected">
-              <div class="payment-selected__icon">💳</div>
-              <div class="payment-selected__content">
-                <span class="payment-selected__label">Método de pago:</span>
-                <span class="payment-selected__value">{{ selectedPaymentMethodText() }}</span>
-              </div>
-            </div>
-            }
-          </div>
-        </div>
+        <!-- Reemplaza la sección de resumen con: -->
+        <app-cart-summary [cartItems]="cartItems()" [subtotal]="subtotal()" [ivaAmount]="ivaAmount()"
+          [totalWithIva]="totalWithIva()" [selectedDeliveryOption]="selectedDeliveryOption()"
+          [selectedPaymentMethod]="selectedPaymentMethod()" />
       </div>
 
       <!-- Navigation buttons -->

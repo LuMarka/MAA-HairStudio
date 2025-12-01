@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, input, output, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../../../core/services/cart.service';
+import { CartSummary } from "../../molecules/cart-summary/cart-summary";
 
 type PaymentMethod = 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
 type DeliveryType = 'pickup' | 'delivery';
@@ -40,7 +41,7 @@ interface OrderData {
 @Component({
   selector: 'app-methode-pay',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, CartSummary], // ✅ Agregar CartSummary aquí
   templateUrl: './methode-pay.html',
   styleUrl: './methode-pay.scss'
 })
