@@ -204,11 +204,13 @@ export class PurchaseOrderTemplate {
       };
     }
 
-    // Si es delivery sin addressId (dirección manual - caso futuro)
+    // Si es delivery sin addressId, cambiar a pickup
     if (deliveryType === 'delivery' && !addressId) {
-      console.log('📦 [PurchaseOrder] Creando orden delivery sin addressId guardado');
-      // Aquí podrías agregar lógica para dirección manual si tu backend lo soporta
-      return baseDto;
+      console.log('📦 [PurchaseOrder] Sin addressId, cambiando a pickup');
+      return {
+      ...baseDto,
+      deliveryType: 'pickup'
+      };
     }
 
     // Si es pickup
