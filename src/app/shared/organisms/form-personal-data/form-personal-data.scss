@@ -7,7 +7,10 @@
 
 // Contenedor principal
 .purchase-order__content {
-  padding-bottom: 4rem;
+  //padding-bottom: 4rem;
+  padding:calc(32px + 4rem) 2rem 2rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 // Layout del formulario

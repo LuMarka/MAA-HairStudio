@@ -5,15 +5,17 @@
 // CONFIRMATION - PURCHASE ORDER CONTENT
 // ==========================
 .purchase-order__content {
-  padding-bottom: 4rem;
+ padding-bottom: 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 // ==========================
 // CONFIRMATION CONTAINER
 // ==========================
 .confirmation-container {
-  padding: 1rem 0 3rem;
 
+  padding: 1rem 2rem 3rem;
   @include m.tablet {
     padding: 2rem 0 4rem;
   }
@@ -97,6 +99,7 @@
   grid-template-columns: 1fr;
   gap: 2rem;
   margin-bottom: 3rem;
+
 
   @include m.desktop {
     grid-template-columns: 1fr 1fr;
