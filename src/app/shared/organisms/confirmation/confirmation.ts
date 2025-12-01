@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, input, output, computed, signal, effect, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { OrderService } from '../../../core/services/order.service';
 import { CartService } from '../../../core/services/cart.service';
+import { CartSummary } from '../../molecules/cart-summary/cart-summary';
 import type { CreateOrderDto } from '../../../core/models/interfaces/order.interface';
 
 type PaymentMethod = 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
@@ -54,7 +54,7 @@ interface CartItem {
 @Component({
   selector: 'app-confirmation',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CartSummary],
   templateUrl: './confirmation.html',
   styleUrl: './confirmation.scss'
 })
@@ -102,7 +102,7 @@ export class Confirmation {
   readonly totalWithIva = computed(() => this.cartService.totalAmount());
 
   // ========== COMPUTED - DELIVERY & PAYMENT ==========
-  readonly selectedDeliveryOption = computed(() => {
+  readonly selectedDeliveryOption = computed<'pickup' | 'delivery'>(() => {
     return this.checkoutDeliveryType() || 'pickup';
   });
 
@@ -206,13 +206,11 @@ export class Confirmation {
     const deliveryType = checkoutState.deliveryType;
     const addressId = checkoutState.selectedAddressId;
 
-    // Construir DTO base
     const baseDto = {
       deliveryType,
       notes: orderData.notes || undefined
     };
 
-    // Si es delivery Y hay addressId, usar shippingAddressId
     if (deliveryType === 'delivery' && addressId) {
       console.log('📦 Creando orden con delivery y addressId:', addressId);
       return {
@@ -221,18 +219,13 @@ export class Confirmation {
       } as CreateOrderDto;
     }
 
-    // Si es delivery pero NO hay addressId guardado (dirección manual)
     if (deliveryType === 'delivery' && !addressId) {
       console.log('📦 Creando orden con delivery pero sin addressId guardado');
-      // El backend creará la dirección temporal con los datos de orderData
       return {
-        ...baseDto,
-        // Aquí podrías agregar campos de dirección manual si tu DTO lo soporta
-        // O manejar este caso de forma diferente
+        ...baseDto
       } as CreateOrderDto;
     }
 
-    // Si es pickup
     console.log('🏪 Creando orden con pickup');
     return {
       ...baseDto
@@ -265,31 +258,10 @@ export class Confirmation {
     }
 
     console.log('📝 Finalizando orden con DTO:', createOrderDto);
-
-    // Emitir evento para que el componente padre maneje la creación
-    // O crear la orden directamente aquí
     this.finalizeOrder.emit();
-
-    // Si quieres crear la orden directamente desde aquí:
-    /*
-    this.orderService.createOrderFromCart(createOrderDto).subscribe({
-      next: (response) => {
-        console.log('✅ Orden creada exitosamente:', response.data.orderNumber);
-        // Limpiar checkout state después de crear orden
-        this.orderService.clearCheckoutState();
-        // Emitir evento de éxito
-        this.finalizeOrder.emit();
-      },
-      error: (error) => {
-        console.error('❌ Error al crear orden:', error);
-        // Manejar error
-      }
-    });
-    */
   }
 
   onBackToHome(): void {
-    // Limpiar checkout state al volver al inicio
     this.orderService.clearCheckoutState();
     this.backToHome.emit();
   }
@@ -305,18 +277,6 @@ export class Confirmation {
   }
 
   // ========== HELPERS PARA TEMPLATE ==========
-  formatPrice(price: number): string {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 2
-    }).format(price);
-  }
-
-  getItemTotal(item: CartItem): number {
-    return item.price * item.quantity;
-  }
-
   getPaymentMethodIcon(method: PaymentMethod): string {
     const icons: Record<PaymentMethod, string> = {
       'cash': '💵',

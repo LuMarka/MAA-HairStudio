@@ -29,7 +29,7 @@
             <span class="btn__text">Volver al Inicio</span>
           </button>
         </div>
-        <p class="success-redirect">Serás redirigido automáticamente en 5 segundos...</p>
+        <p class="success-redirect">Serás redirigido automáticamente en {{ redirectSeconds() }} segundos...</p>
       </div>
     </div>
     } @else {
@@ -93,73 +93,36 @@
           </div>
 
           <!-- Payment Method Badge -->
-          @if (selectedPaymentMethod()) {
+          <!-- @if (selectedPaymentMethod()) {
           <div class="payment-method-badge">
-            <div class="payment-method-badge__icon">💳</div>
+            <div class="payment-method-badge__icon">
+              {{ getPaymentMethodIcon(selectedPaymentMethod()!) }}
+            </div>
             <div class="payment-method-badge__content">
               <span class="payment-method-badge__label">Método de pago</span>
               <span class="payment-method-badge__value">{{ selectedPaymentMethodText() }}</span>
             </div>
           </div>
-          }
+          } -->
           }
         </div>
 
-        <!-- Order Summary -->
-        <div class="confirmation-section">
-          <div class="confirmation-section__header">
-            <div class="confirmation-section__icon">🛒</div>
-            <h3 class="confirmation-section__title">Resumen del Pedido</h3>
-          </div>
-
-          <div class="confirmation-section__content">
-            <div class="order-items-list">
-              @for (item of cartItems(); track item.id) {
-                      <div class="order-item-card">
-                        <div class="order-item-card__info">
-                          <h4 class="order-item-card__name">{{ item.name }}</h4>
-                          @if (item.brand) {
-                            <span class="order-item-card__brand">{{ item.brand }}</span>
-                          }
-                        </div>
-                        <div class="order-item-card__quantity">x{{ item.quantity }}</div>
-                        <div class="order-item-card__price">${{ (item.price * item.quantity).toFixed(2) }}</div>
-                      </div>
-                    }
-            </div>
-
-            <!-- Order totals -->
-            <div class="confirmation-item">
-              <span class="confirmation-item__label">Subtotal:</span>
-              <span class="confirmation-item__value">${{ subtotal().toFixed(2) }}</span>
-            </div>
-            <div class="confirmation-item">
-              <span class="confirmation-item__label">Envío:</span>
-              <span class="confirmation-item__value">
-                @if (selectedDeliveryOption() === 'pickup') {
-                Gratis
-                } @else {
-                A convenir
-                }
-              </span>
-            </div>
-            <div class="confirmation-item">
-              <span class="confirmation-item__label">IVA (21%):</span>
-              <span class="confirmation-item__value">${{ ivaAmount().toFixed(2) }}</span>
-            </div>
-            <div class="confirmation-item confirmation-item--total">
-              <span class="confirmation-item__label">Total:</span>
-              <span class="confirmation-item__value">${{ totalWithIva().toFixed(2) }}</span>
-            </div>
-          </div>
-        </div>
+        <!-- Cart Summary Component -->
+        <app-cart-summary
+          [cartItems]="cartItems()"
+          [subtotal]="subtotal()"
+          [ivaAmount]="ivaAmount()"
+          [totalWithIva]="totalWithIva()"
+          [selectedDeliveryOption]="selectedDeliveryOption()"
+          [selectedPaymentMethod]="selectedPaymentMethod()"
+        />
       </div>
 
       <!-- Action Buttons -->
       <div class="confirmation-actions">
         <div class="confirmation-actions__secondary">
           <button type="button" class="btn btn--outline" (click)="onEditCart()">
-            <span class="btn__icon">🛒</span>
+            <span class="__icon">🛒</span>
             <span class="btn__text">Editar Carrito</span>
           </button>
 
@@ -170,9 +133,14 @@
         </div>
 
         <div class="confirmation-actions__primary">
-          <button type="button" class="btn btn--primary btn--large" [class.btn--loading]="isProcessing()"
-            [disabled]="isProcessing()" (click)="onFinalizeOrder()">
+          <button 
+            type="button" 
+            class="btn btn--primary btn--large" 
+            [class.btn--loading]="isProcessing()"
+            [disabled]="!canFinalize()" 
+            (click)="onFinalizeOrder()">
             @if (isProcessing()) {
+            <span class="btn__spinner"></span>
             <span class="btn__text">Procesando...</span>
             } @else {
             <span class="btn__text">Finalizar Pedido</span>
