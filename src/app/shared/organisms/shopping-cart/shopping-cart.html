@@ -158,47 +158,9 @@
       <!-- Resumen del carrito -->
       <aside class="cart__summary">
         <div class="cart-summary">
-          <h3 class="cart-summary__title">Resumen del pedido</h3>
-
-          <div class="cart-summary__line">
-            <span class="cart-summary__label">Subtotal ({{ totalItems() }} productos):</span>
-            <span class="cart-summary__value">${{ formatPrice(subtotal()) }}</span>
-          </div>
-
-          @if (totalDiscount() > 0) {
-            <div class="cart-summary__line cart-summary__line--discount">
-              <span class="cart-summary__label">Descuentos:</span>
-              <span class="cart-summary__value cart-summary__value--discount">
-                -${{ formatPrice(totalDiscount()) }}
-              </span>
-            </div>
-          }
-
-          <div class="cart-summary__line">
-            <span class="cart-summary__label">Subtotal con descuentos:</span>
-            <span class="cart-summary__value">${{ formatPrice(totalAmount()) }}</span>
-          </div>
-
-          <div class="cart-summary__line">
-            <span class="cart-summary__label">IVA (21%):</span>
-            <span class="cart-summary__value">${{ formatPrice(estimatedTax()) }}</span>
-          </div>
-
-          @if (estimatedShipping() > 0) {
-            <div class="cart-summary__line">
-              <span class="cart-summary__label">Envío estimado:</span>
-              <span class="cart-summary__value">${{ formatPrice(estimatedShipping()) }}</span>
-            </div>
-          }
-
-          <hr class="cart-summary__divider">
-
-          <div class="cart-summary__line cart-summary__line--total">
-            <span class="cart-summary__label">Total estimado:</span>
-            <span class="cart-summary__value cart-summary__value--total">
-              ${{ formatPrice(estimatedTotal()) }}
-            </span>
-          </div>
+          <app-cart-summary class="cart-summary__line" [cartItems]="cartItemsForSummary()" [subtotal]="subtotalForSummary()"
+            [ivaAmount]="ivaAmountForSummary()" [totalWithIva]="totalWithIvaForSummary()"
+            [selectedDeliveryOption]="selectedDeliveryForSummary()" />
 
           <!-- Sección de checkout -->
           <div class="cart-summary__checkout">

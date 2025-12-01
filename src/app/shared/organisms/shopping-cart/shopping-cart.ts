@@ -1,16 +1,24 @@
-import { Component, ChangeDetectionStrategy, input, output, computed, signal, effect } from '@angular/core';
-import { inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, signal, effect, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { OrderService } from '../../../core/services/order.service';
+import { CartService } from '../../../core/services/cart.service';
 import { Paginator, PaginationEvent } from '../../molecules/paginator/paginator';
+import { CartSummary } from "../../molecules/cart-summary/cart-summary";
 import type { CartInterface, Datum } from '../../../core/models/interfaces/cart.interface';
 import type { DeliveryType } from '../../../core/models/interfaces/order.interface';
-import { CartService } from '../../../core/services/cart.service';
+
+interface CartItem {
+  id: string;
+  name: string;
+  brand?: string;
+  quantity: number;
+  price: number;
+}
 
 @Component({
   selector: 'app-shopping-cart',
-  imports: [Paginator],
+  imports: [Paginator, CartSummary],
   templateUrl: './shopping-cart.html',
   styleUrl: './shopping-cart.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,7 +58,7 @@ export class ShoppingCart {
   readonly isEmpty = computed(() => this.items().length === 0);
   readonly hasItems = computed(() => this.items().length > 0);
 
-  // ========== COMPUTED - Resumen ==========
+  // ========== COMPUTED - Resumen (del summary del API) ==========
   readonly totalItems = computed(() => this.summary()?.totalItems ?? 0);
   readonly totalQuantity = computed(() => this.summary()?.totalQuantity ?? 0);
   readonly subtotal = computed(() => this.summary()?.subtotal ?? 0);
@@ -59,7 +67,49 @@ export class ShoppingCart {
   readonly estimatedTax = computed(() => this.summary()?.estimatedTax ?? 0);
   readonly estimatedShipping = computed(() => this.summary()?.estimatedShipping ?? 0);
   readonly estimatedTotal = computed(() => this.summary()?.estimatedTotal ?? 0);
-  readonly cartTotal = computed(() => this.cartService.totalAmount() / 1.21);
+
+  // ========== COMPUTED - Para CartSummary Component ==========
+
+  /**
+   * Transforma los items del carrito al formato requerido por CartSummary
+   */
+  readonly cartItemsForSummary = computed<CartItem[]>(() => {
+    return this.items().map(item => ({
+      id: item.product.id,
+      name: item.product.name,
+      brand: item.product.brand,
+      quantity: item.quantity,
+      price: item.product.finalPrice
+    }));
+  });
+
+  /**
+   * Subtotal sin IVA para CartSummary
+   */
+  readonly subtotalForSummary = computed(() => {
+    return this.subtotal();
+  });
+
+  /**
+   * Monto del IVA (21%) para CartSummary
+   */
+  readonly ivaAmountForSummary = computed(() => {
+    return this.subtotal() * 0.21;
+  });
+
+  /**
+   * Total con IVA incluido para CartSummary
+   */
+  readonly totalWithIvaForSummary = computed(() => {
+    return this.totalAmount();
+  });
+
+  /**
+   * Opción de entrega seleccionada para CartSummary
+   */
+  readonly selectedDeliveryForSummary = computed<'pickup' | 'delivery'>(() => {
+    return this.selectedDeliveryOption() || 'pickup';
+  });
 
   // ========== COMPUTED - UI ==========
   readonly hasUnavailableItems = computed(() =>
@@ -190,8 +240,7 @@ export class ShoppingCart {
   }
 
   /**
-   * ✅ REFACTORIZADO: Solo guarda el estado y redirige a purchase-order
-   * Ya NO crea la orden aquí
+   * Guarda el estado y redirige a purchase-order
    */
   onProceedToCheckout(): void {
     const deliveryType = this.selectedDeliveryOption();
@@ -239,8 +288,8 @@ export class ShoppingCart {
 
   canIncrease(item: Datum): boolean {
     return item.quantity < item.product.stock &&
-           this.isAvailable(item) &&
-           !this.isProcessingItem(item.product.id);
+      this.isAvailable(item) &&
+      !this.isProcessingItem(item.product.id);
   }
 
   isProcessingItem(productId: string): boolean {
