@@ -1,10 +1,10 @@
 import { Component, ChangeDetectionStrategy, input, output, computed, signal, effect, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
 import { AddressService } from '../../../core/services/address.service';
 import { OrderService } from '../../../core/services/order.service';
+import { CartSummary } from '../../molecules/cart-summary/cart-summary';
 import type { Datum as AddressData, CreateAddressDto } from '../../../core/models/interfaces/address.interface';
 
 type DeliveryType = 'pickup' | 'delivery';
@@ -46,7 +46,7 @@ interface FormData {
 @Component({
   selector: 'app-form-personal-data',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CartSummary],
   templateUrl: './form-personal-data.html',
   styleUrl: './form-personal-data.scss'
 })
@@ -140,9 +140,10 @@ export class FormPersonalData {
   readonly subtotal = computed(() => this.cartService.subtotal());
   readonly ivaAmount = computed(() => this.subtotal() * 0.21);
   readonly totalWithIva = computed(() => this.cartService.totalAmount());
-  readonly shippingText = computed(() => this.isDelivery() ? 'A convenir' : 'Gratis');
-  readonly deliveryTimeText = computed(() => this.isDelivery() ? '3-5 días hábiles' : 'Lunes a Viernes');
-  readonly deliveryTimeLabel = computed(() => this.isDelivery() ? 'Tiempo estimado:' : 'Disponible:');
+
+  readonly selectedDeliveryOption = computed<'pickup' | 'delivery'>(() => {
+    return this.deliveryOption();
+  });
 
   // ========== COMPUTED - VALIDATION ==========
   readonly validationMessage = computed(() => {

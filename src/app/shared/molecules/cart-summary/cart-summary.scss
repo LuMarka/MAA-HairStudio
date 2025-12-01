@@ -252,6 +252,128 @@
 }
 
 // ==========================
+// DELIVERY INFO
+// ==========================
+.delivery-info {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid v.color('gray1');
+
+  @include m.tablet {
+    margin-top: 1.75rem;
+    padding-top: 1.75rem;
+  }
+
+  &__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+
+    @include m.tablet {
+      font-size: 0.9375rem;
+      margin-bottom: 1rem;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__label {
+    color: v.color('text-muted');
+    font-weight: 500;
+  }
+
+  &__value {
+    font-weight: 600;
+    color: v.color('text-dark');
+  }
+}
+
+// ==========================
+// VALIDATION STATUS
+// ==========================
+.validation-status {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+
+  @include m.tablet {
+    margin-top: 1.75rem;
+    padding: 1.25rem;
+  }
+
+  &__success,
+  &__pending {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    @include m.tablet {
+      gap: 1rem;
+    }
+  }
+
+  &__success {
+    background: rgba(106, 191, 142, 0.1);
+    border: 1px solid rgba(106, 191, 142, 0.3);
+  }
+
+  &__pending {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+  }
+
+  &__icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+
+    @include m.tablet {
+      font-size: 1.5rem;
+    }
+  }
+
+  &__text {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.4;
+
+    @include m.tablet {
+      font-size: 0.875rem;
+    }
+  }
+
+  &__success &__text {
+    color: v.color('primary');
+  }
+
+  &__pending &__text {
+    color: #d68910;
+  }
+}
+
+// ==========================
+// EMPTY STATE
+// ==========================
+.order-items--empty {
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.order-empty-message {
+  color: v.color('text-muted');
+  font-size: 0.875rem;
+  margin: 0;
+
+  @include m.tablet {
+    font-size: 0.9375rem;
+  }
+}
+
+// ==========================
 // RESPONSIVE ADJUSTMENTS
 // ==========================
 @include m.mobile {
@@ -265,6 +387,10 @@
 // ==========================
 @media (prefers-reduced-motion: reduce) {
   .payment-selected {
+    transition: none;
+  }
+
+  .validation-status {
     transition: none;
   }
 }
@@ -283,6 +409,11 @@
 // ==========================
 @media print {
   .payment-selected {
+    background: none;
+    border: 2px solid #000;
+  }
+
+  .validation-status {
     background: none;
     border: 2px solid #000;
   }

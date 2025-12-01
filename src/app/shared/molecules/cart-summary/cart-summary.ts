@@ -1,4 +1,5 @@
 import { Component, input, computed, ChangeDetectionStrategy } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 
 type PaymentMethod = 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
 
@@ -13,8 +14,8 @@ interface CartItem {
 /**
  * Componente de resumen del carrito
  * 
- * @responsibility Mostrar resumen de productos, totales y método de pago seleccionado
- * @reusable Usado en confirmación de pedido y checkout
+ * @responsibility Mostrar resumen de productos, totales, método de pago y estado de validación
+ * @reusable Usado en confirmación de pedido, checkout y formulario de datos personales
  * 
  * @example
  * ```html
@@ -25,18 +26,20 @@ interface CartItem {
  *   [totalWithIva]="totalWithIva()"
  *   [selectedDeliveryOption]="deliveryOption()"
  *   [selectedPaymentMethod]="paymentMethod()"
+ *   [isFormValid]="formValid()"
+ *   [validationMessage]="validationMsg()"
  * />
  * ```
  */
 @Component({
   selector: 'app-cart-summary',
-  imports: [],
+  imports: [CurrencyPipe],
   templateUrl: './cart-summary.html',
   styleUrl: './cart-summary.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CartSummary {
-  // ========== INPUTS ==========
+  // ========== INPUTS - CART DATA ==========
   
   /**
    * Lista de items del carrito
@@ -58,6 +61,8 @@ export class CartSummary {
    */
   readonly totalWithIva = input.required<number>();
 
+  // ========== INPUTS - DELIVERY & PAYMENT ==========
+  
   /**
    * Opción de entrega seleccionada
    */
@@ -68,7 +73,43 @@ export class CartSummary {
    */
   readonly selectedPaymentMethod = input<PaymentMethod | null>(null);
 
-  // ========== COMPUTED ==========
+  // ========== INPUTS - VALIDATION ==========
+  
+  /**
+   * Indica si el formulario padre es válido
+   */
+  readonly isFormValid = input<boolean>(false);
+
+  /**
+   * Mensaje de validación del formulario padre
+   */
+  readonly validationMessage = input<string>('');
+
+  /**
+   * Indica si se debe mostrar el estado de validación
+   */
+  readonly showValidation = input<boolean>(false);
+
+  // ========== COMPUTED - CART ==========
+
+  /**
+   * Indica si hay items en el carrito
+   */
+  readonly hasCartItems = computed(() => this.cartItems().length > 0);
+
+  /**
+   * Cantidad total de items en el carrito
+   */
+  readonly cartItemsCount = computed(() => this.cartItems().length);
+
+  /**
+   * Cantidad total de productos (suma de quantities)
+   */
+  readonly totalItems = computed(() => {
+    return this.cartItems().reduce((sum, item) => sum + item.quantity, 0);
+  });
+
+  // ========== COMPUTED - PAYMENT ==========
 
   /**
    * Texto descriptivo del método de pago seleccionado
@@ -92,6 +133,8 @@ export class CartSummary {
    */
   readonly hasPaymentMethod = computed(() => this.selectedPaymentMethod() !== null);
 
+  // ========== COMPUTED - DELIVERY ==========
+
   /**
    * Texto del costo de envío
    */
@@ -100,9 +143,39 @@ export class CartSummary {
   });
 
   /**
-   * Cantidad total de items en el carrito
+   * Texto de la modalidad de entrega
    */
-  readonly totalItems = computed(() => {
-    return this.cartItems().reduce((sum, item) => sum + item.quantity, 0);
+  readonly deliveryOptionText = computed(() => {
+    return this.selectedDeliveryOption() === 'delivery' 
+      ? 'Envío a domicilio' 
+      : 'Retiro en tienda';
+  });
+
+  /**
+   * Label del tiempo de entrega/retiro
+   */
+  readonly deliveryTimeLabel = computed(() => {
+    return this.selectedDeliveryOption() === 'delivery'
+      ? 'Tiempo estimado:'
+      : 'Disponible:';
+  });
+
+  /**
+   * Texto del tiempo de entrega/retiro
+   */
+  readonly deliveryTimeText = computed(() => {
+    return this.selectedDeliveryOption() === 'delivery'
+      ? '3-5 días hábiles'
+      : 'Inmediato';
+  });
+
+  // ========== COMPUTED - VALIDATION ==========
+
+  /**
+   * Indica si se debe mostrar el estado de validación
+   * Se muestra si showValidation es true O si hay un mensaje de validación
+   */
+  readonly shouldShowValidation = computed(() => {
+    return this.showValidation() || !!this.validationMessage();
   });
 }

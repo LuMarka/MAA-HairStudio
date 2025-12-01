@@ -349,81 +349,10 @@
 
       <!-- Resumen del Pedido - Columna derecha -->
       <aside class="order-sidebar">
-        <div class="order-summary-card">
-          <h3 class="summary-title">Resumen del Pedido</h3>
-
-          <!-- Productos -->
-          @if (hasCartItems()) {
-            <div class="summary-section">
-              <h4 class="summary-subtitle">Productos ({{ cartItemsCount() }})</h4>
-              <div class="summary-items">
-                @for (item of cartItems(); track item.id) {
-                  <div class="summary-item">
-                    <div class="item-details">
-                      <span class="item-name">{{ item.name }}</span>
-                      @if (item.brand) {
-                        <span class="item-brand">{{ item.brand }}</span>
-                      }
-                    </div>
-                    <div class="item-quantity">x{{ item.quantity }}</div>
-                    <div class="item-price">${{ (item.price * item.quantity).toFixed(2) }}</div>
-                  </div>
-                }
-              </div>
-            </div>
-          } @else {
-            <div class="summary-section summary-section--empty">
-              <p class="summary-empty">No hay productos en el carrito</p>
-            </div>
-          }
-
-          <!-- Totales -->
-          <div class="summary-totals">
-            <div class="total-row">
-              <span>Subtotal:</span>
-              <span>${{ subtotal().toFixed(2) }}</span>
-            </div>
-            <div class="total-row">
-              <span>Envío:</span>
-              <span>{{ shippingText() }}</span>
-            </div>
-            <div class="total-row">
-              <span>IVA (21%):</span>
-              <span>${{ ivaAmount().toFixed(2) }}</span>
-            </div>
-            <div class="total-row total-row--final">
-              <span>Total:</span>
-              <span>${{ totalWithIva().toFixed(2) }}</span>
-            </div>
-          </div>
-
-          <!-- Información de Entrega -->
-          <div class="delivery-info">
-            <div class="delivery-info__item">
-              <span class="delivery-info__label">Modalidad:</span>
-              <span class="delivery-info__value">{{ deliveryOptionText() }}</span>
-            </div>
-            <div class="delivery-info__item">
-              <span class="delivery-info__label">{{ deliveryTimeLabel() }}</span>
-              <span class="delivery-info__value">{{ deliveryTimeText() }}</span>
-            </div>
-          </div>
-
-          <!-- Estado de Validación -->
-          <div class="validation-status">
-            @if (formValid()) {
-              <div class="validation-status__success">
-                <span class="validation-status__icon">✅</span>
-                <span class="validation-status__text">{{ validationMessage() }}</span>
-              </div>
-            } @else {
-              <div class="validation-status__pending">
-                <span class="validation-status__icon">⚠️</span>
-                <span class="validation-status__text">{{ validationMessage() }}</span>
-              </div>
-            }
-          </div>
-        </div>
+       <!-- Resumen del Pedido - Columna derecha -->
+      <app-cart-summary [cartItems]="cartItems()" [subtotal]="subtotal()" [ivaAmount]="ivaAmount()"
+        [totalWithIva]="totalWithIva()" [selectedDeliveryOption]="selectedDeliveryOption()" [isFormValid]="formValid()"
+        [validationMessage]="validationMessage()" [showValidation]="true" />
       </aside>
     </div>
   </div>
