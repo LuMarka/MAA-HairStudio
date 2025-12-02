@@ -6,5 +6,6 @@ export interface Product {
   type: string;       // shampoo, conditioner, etc.
   description: string;
   price: number;
+  cantidad: number; // stock disponible
   image: string;
 }

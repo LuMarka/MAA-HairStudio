@@ -1,1 +1,76 @@
-<p>admin-products-template works!</p>
+
+<section class="admin-products-panel">
+
+	<!-- Modal de edición -->
+	@if (editingProduct()) {
+		<div class="modal-backdrop" (click)="closeEditModal()"></div>
+		<div class="modal">
+			<h3>Editar producto</h3>
+			<form (submit)="submitEditProduct($event)">
+				<div class="form-row">
+					<input type="text" name="name" [value]="editingProduct()!.name" placeholder="Nombre" required />
+					<input type="text" name="brand" [value]="editingProduct()!.brand" placeholder="Marca" required />
+					<input type="text" name="collection" [value]="editingProduct()!.collection" placeholder="Colección" required />
+					<input type="text" name="type" [value]="editingProduct()!.type" placeholder="Tipo" required />
+					<input type="text" name="description" [value]="editingProduct()!.description" placeholder="Descripción" required />
+					<input type="number" name="price" [value]="editingProduct()!.price" placeholder="Precio" required />
+					<input type="number" name="cantidad" [value]="editingProduct()!.cantidad" placeholder="Cantidad" min="0" required />
+					<input type="text" name="image" [value]="editingProduct()!.image" placeholder="URL Imagen" required />
+				</div>
+				<button type="submit">Guardar cambios</button>
+				<button type="button" (click)="closeEditModal()">Cancelar</button>
+			</form>
+		</div>
+	}
+	<h2>Gestión de productos</h2>
+	<!-- Tabla editable de productos -->
+	<table class="admin-products-table">
+		<thead>
+			<tr>
+				<th>Nombre</th>
+				<th>Marca</th>
+				<th>Colección</th>
+				<th>Tipo</th>
+				<th>Descripción</th>
+				<th>Precio</th>
+				<th>Cantidad</th>
+				<th>Imagen</th>
+				<th>Acciones</th>
+			</tr>
+		</thead>
+		<tbody>
+			@for (product of products(); track product.id) {
+			<tr>
+				<td><input type="text" [value]="product.name" (change)="updateField(product.id, 'name', $any($event.target).value)" /></td>
+				<td><input type="text" [value]="product.brand" (change)="updateField(product.id, 'brand', $any($event.target).value)" /></td>
+				<td><input type="text" [value]="product.collection" (change)="updateField(product.id, 'collection', $any($event.target).value)" /></td>
+				<td><input type="text" [value]="product.type" (change)="updateField(product.id, 'type', $any($event.target).value)" /></td>
+				<td><input type="text" [value]="product.description" (change)="updateField(product.id, 'description', $any($event.target).value)" /></td>
+				<td><input type="number" [value]="product.price" (change)="updateField(product.id, 'price', $any($event.target).value)" /></td>
+				<td><input type="number" [value]="product.cantidad" (change)="updateField(product.id, 'cantidad', $any($event.target).value)" min="0" /></td>
+				<td><input type="text" [value]="product.image" (change)="updateField(product.id, 'image', $any($event.target).value)" /></td>
+				<td>
+					<button type="button" (click)="openEditModal(product)">Editar</button>
+					<button type="button" (click)="deleteProduct(product.id)">Eliminar</button>
+				</td>
+			</tr>
+			}
+		</tbody>
+	</table>
+
+	<!-- Formulario para agregar producto -->
+	<form class="admin-products-form" (submit)="addProduct($event)">
+		<h3>Agregar nuevo producto</h3>
+		<div class="form-row">
+			<input type="text" name="name" placeholder="Nombre" required />
+			<input type="text" name="brand" placeholder="Marca" required />
+			<input type="text" name="collection" placeholder="Colección" required />
+			<input type="text" name="type" placeholder="Tipo" required />
+			<input type="text" name="description" placeholder="Descripción" required />
+			<input type="number" name="price" placeholder="Precio" required />
+			<input type="number" name="cantidad" placeholder="Cantidad" min="0" required />
+			<input type="text" name="image" placeholder="URL Imagen" required />
+		</div>
+		<button type="submit">Agregar producto</button>
+	</form>
+</section>

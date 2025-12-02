@@ -21,6 +21,7 @@ import { Login } from './login/login';
 import { Profile } from './profile/profile';
 import { Gallery } from './gallery/gallery';
 import { Wishlist } from './wishlist/wishlist';
+import { AdminDashboard } from './admin-dashboard/admin-dashboard';
 
 export const pagesRoutes: Routes = [
   {
@@ -125,6 +126,15 @@ export const pagesRoutes: Routes = [
           description: "Tu lista de productos favoritos.",
           keywords: "wishlist, favorites, productos favoritos",
         }
+      },
+      {
+        path: 'admin-dashboard',
+        component: AdminDashboard,
+        data: {
+          title: "admin dashboard",
+          description: "Panel de administración del dashboard.",
+          keywords: "admin, dashboard, management, dashboard",
+        }
       }
     ]
   },
@@ -133,7 +143,7 @@ export const pagesRoutes: Routes = [
     component: LayoutDash,
     children: [
       {
-        path: '',
+        path: 'admin-cart',
         component: AdminCart,
         data: {
           title: "admin",
@@ -186,6 +196,7 @@ export const pagesRoutes: Routes = [
           keywords: "admin, dashboard, management, wishlist",
         }
       }
+
     ]
   },
   {

@@ -1,6 +1,12 @@
-<div>
-  <header>header</header>
-  <main>
+<div class="layout">
+  <header class="layout__header">
+    <app-navbar />
+  </header>
+
+  <main class="layout__main">
     <router-outlet />
   </main>
+
+  <app-footer class="layout__footer" />
+
 </div>

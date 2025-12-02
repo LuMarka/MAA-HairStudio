@@ -1,5 +1,23 @@
-div {
+@use '../../../../assets/styles/variables' as v;
+@use '../../../../assets/styles/mixins' as m;
+
+
+.layout {
+  &__main {
+    margin-top: 130px; // Space for navbar + search
+   padding: v.$spacing-md;
   display: grid;
   min-height: 100dvh;
   grid-template-columns: auto 1fr;
+
+    @include m.mobile-only {
+      margin-top: 110px; // 60px + 50px for mobile
+    }
+  }
+}
+
+div {
+  display: grid;
+  min-height: 100dvh;
+  grid-template-rows: auto 1fr auto;
 }
