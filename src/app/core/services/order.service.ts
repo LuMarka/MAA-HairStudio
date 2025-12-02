@@ -20,6 +20,15 @@ import type {
 } from '../models/interfaces/order.interface';
 
 /**
+ * Estado temporal de checkout antes de crear la orden
+ */
+export interface CheckoutState {
+  deliveryType: DeliveryType;
+  selectedAddressId?: string;
+  timestamp: number; // Para validar expiración (30 minutos)
+}
+
+/**
  * Servicio para gestión de órdenes de compra
  *
  * Maneja todas las operaciones de órdenes incluyendo:
@@ -29,14 +38,19 @@ import type {
  * - Confirmar órdenes (usuario)
  * - Actualizar estados (admin)
  * - Estadísticas y búsquedas (admin)
+ * - Gestión de estado de checkout
  *
  * @example
  * ```typescript
  * const orderService = inject(OrderService);
  *
+ * // Iniciar checkout
+ * orderService.initCheckout('delivery');
+ * router.navigate(['/purchase-order']);
+ *
  * // Crear orden con pickup
  * orderService.createOrderFromCart({
- *   deliveryType: 'tienda',
+ *   deliveryType: 'pickup',
  *   notes: 'Voy a retirar por la tarde'
  * }).subscribe();
  *
@@ -51,6 +65,10 @@ export class OrderService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}orders`;
 
+  // ========== STORAGE KEYS ==========
+  private readonly CHECKOUT_STATE_KEY = 'maa_checkout_state';
+  private readonly CHECKOUT_EXPIRATION_MS = 30 * 60 * 1000; // 30 minutos
+
   // ========== STATE MANAGEMENT ==========
 
   private readonly _orders$ = new BehaviorSubject<OrderData[]>([]);
@@ -60,6 +78,11 @@ export class OrderService {
   private readonly _totalOrders = signal(0);
   private readonly _currentPage = signal(1);
   private readonly _totalPages = signal(0);
+
+  // ========== CHECKOUT STATE ==========
+  private readonly _checkoutState = signal<CheckoutState | null>(
+    this.loadCheckoutStateFromStorage()
+  );
 
   // ========== COMPUTED VALUES ==========
 
@@ -85,6 +108,217 @@ export class OrderService {
     this._orders$.value.filter(order => order.status === 'delivered')
   );
 
+  // ========== COMPUTED - CHECKOUT STATE ==========
+
+  /**
+   * Estado de checkout actual
+   */
+  readonly checkoutState = this._checkoutState.asReadonly();
+
+  /**
+   * Indica si hay un checkout activo y no expirado
+   */
+  readonly hasActiveCheckout = computed(() => {
+    const state = this._checkoutState();
+    if (!state) return false;
+
+    const now = Date.now();
+    const isExpired = (now - state.timestamp) > this.CHECKOUT_EXPIRATION_MS;
+
+    if (isExpired) {
+      console.warn('⚠️ Checkout expirado, limpiando...');
+      this.clearCheckoutState();
+      return false;
+    }
+
+    return true;
+  });
+
+  /**
+   * Tipo de entrega del checkout activo
+   */
+  readonly checkoutDeliveryType = computed(() => {
+    return this.hasActiveCheckout() ? this._checkoutState()?.deliveryType ?? null : null;
+  });
+
+  /**
+   * Dirección seleccionada del checkout activo
+   */
+  readonly checkoutAddressId = computed(() => {
+    return this.hasActiveCheckout() ? this._checkoutState()?.selectedAddressId ?? null : null;
+  });
+
+  /**
+   * Indica si el checkout es tipo delivery
+   */
+  readonly isDeliveryCheckout = computed(() => {
+    return this.checkoutDeliveryType() === 'delivery';
+  });
+
+  /**
+   * Indica si el checkout es tipo pickup
+   */
+  readonly isPickupCheckout = computed(() => {
+    return this.checkoutDeliveryType() === 'pickup';
+  });
+
+  // ========== PUBLIC METHODS - CHECKOUT STATE MANAGEMENT ==========
+
+  /**
+   * Inicia el proceso de checkout guardando el tipo de entrega
+   *
+   * @param deliveryType - Tipo de entrega seleccionado
+   * @param addressId - ID de dirección (opcional, solo para delivery)
+   *
+   * @example
+   * ```typescript
+   * // Iniciar checkout con pickup
+   * orderService.initCheckout('pickup');
+   *
+   * // Iniciar checkout con delivery y dirección
+   * orderService.initCheckout('delivery', 'address-uuid-123');
+   *
+   * // Luego navegar a purchase-order
+   * router.navigate(['/purchase-order']);
+   * ```
+   */
+  initCheckout(deliveryType: DeliveryType, addressId?: string): void {
+    const checkoutState: CheckoutState = {
+      deliveryType,
+      selectedAddressId: addressId,
+      timestamp: Date.now()
+    };
+
+    this._checkoutState.set(checkoutState);
+    this.saveCheckoutStateToStorage(checkoutState);
+
+    console.log('✅ Checkout iniciado:', {
+      deliveryType,
+      hasAddress: !!addressId,
+      timestamp: new Date(checkoutState.timestamp).toISOString()
+    });
+  }
+
+  /**
+   * Actualiza la dirección seleccionada durante el checkout
+   *
+   * @param addressId - ID de la dirección seleccionada
+   *
+   * @example
+   * ```typescript
+   * // Usuario selecciona una dirección en purchase-order
+   * orderService.updateCheckoutAddress('new-address-uuid');
+   * ```
+   */
+  updateCheckoutAddress(addressId: string): void {
+    const currentState = this._checkoutState();
+
+    if (!currentState) {
+      console.warn('⚠️ No hay checkout activo para actualizar dirección');
+      return;
+    }
+
+    if (currentState.deliveryType !== 'delivery') {
+      console.warn('⚠️ Solo se puede actualizar dirección en checkout tipo delivery');
+      return;
+    }
+
+    const updatedState: CheckoutState = {
+      ...currentState,
+      selectedAddressId: addressId,
+      timestamp: Date.now() // Renovar timestamp al actualizar
+    };
+
+    this._checkoutState.set(updatedState);
+    this.saveCheckoutStateToStorage(updatedState);
+
+    console.log('✅ Dirección actualizada en checkout:', addressId);
+  }
+
+  /**
+   * Limpia el estado de checkout
+   * Se debe llamar después de crear la orden o cancelar el proceso
+   *
+   * @example
+   * ```typescript
+   * // Después de crear orden exitosamente
+   * orderService.createOrderFromCart(data).subscribe({
+   *   next: () => {
+   *     orderService.clearCheckoutState();
+   *     router.navigate(['/orders']);
+   *   }
+   * });
+   *
+   * // Al cancelar checkout
+   * onCancelCheckout() {
+   *   orderService.clearCheckoutState();
+   *   router.navigate(['/cart']);
+   * }
+   * ```
+   */
+  clearCheckoutState(): void {
+    this._checkoutState.set(null);
+    this.removeCheckoutStateFromStorage();
+    console.log('🧹 Estado de checkout limpiado');
+  }
+
+  /**
+   * Obtiene el tipo de entrega del checkout activo
+   *
+   * @returns Tipo de entrega o null si no hay checkout activo
+   *
+   * @example
+   * ```typescript
+   * const deliveryType = orderService.getCheckoutDeliveryType();
+   * if (deliveryType === 'delivery') {
+   *   // Mostrar selector de dirección
+   * }
+   * ```
+   */
+  getCheckoutDeliveryType(): DeliveryType | null {
+    return this.checkoutDeliveryType();
+  }
+
+  /**
+   * Obtiene la dirección seleccionada del checkout activo
+   *
+   * @returns ID de dirección o null
+   *
+   * @example
+   * ```typescript
+   * const addressId = orderService.getCheckoutAddressId();
+   * if (addressId) {
+   *   addressService.getAddressById(addressId).subscribe();
+   * }
+   * ```
+   */
+  getCheckoutAddressId(): string | null {
+    return this.checkoutAddressId();
+  }
+
+  /**
+   * Valida que existe un checkout activo
+   * Útil en guards o al inicializar componentes
+   *
+   * @returns true si hay checkout válido, false si no
+   *
+   * @example
+   * ```typescript
+   * // En purchase-order.component.ts
+   * ngOnInit() {
+   *   if (!this.orderService.hasActiveCheckout()) {
+   *     console.warn('No hay checkout activo');
+   *     this.router.navigate(['/cart']);
+   *     return;
+   *   }
+   *   // Continuar con el flujo
+   * }
+   * ```
+   */
+  validateCheckout(): boolean {
+    return this.hasActiveCheckout();
+  }
+
   // ========== PUBLIC METHODS - USER OPERATIONS ==========
 
   /**
@@ -97,7 +331,7 @@ export class OrderService {
    * ```typescript
    * // Orden con pickup
    * orderService.createOrderFromCart({
-   *   deliveryType: 'tienda',
+   *   deliveryType: 'pickup',
    *   notes: 'Voy a retirar por la tarde'
    * }).subscribe({
    *   next: (response) => console.log('Orden creada:', response.data),
@@ -106,7 +340,7 @@ export class OrderService {
    *
    * // Orden con delivery
    * orderService.createOrderFromCart({
-   *   deliveryType: 'casa',
+   *   deliveryType: 'delivery',
    *   shippingAddressId: 'address-uuid',
    *   notes: 'Llamar antes de entregar'
    * }).subscribe();
@@ -221,8 +455,7 @@ export class OrderService {
     return this.http.patch<OrderInterface>(`${this.apiUrl}/${orderId}/confirm`, confirmDto).pipe(
       tap((response) => {
         this._currentOrder$.next(response.data);
-        
-        // Actualizar en la lista local si existe
+
         const currentOrders = this._orders$.value;
         const updatedOrders = currentOrders.map(order =>
           order.id === orderId ? response.data : order
@@ -372,8 +605,7 @@ export class OrderService {
     return this.http.patch<OrderInterface>(`${this.apiUrl}/${orderId}/status`, statusData).pipe(
       tap((response) => {
         this._currentOrder$.next(response.data);
-        
-        // Actualizar en la lista local si existe
+
         const currentOrders = this._orders$.value;
         const updatedOrders = currentOrders.map(order =>
           order.id === orderId ? response.data : order
@@ -486,24 +718,82 @@ export class OrderService {
     return this.getMyOrders(params);
   }
 
-  // ========== PRIVATE METHODS ==========
+  // ========== PRIVATE METHODS - CHECKOUT STORAGE ==========
+
+  /**
+   * Carga el estado de checkout desde localStorage
+   */
+  private loadCheckoutStateFromStorage(): CheckoutState | null {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return null;
+    }
+
+    try {
+      const stored = localStorage.getItem(this.CHECKOUT_STATE_KEY);
+      if (!stored) return null;
+
+      const state: CheckoutState = JSON.parse(stored);
+
+      // Validar que no haya expirado
+      const now = Date.now();
+      if ((now - state.timestamp) > this.CHECKOUT_EXPIRATION_MS) {
+        console.warn('⚠️ Checkout state expirado al cargar');
+        this.removeCheckoutStateFromStorage();
+        return null;
+      }
+
+      console.log('✅ Checkout state cargado desde storage');
+      return state;
+    } catch (error) {
+      console.error('❌ Error al cargar estado de checkout:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Guarda el estado de checkout en localStorage
+   */
+  private saveCheckoutStateToStorage(state: CheckoutState): void {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return;
+    }
+
+    try {
+      localStorage.setItem(this.CHECKOUT_STATE_KEY, JSON.stringify(state));
+      console.log('💾 Checkout state guardado en storage');
+    } catch (error) {
+      console.error('❌ Error al guardar estado de checkout:', error);
+    }
+  }
+
+  /**
+   * Elimina el estado de checkout de localStorage
+   */
+  private removeCheckoutStateFromStorage(): void {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return;
+    }
+
+    try {
+      localStorage.removeItem(this.CHECKOUT_STATE_KEY);
+      console.log('🗑️ Checkout state eliminado de storage');
+    } catch (error) {
+      console.error('❌ Error al eliminar estado de checkout:', error);
+    }
+  }
+
+  // ========== PRIVATE METHODS - ERROR HANDLING ==========
 
   /**
    * Maneja errores HTTP de manera centralizada
-   *
-   * @param error - Error HTTP recibido
-   * @param operation - Nombre de la operación que falló
-   * @returns Observable que emite el error
    */
   private handleError(error: HttpErrorResponse, operation: string): Observable<never> {
     let errorMessage = `Error al ${operation}`;
 
     if (error.error instanceof ErrorEvent) {
-      // Error del lado del cliente
       errorMessage = `Error de red: ${error.error.message}`;
       console.error('❌ Error del cliente:', error.error.message);
     } else {
-      // Error del lado del servidor
       const serverMessage = error.error?.message;
 
       if (Array.isArray(serverMessage)) {

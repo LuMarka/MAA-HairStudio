@@ -1,0 +1,155 @@
+<div class="purchase-order__content">
+  <div class="container">
+    @if (orderSent()) {
+    <!-- Success Message -->
+    <div class="success-container">
+      <div class="success-content">
+        <div class="success-icon">✅</div>
+        <h2 class="success-title">¡Gracias por tu compra!</h2>
+        <p class="success-message">
+          Tu pedido ha sido enviado correctamente. Nos pondremos en contacto contigo por WhatsApp muy pronto.
+        </p>
+        <div class="success-details">
+          <div class="success-detail">
+            <span class="success-detail__icon">📱</span>
+            <span class="success-detail__text">Mensaje enviado por WhatsApp</span>
+          </div>
+          <div class="success-detail">
+            <span class="success-detail__icon">⏰</span>
+            <span class="success-detail__text">Te contactaremos en las próximas horas</span>
+          </div>
+          <div class="success-detail">
+            <span class="success-detail__icon">🚚</span>
+            <span class="success-detail__text">{{ deliveryOptionText() }}</span>
+          </div>
+        </div>
+        <div class="success-actions">
+          <button type="button" class="btn btn--primary" (click)="onBackToHome()">
+            <span class="btn__icon">🏠</span>
+            <span class="btn__text">Volver al Inicio</span>
+          </button>
+        </div>
+        <p class="success-redirect">Serás redirigido automáticamente en {{ redirectSeconds() }} segundos...</p>
+      </div>
+    </div>
+    } @else {
+    <!-- Order Confirmation -->
+    <div class="confirmation-container">
+      <div class="confirmation-header">
+        <h2 class="confirmation-header__title">Confirmar Pedido</h2>
+        <p class="confirmation-header__subtitle">Revisa los detalles antes de finalizar tu compra</p>
+
+        <div class="success-indicator">
+          <span class="success-indicator__icon">✅</span>
+          <span>Información verificada y lista para procesar</span>
+        </div>
+      </div>
+
+      <!-- Content Grid -->
+      <div class="confirmation-content">
+        <!-- Customer Information -->
+        <div class="confirmation-section">
+          <div class="confirmation-section__header">
+            <div class="confirmation-section__icon">👤</div>
+            <h3 class="confirmation-section__title">Información del Cliente</h3>
+          </div>
+
+          @if (orderData(); as data) {
+          <div class="confirmation-section__content">
+            <div class="confirmation-item">
+              <span class="confirmation-item__label">Cliente:</span>
+              <span class="confirmation-item__value">{{ data.firstName }} {{ data.lastName }}</span>
+            </div>
+            <div class="confirmation-item">
+              <span class="confirmation-item__label">Email:</span>
+              <span class="confirmation-item__value">{{ data.email }}</span>
+            </div>
+            <div class="confirmation-item">
+              <span class="confirmation-item__label">Teléfono:</span>
+              <span class="confirmation-item__value">{{ data.phone }}</span>
+            </div>
+
+            @if (data.deliveryOption === 'delivery') {
+            <div class="confirmation-item confirmation-item--address">
+              <span class="confirmation-item__label">Dirección:</span>
+              <div class="confirmation-item__value">
+                <div>{{ data.address }}</div>
+                <div>{{ data.city }}@if (data.postalCode) { ({{ data.postalCode }}) }</div>
+              </div>
+            </div>
+            } @else {
+            <div class="confirmation-item">
+              <span class="confirmation-item__label">Modalidad:</span>
+              <span class="confirmation-item__value">Retiro en tienda</span>
+            </div>
+            }
+
+            @if (data.notes) {
+            <div class="confirmation-item confirmation-item--notes">
+              <span class="confirmation-item__label">Notas:</span>
+              <span class="confirmation-item__value">{{ data.notes }}</span>
+            </div>
+            }
+          </div>
+
+          <!-- Payment Method Badge -->
+          <!-- @if (selectedPaymentMethod()) {
+          <div class="payment-method-badge">
+            <div class="payment-method-badge__icon">
+              {{ getPaymentMethodIcon(selectedPaymentMethod()!) }}
+            </div>
+            <div class="payment-method-badge__content">
+              <span class="payment-method-badge__label">Método de pago</span>
+              <span class="payment-method-badge__value">{{ selectedPaymentMethodText() }}</span>
+            </div>
+          </div>
+          } -->
+          }
+        </div>
+
+        <!-- Cart Summary Component -->
+        <app-cart-summary
+          [cartItems]="cartItems()"
+          [subtotal]="subtotal()"
+          [ivaAmount]="ivaAmount()"
+          [totalWithIva]="totalWithIva()"
+          [selectedDeliveryOption]="selectedDeliveryOption()"
+          [selectedPaymentMethod]="selectedPaymentMethod()"
+        />
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="confirmation-actions">
+        <div class="confirmation-actions__secondary">
+          <button type="button" class="btn btn--outline" (click)="onEditCart()">
+            <span class="__icon">🛒</span>
+            <span class="btn__text">Editar Carrito</span>
+          </button>
+
+          <button type="button" class="btn btn--secondary" (click)="onPreviousStep()">
+            <span class="btn__icon">←</span>
+            <span class="btn__text">Volver</span>
+          </button>
+        </div>
+
+        <div class="confirmation-actions__primary">
+          <button 
+            type="button" 
+            class="btn btn--primary btn--large" 
+            [class.btn--loading]="isProcessing()"
+            [disabled]="!canFinalize()" 
+            (click)="onFinalizeOrder()">
+            @if (isProcessing()) {
+            <span class="btn__spinner"></span>
+            <span class="btn__text">Procesando...</span>
+            } @else {
+            <span class="btn__text">Finalizar Pedido</span>
+            <span class="btn__icon">✅</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</div>

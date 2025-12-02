@@ -1,8 +1,14 @@
-import { Component, signal, inject, ChangeDetectionStrategy, computed, OnInit, effect } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-/* import { CartService } from '../../../core/services/cartOld.service'; */
+import { Component, signal, inject, ChangeDetectionStrategy, computed, effect } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormPersonalData } from "../../organisms/form-personal-data/form-personal-data";
+import { MethodePay } from "../../organisms/methode-pay/methode-pay";
+import { Confirmation } from "../../organisms/confirmation/confirmation";
+import { OrderService } from "../../../core/services/order.service";
+import { CartService } from "../../../core/services/cart.service";
+import type { DeliveryType, CreateOrderDto } from "../../../core/models/interfaces/order.interface";
+
+type PaymentMethod = 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
 
 interface CartItem {
   id: string;
@@ -17,303 +23,284 @@ interface OrderData {
   lastName: string;
   email: string;
   phone: string;
-  deliveryOption: 'pickup' | 'delivery';
+  deliveryOption: DeliveryType;
   address?: string;
   city?: string;
+  province?: string;
   postalCode?: string;
-  notes?: string;
-  paymentMethod: 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
+  deliveryInstructions?: string;
+  paymentMethod: PaymentMethod;
 }
 
+/**
+ * Template para el flujo completo de compra (3 pasos)
+ *
+ * @responsibility Orquestar el proceso de checkout desde datos personales hasta confirmación
+ * @step1 FormPersonalData - Recolectar información del cliente
+ * @step2 MethodePay - Seleccionar método de pago
+ * @step3 Confirmation - Revisar y finalizar pedido
+ */
 @Component({
   selector: 'app-purchase-order-template',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
-    ReactiveFormsModule
+    FormPersonalData,
+    MethodePay,
+    Confirmation
   ],
   templateUrl: './purchase-order-template.html',
   styleUrl: './purchase-order-template.scss'
 })
-export class PurchaseOrderTemplate implements OnInit {
-  /* private readonly cartService = inject(CartService); */
+export class PurchaseOrderTemplate {
   private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
-  private readonly fb = inject(FormBuilder);
+  private readonly orderService = inject(OrderService);
+  private readonly cartService = inject(CartService);
 
+  // ========== STATE SIGNALS ==========
   readonly currentStep = signal(1);
-  readonly totalSteps = signal(3);
   readonly orderData = signal<OrderData | null>(null);
-  readonly selectedPaymentMethod = signal<OrderData['paymentMethod'] | null>(null);
-  readonly selectedDeliveryOption = signal<'pickup' | 'delivery'>('delivery');
-  readonly formValid = signal(false);
+  readonly selectedPaymentMethod = signal<PaymentMethod | null>(null);
+  readonly selectedDeliveryOption = signal<DeliveryType>('pickup');
   readonly orderSent = signal(false);
   readonly isProcessing = signal(false);
+  readonly personalFormData = signal<Omit<OrderData, 'paymentMethod' | 'deliveryOption'> | null>(null);
 
-private readonly WHATSAPP_NUMBER = '5492616984285';
-/*    private readonly WHATSAPP_NUMBER = '5493534015655'; */
+  private readonly WHATSAPP_NUMBER = '573185539506';
+  private readonly totalSteps = 3;
 
-  /* readonly cartItems = computed(() => this.cartService.items());
-  readonly cartTotal = computed(() => this.cartService.total()); */
+  // ========== COMPUTED VALUES - CART ==========
+  readonly cartItems = computed(() => {
+    const cart = this.cartService.cart();
+    if (!cart?.data) return [];
 
-  /* readonly subtotal = computed(() => {
-    const total = this.cartTotal();
-    return total / 1.21; // Descontar el IVA del total
-  }); */
-
-  /* readonly ivaAmount = computed(() => {
-    return this.subtotal() * 0.21; // 21% de IVA
-  }); */
-
-  /* readonly totalWithIva = computed(() => {
-    return this.subtotal() + this.ivaAmount();
-  }); */
-
-  readonly deliveryOptionText = computed(() => {
-    return this.selectedDeliveryOption() === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio';
+    return cart.data.map(item => ({
+      id: item.product.id,
+      name: item.product.name,
+      brand: item.product.brand,
+      quantity: item.quantity,
+      price: item.product.finalPrice
+    }));
   });
 
-  // Computed for selected payment method text
-  readonly selectedPaymentMethodText = computed(() => {
-    const method = this.selectedPaymentMethod();
-    return method ? this.getPaymentMethodText(method) : '';
-  });
+  readonly subtotal = computed(() => this.cartService.subtotal());
+  readonly ivaAmount = computed(() => this.subtotal() * 0.21);
+  readonly totalWithIva = computed(() => this.cartService.totalAmount());
 
-  // Reactive form
-  readonly orderForm = this.fb.group({
-    firstName: ['', [Validators.required]],
-    lastName: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required]],
-    address: [''],
-    city: [''],
-    postalCode: [''],
-    notes: ['']
-  });
+  // ========== COMPUTED VALUES - CHECKOUT STATE ==========
+  readonly checkoutState = computed(() => this.orderService.checkoutState());
+  readonly checkoutAddressId = computed(() => this.orderService.checkoutAddressId());
 
-  readonly isStep1Valid = computed(() => {
-    return this.formValid();
-  });
-
-  readonly isOrderComplete = computed(() => {
-    const data = this.orderData();
-    const paymentMethod = this.selectedPaymentMethod();
-    return data !== null && paymentMethod !== null && this.isStep1Valid();
-  });
-
+  // ========== CONSTRUCTOR ==========
   constructor() {
-    // Effect para actualizar la validación del formulario
+    // Effect: Cargar deliveryType desde OrderService
     effect(() => {
-      const deliveryOption = this.selectedDeliveryOption();
-      this.updateFormValidators(deliveryOption);
-      this.checkFormValidity();
-    });
-  }
-
-  ngOnInit(): void {
-    // Get delivery option from query params
-    /* this.route.queryParams.subscribe(params => {
-      const deliveryOption = params['deliveryOption'] as 'pickup' | 'delivery';
-      if (deliveryOption) {
-        this.selectedDeliveryOption.set(deliveryOption);
+      const checkoutState = this.checkoutState();
+      if (checkoutState?.deliveryType) {
+        this.selectedDeliveryOption.set(checkoutState.deliveryType);
+        console.log('📦 [PurchaseOrder] Tipo de entrega:', checkoutState.deliveryType);
+      } else {
+        console.warn('⚠️ [PurchaseOrder] No hay checkout state, usando pickup por defecto');
+        this.selectedDeliveryOption.set('pickup');
       }
-    }); */
-
-    // Check if cart is empty
-    /* if (this.cartItems().length === 0) {
-      this.router.navigate(['/cart']);
-    } */
-
-    // Subscribe to form changes
-    this.orderForm.valueChanges.subscribe(() => {
-      this.checkFormValidity();
-      this.updateOrderData();
     });
-
-    // Subscribe to form status changes
-    this.orderForm.statusChanges.subscribe(() => {
-      this.checkFormValidity();
-    });
-
-    // Initial validation check
-    this.updateFormValidators(this.selectedDeliveryOption());
-    this.checkFormValidity();
   }
 
-  private updateFormValidators(deliveryOption: 'pickup' | 'delivery'): void {
-    const addressControl = this.orderForm.get('address');
-    const cityControl = this.orderForm.get('city');
-
-    if (deliveryOption === 'delivery') {
-      addressControl?.setValidators([Validators.required]);
-      cityControl?.setValidators([Validators.required]);
-    } else {
-      addressControl?.clearValidators();
-      cityControl?.clearValidators();
-    }
-
-    addressControl?.updateValueAndValidity({ emitEvent: false });
-    cityControl?.updateValueAndValidity({ emitEvent: false });
-  }
-
-  private checkFormValidity(): void {
-    const form = this.orderForm;
-    const deliveryOption = this.selectedDeliveryOption();
-
-    // Check basic required fields
-    const firstNameValid = form.get('firstName')?.valid ?? false;
-    const lastNameValid = form.get('lastName')?.valid ?? false;
-    const emailValid = form.get('email')?.valid ?? false;
-    const phoneValid = form.get('phone')?.valid ?? false;
-
-    let isValid = firstNameValid && lastNameValid && emailValid && phoneValid;
-
-    // For delivery, also check address fields
-    if (deliveryOption === 'delivery') {
-      const addressValid = form.get('address')?.valid ?? false;
-      const cityValid = form.get('city')?.valid ?? false;
-      isValid = isValid && addressValid && cityValid;
-    }
-
-    this.formValid.set(isValid);
-  }
-
-  private updateOrderData(): void {
-    if (this.isStep1Valid()) {
-      const formValue = this.orderForm.value;
-      this.orderData.set({
-        firstName: formValue.firstName || '',
-        lastName: formValue.lastName || '',
-        email: formValue.email || '',
-        phone: formValue.phone || '',
-        deliveryOption: this.selectedDeliveryOption(),
-        address: formValue.address || '',
-        city: formValue.city || '',
-        postalCode: formValue.postalCode || '',
-        notes: formValue.notes || '',
-        paymentMethod: 'cash'
-      } as OrderData);
-    }
-  }
-
+  // ========== NAVIGATION METHODS ==========
   onNextStep(): void {
     const currentStepValue = this.currentStep();
 
-    if (currentStepValue < this.totalSteps()) {
-      // Step 1: Validate form
-      if (currentStepValue === 1) {
-        this.orderForm.markAllAsTouched();
-        this.checkFormValidity();
-
-        if (!this.isStep1Valid()) {
-          return;
-        }
-      }
-
-      // Step 2: Validate payment method
+    if (currentStepValue < this.totalSteps) {
       if (currentStepValue === 2 && !this.selectedPaymentMethod()) {
+        console.warn('⚠️ [PurchaseOrder] Método de pago requerido');
         return;
       }
 
-      this.currentStep.set(currentStepValue + 1);
+      this.currentStep.update(step => step + 1);
     }
   }
 
   onPreviousStep(): void {
     const currentStepValue = this.currentStep();
     if (currentStepValue > 1) {
-      this.currentStep.set(currentStepValue - 1);
+      this.currentStep.update(step => step - 1);
     }
   }
 
-  onPaymentMethodChange(method: OrderData['paymentMethod']): void {
+  // ========== STEP 1: FORM PERSONAL DATA HANDLERS ==========
+  onPersonalFormDataChange(data: Omit<OrderData, 'paymentMethod' | 'deliveryOption'>): void {
+    this.personalFormData.set(data);
+
+    this.orderData.set({
+      ...data,
+      deliveryOption: this.selectedDeliveryOption(),
+      paymentMethod: this.selectedPaymentMethod() || 'cash'
+    });
+  }
+
+  onPersonalFormValidChange(_isValid: boolean): void {
+    // FormPersonalData maneja su propia validación
+  }
+
+  onEditCartFromForm(): void {
+    this.router.navigate(['/cart']);
+  }
+
+  onContinueFromForm(): void {
+    this.currentStep.set(2);
+  }
+
+  // ========== STEP 2: PAYMENT METHOD HANDLERS ==========
+  onPaymentMethodChange(method: PaymentMethod): void {
     this.selectedPaymentMethod.set(method);
 
-    const currentData = this.orderData();
+    const currentData = this.personalFormData();
     if (currentData) {
       this.orderData.set({
         ...currentData,
+        deliveryOption: this.selectedDeliveryOption(),
         paymentMethod: method
       });
     }
   }
 
+  // ========== STEP 3: CONFIRMATION HANDLERS ==========
   onEditCart(): void {
     this.router.navigate(['/cart']);
   }
 
-  // Form helper methods
-  isFieldInvalid(fieldName: string): boolean {
-    const field = this.orderForm.get(fieldName);
-    return !!(field && field.invalid && field.touched);
-  }
+  /**
+   * Construye el DTO para crear la orden usando CheckoutState
+   */
+  private buildCreateOrderDto(): CreateOrderDto | null {
+    const orderData = this.orderData();
+    const checkoutState = this.checkoutState();
 
-  getFieldError(fieldName: string): string {
-    const field = this.orderForm.get(fieldName);
-    if (field?.errors && field.touched) {
-      if (field.errors['required']) {
-        const fieldLabels: Record<string, string> = {
-          firstName: 'El nombre',
-          lastName: 'El apellido',
-          email: 'El email',
-          phone: 'El teléfono',
-          address: 'La dirección',
-          city: 'La ciudad'
-        };
-        return `${fieldLabels[fieldName] || 'Este campo'} es requerido`;
-      }
-      if (field.errors['email']) {
-        return 'Ingresa un email válido';
-      }
+    if (!orderData) {
+      console.error('❌ [PurchaseOrder] No hay datos de orden');
+      return null;
     }
-    return '';
-  }
 
-  // Private method for payment method text (no null handling needed)
-  private getPaymentMethodText(method: OrderData['paymentMethod']): string {
-    const paymentMethods: Record<OrderData['paymentMethod'], string> = {
-      'mercadopago-card': 'Tarjeta de Crédito/Débito (Mercado Pago)',
-      'mercadopago': 'Mercado Pago',
-      'transfer': 'Transferencia Bancaria',
-      'cash': 'Efectivo en la entrega'
+    if (!checkoutState) {
+      console.error('❌ [PurchaseOrder] No hay checkout state');
+      return null;
+    }
+
+    const deliveryType = checkoutState.deliveryType;
+    const addressId = checkoutState.selectedAddressId;
+
+    // DTO base
+    const baseDto: CreateOrderDto = {
+      deliveryType,
+      notes: orderData.deliveryInstructions || undefined
     };
 
-    return paymentMethods[method] || 'No especificado';
+    // Si es delivery Y hay addressId guardado
+    if (deliveryType === 'delivery' && addressId) {
+      console.log('📦 [PurchaseOrder] Creando orden con addressId:', addressId);
+      return {
+        ...baseDto,
+        shippingAddressId: addressId
+      };
+    }
+
+    // Si es delivery sin addressId, cambiar a pickup
+    if (deliveryType === 'delivery' && !addressId) {
+      console.log('📦 [PurchaseOrder] Sin addressId, cambiando a pickup');
+      return {
+      ...baseDto,
+      deliveryType: 'pickup'
+      };
+    }
+
+    // Si es pickup
+    console.log('🏪 [PurchaseOrder] Creando orden pickup');
+    return baseDto;
   }
 
   onFinalizeOrder(): void {
-    const data = this.orderData();
+    const orderData = this.orderData();
     const paymentMethod = this.selectedPaymentMethod();
-    /* const cartItems = this.cartItems();
-    const total = this.cartTotal(); */
+    const cartItems = this.cartItems();
+    const total = this.totalWithIva();
 
-    if (!data || !paymentMethod) {
-      alert('Por favor complete todos los datos requeridos');
+    // Validaciones
+    if (!orderData || !paymentMethod) {
+      console.error('❌ [PurchaseOrder] Datos incompletos');
       return;
     }
 
-   /*  if (cartItems.length === 0) {
-      alert('El carrito está vacío');
+    if (cartItems.length === 0) {
+      console.error('❌ [PurchaseOrder] Carrito vacío');
       this.router.navigate(['/cart']);
       return;
     }
 
     if (total <= 0) {
-      alert('Total inválido');
+      console.error('❌ [PurchaseOrder] Total inválido');
       return;
-    } */
+    }
 
-    const completeOrderData: OrderData = {
-      ...data,
-      paymentMethod
-    };
+    // Construir DTO
+    const createOrderDto = this.buildCreateOrderDto();
+
+    if (!createOrderDto) {
+      console.error('❌ [PurchaseOrder] No se pudo construir DTO');
+      return;
+    }
 
     this.isProcessing.set(true);
-    /* this.sendToWhatsApp(completeOrderData, cartItems, total); */
+
+    console.log('📦 [PurchaseOrder] Creando orden:', createOrderDto);
+
+    // Crear orden en el backend
+    this.orderService.createOrderFromCart(createOrderDto).subscribe({
+      next: (response) => {
+        console.log('✅ [PurchaseOrder] Orden creada:', {
+          orderNumber: response.data.orderNumber,
+          id: response.data.id,
+          total: response.data.total,
+          deliveryType: response.data.deliveryType,
+          hasShippingAddress: !!response.data.shippingAddress
+        });
+
+        // Limpiar carrito
+        this.cartService.clearCart().subscribe({
+          next: () => {
+            console.log('✅ [PurchaseOrder] Carrito limpiado');
+            this.sendToWhatsApp(orderData, cartItems, total, response.data.orderNumber);
+            this.orderService.clearCheckoutState();
+            this.handleOrderSuccess();
+          },
+          error: (error) => {
+            console.error('⚠️ [PurchaseOrder] Error al limpiar carrito:', error);
+            this.sendToWhatsApp(orderData, cartItems, total, response.data.orderNumber);
+            this.orderService.clearCheckoutState();
+            this.handleOrderSuccess();
+          }
+        });
+      },
+      error: (error) => {
+        console.error('❌ [PurchaseOrder] Error al crear orden:', error);
+        this.isProcessing.set(false);
+        alert('Hubo un error al crear tu pedido. Por favor intenta nuevamente.');
+      }
+    });
   }
 
-  private sendToWhatsApp(orderData: OrderData, cartItems: CartItem[], total: number): void {
-    const message = this.buildWhatsAppMessage(orderData, cartItems, total);
+  onBackToHome(): void {
+    this.orderService.clearCheckoutState();
+    this.router.navigate(['/']);
+  }
+
+  // ========== WHATSAPP INTEGRATION ==========
+  private sendToWhatsApp(
+    orderData: OrderData,
+    cartItems: CartItem[],
+    total: number,
+    orderNumber: string
+  ): void {
+    const message = this.buildWhatsAppMessage(orderData, cartItems, total, orderNumber);
 
     try {
       const encodedMessage = encodeURIComponent(message);
@@ -323,55 +310,33 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
         this.copyToClipboard(message);
         alert('El mensaje es muy largo. Se ha copiado al portapapeles. Por favor, pégalo en WhatsApp.');
         window.open(`https://wa.me/${this.WHATSAPP_NUMBER}`, '_blank');
-        this.handleOrderSuccess();
         return;
       }
 
       window.open(whatsappUrl, '_blank');
-      this.handleOrderSuccess();
-
     } catch (error) {
-      console.error('Error sending to WhatsApp:', error);
+      console.error('❌ Error al abrir WhatsApp:', error);
       this.copyToClipboard(message);
       alert('Hubo un error al abrir WhatsApp. El mensaje se ha copiado al portapapeles.');
       window.open(`https://wa.me/${this.WHATSAPP_NUMBER}`, '_blank');
-      this.handleOrderSuccess();
     }
   }
 
-  private handleOrderSuccess(): void {
-    this.isProcessing.set(false);
-    this.orderSent.set(true);
-    /* this.cartService.clearCart(); */
-
-    // Auto redirect after 60 seconds
-    setTimeout(() => {
-      this.router.navigate(['/']);
-    }, 60000);
-  }
-
-  onBackToHome(): void {
-    this.router.navigate(['/']);
-  }
-
-  private copyToClipboard(message: string): void {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(message).then(() => {
-        console.log('Message copied to clipboard');
-      }).catch(err => {
-        console.error('Failed to copy message:', err);
-      });
-    }
-  }
-
-  private buildWhatsAppMessage(data: OrderData, items: CartItem[], total: number): string {
+  private buildWhatsAppMessage(
+    data: OrderData,
+    items: CartItem[],
+    total: number,
+    orderNumber: string
+  ): string {
     let message = '🛍️ NUEVO PEDIDO - MAA Hair Studio\n\n';
+    message += `📋 ORDEN: ${orderNumber}\n\n`;
 
-    message += '📋 PRODUCTOS:\n';
+    message += '🛒 PRODUCTOS:\n';
     items.forEach((item, index) => {
       const itemTotal = item.price * item.quantity;
       const brand = item.brand ? ` (${item.brand})` : '';
-      message += `${index + 1}. ${item.name}${brand} x${item.quantity} - $${itemTotal.toFixed(2)}\n`;
+      message += `${index + 1}. ${item.name}${brand}\n`;
+      message += `   Cantidad: x${item.quantity} - Subtotal: $${itemTotal.toFixed(2)}\n`;
     });
 
     message += `\n💰 TOTAL: $${total.toFixed(2)}\n\n`;
@@ -383,23 +348,46 @@ private readonly WHATSAPP_NUMBER = '5492616984285';
 
     if (data.deliveryOption === 'delivery') {
       message += '🚚 DIRECCIÓN DE ENTREGA:\n';
-      message += `Dirección: ${data.address}\n`;
-      message += `Ciudad: ${data.city}\n`;
-      if (data.postalCode) {
-        message += `Código Postal: ${data.postalCode}\n`;
-      }
+      if (data.province) message += `Provincia: ${data.province}\n`;
+      if (data.city) message += `Ciudad: ${data.city}\n`;
+      if (data.address) message += `Dirección: ${data.address}\n`;
+      if (data.postalCode) message += `Código Postal: ${data.postalCode}\n`;
     } else {
       message += '🏪 RETIRO EN TIENDA\n';
     }
 
     message += `\n💳 MÉTODO DE PAGO: ${this.getPaymentMethodText(data.paymentMethod)}\n`;
 
-    if (data.notes?.trim()) {
-      message += `\n📝 Notas: ${data.notes}\n`;
+    if (data.deliveryInstructions?.trim()) {
+      message += `\n📝 Notas: ${data.deliveryInstructions}\n`;
     }
 
     message += '\n¡Gracias por tu pedido! 🎉';
 
     return message;
+  }
+
+  private getPaymentMethodText(method: PaymentMethod): string {
+    const paymentMethods: Record<PaymentMethod, string> = {
+      'mercadopago-card': 'Tarjeta de Crédito/Débito (Mercado Pago)',
+      'mercadopago': 'Mercado Pago',
+      'transfer': 'Transferencia Bancaria',
+      'cash': 'Efectivo en la entrega'
+    };
+    return paymentMethods[method] || 'No especificado';
+  }
+
+  private handleOrderSuccess(): void {
+    this.isProcessing.set(false);
+    this.orderSent.set(true);
+    console.log('🎉 [PurchaseOrder] Orden procesada exitosamente');
+  }
+
+  private copyToClipboard(message: string): void {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(message).catch(err => {
+        console.error('❌ Error al copiar al portapapeles:', err);
+      });
+    }
   }
 }

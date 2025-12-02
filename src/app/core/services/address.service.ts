@@ -10,9 +10,7 @@ import type {
   DefaultAddressResponse,
   CreateAddressDto,
   UpdateAddressDto,
-  AddressValidationResponse,
-  ProvincesResponse,
-  CitiesResponse
+  AddressValidationResponse
 } from '../models/interfaces/address.interface';
 
 
@@ -370,55 +368,6 @@ export class AddressService {
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'eliminar dirección')),
       finalize(() => this._isLoading.set(false))
-    );
-  }
-
-  // ========== PUBLIC METHODS - UTILITY ENDPOINTS ==========
-
-  /**
-   * Obtiene la lista de provincias de Argentina
-   *
-   * @returns Observable con el array de provincias
-   *
-   * @example
-   * ```typescript
-   * addressService.getProvinces().subscribe({
-   *   next: (response) => console.log('Provincias:', response.data),
-   *   error: (error) => console.error('Error:', error)
-   * });
-   * ```
-   */
-  getProvinces(): Observable<ProvincesResponse> {
-    return this.http.get<ProvincesResponse>(`${this.apiUrl}/utils/provinces`).pipe(
-      tap((response) => {
-        console.log('✅ Provincias obtenidas:', response.data.length);
-      }),
-      catchError((error: HttpErrorResponse) => this.handleError(error, 'obtener provincias'))
-    );
-  }
-
-  /**
-   * Obtiene las ciudades de una provincia específica
-   *
-   * @param province - Nombre de la provincia
-   * @returns Observable con las ciudades de la provincia
-   *
-   * @example
-   * ```typescript
-   * addressService.getCitiesByProvince('Buenos Aires').subscribe({
-   *   next: (response) => console.log('Ciudades:', response.data.cities),
-   *   error: (error) => console.error('Error:', error)
-   * });
-   * ```
-   */
-  getCitiesByProvince(province: string): Observable<CitiesResponse> {
-    const encodedProvince = encodeURIComponent(province);
-
-    return this.http.get<CitiesResponse>(`${this.apiUrl}/utils/cities/${encodedProvince}`).pipe(
-      tap((response) => {
-        console.log('✅ Ciudades obtenidas para', province, ':', response.data.cities.length);
-      }),
-      catchError((error: HttpErrorResponse) => this.handleError(error, 'obtener ciudades'))
     );
   }
 

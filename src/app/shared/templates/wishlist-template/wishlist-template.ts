@@ -14,8 +14,10 @@ import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { tap, catchError, finalize } from 'rxjs/operators';
-import { EMPTY } from 'rxjs';
+import { EMPTY, throwError } from 'rxjs';
 import { WishlistService } from '../../../core/services/wishlist.service';
+import { CartService } from '../../../core/services/cart.service'; // ✅ Agregar import
+import { AuthService } from '../../../core/services/auth.service';
 import { ScrollAnimationService } from '../../../core/services/scroll-animation.service';
 import { ProductCard } from '../../molecules/product-card/product-card';
 import { Paginator, PaginationEvent } from '../../molecules/paginator/paginator';
@@ -34,6 +36,8 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly wishlistService = inject(WishlistService);
+  private readonly cartService = inject(CartService); // ✅ Inyectar CartService
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
   // State management con signals
@@ -42,6 +46,8 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
   private readonly _localLoading = signal(false);
   private readonly _localError = signal<string | null>(null);
   private readonly _currentParams = signal<WishlistQueryParams>({ page: 1, limit: 10 });
+  private readonly _isProcessing = signal(false);
+  private readonly _processingProductId = signal<string | null>(null);
 
   // Computed values
   readonly wishlistData = computed(() => this._wishlistData());
@@ -144,30 +150,42 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
   }
 
   handleMoveToCart(data: { productId: string; quantity: number }): void {
-    console.log('🛒 Moviendo al carrito:', data);
+    this._isProcessing.set(true);
+    this._processingProductId.set(data.productId);
 
-    this._localLoading.set(true);
-
-    this.wishlistService.moveToCart({
-      productId: data.productId,
-      quantity: data.quantity,
-      removeFromWishlist: true
-    })
+    this.wishlistService
+      .moveToCart({
+        productId: data.productId,
+        quantity: data.quantity,
+        removeFromWishlist: true,
+      })
       .pipe(
         tap((response) => {
+          console.log('✅ Producto movido al carrito:', response.message);
+
+          // Actualizar wishlist local
           this._wishlistData.set(response.wishlist);
-          this._fullProducts.update(products =>
-            products.filter(p => p.id !== data.productId)
+          this._fullProducts.update((products) =>
+            products.filter((p) => p.id !== data.productId)
           );
-          console.log('✅ Agregado:', response.message);
+
+          // ✅ NUEVO: Recargar el carrito para actualizar el badge
+          this.cartService.getCart().subscribe({
+            next: () => console.log('✅ Badge del carrito actualizado'),
+            error: (err) => console.error('❌ Error al actualizar carrito:', err)
+          });
         }),
         catchError((error) => {
           console.error('❌ Error al mover al carrito:', error);
-          this._localError.set('No se pudo mover al carrito');
-          return EMPTY;
+          this._localError.set(
+            error?.message || 'Error al mover el producto al carrito'
+          );
+          return throwError(() => error);
         }),
-        finalize(() => this._localLoading.set(false)),
-        takeUntilDestroyed(this.destroyRef)
+        finalize(() => {
+          this._isProcessing.set(false);
+          this._processingProductId.set(null);
+        })
       )
       .subscribe();
   }

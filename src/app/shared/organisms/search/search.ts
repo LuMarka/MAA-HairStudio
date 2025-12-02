@@ -1,12 +1,22 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { SearchBar } from '../search-bar/search-bar';
-import { SearchResult } from '../../../core/models/interfaces/SearchResult.interface';
-import { SearchSuggestion } from '../../../core/models/interfaces/SearchSuggestion.interface';
+import type { SearchResult } from '../../../core/models/interfaces/SearchResult.interface';
+import type { SearchSuggestion } from '../../../core/models/interfaces/SearchSuggestion.interface';
 import { CartService } from '../../../core/services/cart.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 
+/**
+ * Interfaz para las acciones del header
+ */
+interface HeaderAction {
+  icon: string;
+  label: string;
+  badge: number;
+  showBadge: boolean;
+  action: () => void;
+}
 
 @Component({
   selector: 'app-search',
@@ -15,26 +25,30 @@ import { WishlistService } from '../../../core/services/wishlist.service';
   styleUrl: './search.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-
 export class Search {
   readonly router = inject(Router);
   private readonly cartService = inject(CartService);
   readonly authService = inject(AuthService);
+  private readonly wishlistService = inject(WishlistService);
+
+  // ========== CONSTANTES ==========
   private readonly whatsappNumber = '5493534015655';
   private readonly whatsappMessage = 'Hola! Quisiera agendar un turno';
 
-  // Contador del carrito
- /*  cartItemCount = this.cartService.totalItems; */
-  isAuthenticated = this.authService.isAuthenticated;
-  isUserMenuOpen = signal(false);
-  private readonly wishlistService = inject(WishlistService);
-
-/*   private readonly whatsappNumber = '5493534015655';
-  private readonly whatsappMessage = 'Hola! Quisiera agendar un turno'; */
+  readonly icons = {
+    favorites: '❤️',
+    user: '👤',
+    cart: '🛍️',
+    whatsapp: '📞'
+  } as const;
 
   // ========== SIGNALS ==========
   readonly searchSuggestions = signal<SearchSuggestion[]>([]);
-  readonly isLoading = signal<boolean>(false);
+  readonly isLoading = signal(false);
+  readonly isUserMenuOpen = signal(false);
+
+  // ========== COMPUTED - Estado de autenticación ==========
+  readonly isAuthenticated = computed(() => this.authService.isAuthenticated());
 
   // ========== COMPUTED - Contadores ==========
   readonly cartItemCount = computed(() => this.cartService.cart()?.summary.totalItems ?? 0);
@@ -44,75 +58,8 @@ export class Search {
   readonly showCartBadge = computed(() => this.cartItemCount() > 0);
   readonly showWishlistBadge = computed(() => this.wishlistItemCount() > 0);
 
-  readonly icons = {
-    favorites: '❤️',
-    user: '👤',
-    cart: '🛍️',
-    admin: '⚙️',
-    whatsapp: '📞'
-  };
-
-  get actions(): { icon: string; label: string; action: () => void }[] {
-    return [
-      {
-        icon: this.icons.favorites,
-        label: 'Favoritos',
-        action: () => this.router.navigate(['/wishlist'])
-      },
-      {
-        icon: this.icons.user,
-        label: this.isAuthenticated() ? 'Cuenta' : 'Mi Cuenta',
-        action: () => this.toggleUserMenu()
-      },
-      {
-        icon: this.icons.cart,
-        label: 'Carrito',
-        action: () => this.router.navigate(['/cart'])
-      },
-      {
-        icon: this.icons.whatsapp,
-        label: 'Agendar (WhatsApp)',
-        action: () => this.openWhatsApp()
-      }
-    ];
-  }
-
-  toggleUserMenu(): void {
-    this.isUserMenuOpen.update(open => !open);
-  }
-
-  closeUserMenu(): void {
-    this.isUserMenuOpen.set(false);
-  }
-
-  private handleUserAction(): void {
-    if (this.isAuthenticated()) {
-      // Si está autenticado, cerrar sesión
-      this.authService.logout().subscribe({
-        next: () => {
-          console.log('Sesión cerrada exitosamente');
-          this.closeUserMenu();
-          this.router.navigate(['/login']);
-        },
-        error: (err) => {
-          console.error('Error al cerrar sesión:', err);
-        },
-      });
-    } else {
-      // Si no está autenticado, ir al login
-      this.router.navigate(['/login']);
-    }
-  }
-
-  logout(): void {
-    this.handleUserAction();
-  }
-
-  onSearch(result: { query: string; timestamp: number }): void {
-    console.log('Búsqueda realizada:', result.query);
-  }
-  // ========== ACTIONS ==========
-/*   readonly actions = computed(() => [
+  // ========== COMPUTED - Acciones del header ==========
+  readonly actions = computed<HeaderAction[]>(() => [
     {
       icon: this.icons.favorites,
       label: 'Favoritos',
@@ -122,10 +69,10 @@ export class Search {
     },
     {
       icon: this.icons.user,
-      label: 'Mi Cuenta',
+      label: this.isAuthenticated() ? 'Cuenta' : 'Mi Cuenta',
       badge: 0,
       showBadge: false,
-      action: () => this.router.navigate(['/login'])
+      action: () => this.toggleUserMenu()
     },
     {
       icon: this.icons.cart,
@@ -135,29 +82,48 @@ export class Search {
       action: () => this.router.navigate(['/cart'])
     },
     {
-      icon: this.icons.admin,
-      label: 'Admin',
-      badge: 0,
-      showBadge: false,
-      action: () => this.router.navigate(['/admin'])
-    },
-    {
       icon: this.icons.whatsapp,
       label: 'Agendar (WhatsApp)',
       badge: 0,
       showBadge: false,
       action: () => this.openWhatsApp()
     }
-  ]); */
+  ]);
 
-  // ========== MÉTODOS PÚBLICOS ==========
+  // ========== MÉTODOS PÚBLICOS - Menú de usuario ==========
 
-/*   onSearch(result: { query: string; timestamp: number }): void {
+  toggleUserMenu(): void {
+    this.isUserMenuOpen.update(open => !open);
+  }
+
+  closeUserMenu(): void {
+    this.isUserMenuOpen.set(false);
+  }
+
+  logout(): void {
+    this.authService.logout().subscribe({
+      next: () => {
+        console.log('✅ Sesión cerrada exitosamente');
+        this.closeUserMenu();
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        console.error('❌ Error al cerrar sesión:', err);
+      }
+    });
+  }
+
+  // ========== MÉTODOS PÚBLICOS - Búsqueda ==========
+
+  onSearch(result: { query: string; timestamp: number }): void {
     console.log('🔍 Búsqueda realizada:', result.query);
-  } */
+    // TODO: Implementar navegación a resultados de búsqueda
+    // this.router.navigate(['/search'], { queryParams: { q: result.query } });
+  }
 
   onSearchPerformed(result: SearchResult): void {
     console.log('🔍 Search performed:', result);
+    // TODO: Implementar lógica de búsqueda avanzada
   }
 
   onSearchValueChanged(value: string): void {
@@ -167,6 +133,8 @@ export class Search {
       this.searchSuggestions.set([]);
     }
   }
+
+  // ========== MÉTODOS PÚBLICOS - WhatsApp ==========
 
   openWhatsApp(): void {
     const encodedMessage = encodeURIComponent(this.whatsappMessage);
@@ -179,10 +147,13 @@ export class Search {
   private loadSuggestions(query: string): void {
     this.isLoading.set(true);
 
+    // TODO: Reemplazar con llamada real al servicio de búsqueda
     setTimeout(() => {
       const mockSuggestions: SearchSuggestion[] = [
         { id: '1', text: 'Corte de cabello', type: 'service' as const, icon: '✂️' },
         { id: '2', text: 'Shampoo Loreal', type: 'product' as const, icon: '🧴' },
+        { id: '3', text: 'Coloración profesional', type: 'service' as const, icon: '🎨' },
+        { id: '4', text: 'Tratamiento capilar', type: 'product' as const, icon: '💆' }
       ].filter(s => s.text.toLowerCase().includes(query.toLowerCase()));
 
       this.searchSuggestions.set(mockSuggestions);

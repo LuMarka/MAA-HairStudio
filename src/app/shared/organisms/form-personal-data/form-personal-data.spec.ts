@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PurchaseOrderHeader } from './purchase-order-header';
+import { FormPersonalData } from './form-personal-data';
 
-describe('PurchaseOrderHeader', () => {
-  let component: PurchaseOrderHeader;
-  let fixture: ComponentFixture<PurchaseOrderHeader>;
+describe('FormPersonalData', () => {
+  let component: FormPersonalData;
+  let fixture: ComponentFixture<FormPersonalData>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PurchaseOrderHeader]
+      imports: [FormPersonalData]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(PurchaseOrderHeader);
+    fixture = TestBed.createComponent(FormPersonalData);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

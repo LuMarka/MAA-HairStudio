@@ -80,6 +80,7 @@ export class AuthService {
       
       console.log('AuthService - Estado restaurado:', {
         email: storedUser.email,
+        name: storedUser.name,
         role: storedUser.role
       });
     } else {
@@ -113,7 +114,7 @@ export class AuthService {
 
     return this.http.post<LoginResponse>(`${this.authUrl}/login`, data).pipe(
       tap(response => {
-        console.log('Login exitoso:', response.user.email, 'Rol:', response.user.role);
+        console.log('Login exitoso:', response.user.email, 'Rol:', response.user.role, response.user.name);
         this.setAuthData(response);
         
         // Navegar según el rol
