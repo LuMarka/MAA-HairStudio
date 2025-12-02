@@ -77,48 +77,67 @@
         <!-- Datos del Cliente - Columna izquierda -->
         <div class="customer-data-section">
           @if (orderData(); as data) {
-          <div class="customer-summary-card">
-            <h3 class="card-title">
-              <span class="card-icon">👤</span>
-              Datos del Cliente
-            </h3>
-            <div class="customer-data">
-              <div class="data-item">
-                <span class="data-label">Cliente:</span>
-                <span class="data-value">{{ data.firstName }} {{ data.lastName }}</span>
-              </div>
-              <div class="data-item">
-                <span class="data-label">Email:</span>
-                <span class="data-value">{{ data.email }}</span>
-              </div>
-              <div class="data-item">
-                <span class="data-label">Teléfono:</span>
-                <span class="data-value">{{ data.phone }}</span>
-              </div>
-
-              @if (data.deliveryOption === 'delivery') {
-              <div class="data-item data-item--address">
-                <span class="data-label">Dirección:</span>
-                <div class="data-value">
-                  <div>{{ data.address }}</div>
-                  <div>{{ data.city }}@if (data.postalCode) { ({{ data.postalCode }}) }</div>
+            <div class="customer-summary-card">
+              <h3 class="card-title">
+                <span class="card-icon">👤</span>
+                Datos del Cliente
+              </h3>
+              <div class="customer-data">
+                <div class="data-item">
+                  <span class="data-label">Cliente:</span>
+                  <span class="data-value">{{ data.firstName }} {{ data.lastName }}</span>
                 </div>
-              </div>
-              } @else {
-              <div class="data-item">
-                <span class="data-label">Modalidad:</span>
-                <span class="data-value">Retiro en tienda</span>
-              </div>
-              }
+                <div class="data-item">
+                  <span class="data-label">Email:</span>
+                  <span class="data-value">{{ data.email }}</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">Teléfono:</span>
+                  <span class="data-value">{{ data.phone }}</span>
+                </div>
 
-              @if (data.notes) {
-              <div class="data-item data-item--notes">
-                <span class="data-label">Notas:</span>
-                <span class="data-value">{{ data.notes }}</span>
+                @if (data.deliveryOption === 'delivery') {
+                  <div class="data-item data-item--address">
+                    <span class="data-label">Dirección:</span>
+                    <div class="data-value">
+                      @if (hasAddressId()) {
+                        <div class="address-saved">
+                          <span class="address-saved__icon">📍</span>
+                          <span class="address-saved__text">Dirección guardada seleccionada</span>
+                        </div>
+                        @if (data.addressId) {
+                          <div class="address-saved__id">ID: {{ data.addressId }}</div>
+                          @if (data.city) { {{ data.city }} }
+                          @if (data.province) { , {{ data.province }} }
+                          @if (data.postalCode) { ({{ data.postalCode }}) }
+                        }
+                      } @else if (data.address) {
+                        <div>{{ data.address }}</div>
+                        <div>
+                          @if (data.city) { {{ data.city }} }
+                          @if (data.province) { , {{ data.province }} }
+                          @if (data.postalCode) { ({{ data.postalCode }}) }
+                        </div>
+                      } @else {
+                        <div>No especificada</div>
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  <div class="data-item">
+                    <span class="data-label">Modalidad:</span>
+                    <span class="data-value">Retiro en tienda</span>
+                  </div>
+                }
+
+                @if (data.deliveryInstructions) {
+                  <div class="data-item data-item--notes">
+                    <span class="data-label">Instrucciones:</span>
+                    <span class="data-value">{{ data.deliveryInstructions }}</span>
+                  </div>
+                }
               </div>
-              }
             </div>
-          </div>
           }
         </div>
 

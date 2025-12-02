@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../../../core/services/cart.service';
 import { CartSummary } from "../../molecules/cart-summary/cart-summary";
@@ -20,11 +20,12 @@ interface OrderData {
   email: string;
   phone: string;
   deliveryOption: DeliveryType;
+  addressId?: string; // ✅ Agregar
   address?: string;
   city?: string;
-  province?: string;
+  province?: string; // ✅ Ya está, asegúrate que esté
   postalCode?: string;
-  notes?: string;
+  deliveryInstructions?: string; // ✅ Cambiar notes por deliveryInstructions
 }
 
 /**
@@ -41,7 +42,7 @@ interface OrderData {
 @Component({
   selector: 'app-methode-pay',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, CartSummary], // ✅ Agregar CartSummary aquí
+  imports: [CartSummary], // ✅ Solo CartSummary
   templateUrl: './methode-pay.html',
   styleUrl: './methode-pay.scss'
 })
@@ -137,6 +138,42 @@ export class MethodePay {
     const data = this.orderData();
     return data?.deliveryOption === 'delivery' && !!data.address;
   });
+
+  // ========== COMPUTED - ADDRESS INFO ==========
+  readonly hasAddressId = computed(() => {
+    const data = this.orderData();
+    return !!data?.addressId;
+  });
+
+  readonly hasManualAddress = computed(() => {
+    const data = this.orderData();
+    return !!data?.address && !data.addressId;
+  });
+
+  // ========== CONSTRUCTOR ==========
+  constructor() {
+    // Effect para debug
+    effect(() => {
+      const data = this.orderData();
+      if (data) {
+        console.log('📋 [MethodePay] OrderData recibida:', {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          hasAddressId: !!data.addressId,
+          addressId: data.addressId,
+          hasManualAddress: !!data.address,
+          address: data.address,
+          city: data.city,
+          province: data.province,
+          postalCode: data.postalCode,
+          deliveryOption: data.deliveryOption,
+          deliveryInstructions: data.deliveryInstructions
+        });
+      }
+    });
+  }
 
   // ========== MÉTODOS PÚBLICOS - EVENTOS ==========
   onPaymentMethodChange(method: PaymentMethod): void {
