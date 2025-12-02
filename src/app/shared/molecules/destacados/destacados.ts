@@ -279,11 +279,11 @@ export class Destacados implements AfterViewInit, OnInit {
     .subscribe({
       next: (response) => {
         console.log('✅ Producto agregado al carrito:', response.message);
-        
+
         const shouldGoToCart = confirm(
           `"${productName}" se agregó al carrito.\n\n¿Quieres ir al carrito?`
         );
-        
+
         if (shouldGoToCart) {
           this.router.navigate(['/cart']);
         }
@@ -302,7 +302,7 @@ export class Destacados implements AfterViewInit, OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
-    this.productsService.getFeaturedProducts(12)
+    this.productsService.getFeaturedProducts(100)
       .pipe(
         catchError(error => {
           console.error('Error loading featured products:', error);
