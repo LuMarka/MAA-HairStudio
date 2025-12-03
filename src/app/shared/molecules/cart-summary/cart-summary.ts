@@ -13,10 +13,10 @@ interface CartItem {
 
 /**
  * Componente de resumen del carrito
- * 
+ *
  * @responsibility Mostrar resumen de productos, totales, método de pago y estado de validación
  * @reusable Usado en confirmación de pedido, checkout y formulario de datos personales
- * 
+ *
  * @example
  * ```html
  * <app-cart-summary
@@ -40,7 +40,7 @@ interface CartItem {
 })
 export class CartSummary {
   // ========== INPUTS - CART DATA ==========
-  
+
   /**
    * Lista de items del carrito
    */
@@ -62,11 +62,11 @@ export class CartSummary {
   readonly totalWithIva = input.required<number>();
 
   // ========== INPUTS - DELIVERY & PAYMENT ==========
-  
+
   /**
    * Opción de entrega seleccionada
    */
-  readonly selectedDeliveryOption = input<'pickup' | 'delivery'>('pickup');
+  readonly selectedDeliveryOption = input<'pickup' | 'delivery' | null>(null);
 
   /**
    * Método de pago seleccionado (null si no hay ninguno)
@@ -74,7 +74,7 @@ export class CartSummary {
   readonly selectedPaymentMethod = input<PaymentMethod | null>(null);
 
   // ========== INPUTS - VALIDATION ==========
-  
+
   /**
    * Indica si el formulario padre es válido
    */
@@ -117,14 +117,14 @@ export class CartSummary {
   readonly selectedPaymentMethodText = computed(() => {
     const method = this.selectedPaymentMethod();
     if (!method) return null;
-    
+
     const paymentMethods: Record<PaymentMethod, string> = {
       'mercadopago-card': 'Tarjeta de Crédito/Débito (Mercado Pago)',
       'mercadopago': 'Mercado Pago',
       'transfer': 'Transferencia Bancaria',
       'cash': 'Efectivo en la entrega'
     };
-    
+
     return paymentMethods[method];
   });
 
@@ -146,8 +146,8 @@ export class CartSummary {
    * Texto de la modalidad de entrega
    */
   readonly deliveryOptionText = computed(() => {
-    return this.selectedDeliveryOption() === 'delivery' 
-      ? 'Envío a domicilio' 
+    return this.selectedDeliveryOption() === 'delivery'
+      ? 'Envío a domicilio'
       : 'Retiro en tienda';
   });
 

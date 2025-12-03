@@ -50,13 +50,15 @@
 
     <!-- Información de Entrega -->
     <div class="delivery-info">
-      <div class="delivery-info__item">
-        <span class="delivery-info__label">Modalidad:</span>
-        <span class="delivery-info__value">{{ deliveryOptionText() }}</span>
-      </div>
-      <div class="delivery-info__item">
-        <span class="delivery-info__label">{{ deliveryTimeLabel() }}</span>
-        <span class="delivery-info__value">{{ deliveryTimeText() }}</span>
+      @if (selectedDeliveryOption() !== null) {
+        <div class="delivery-info__item" style="display: flex; gap: 0.5em; align-items: center;">
+          <span class="delivery-info__label">Modalidad:</span>
+          <span class="delivery-info__value" style="white-space: nowrap; min-width: 120px; display: inline-block;">{{ deliveryOptionText() }}</span>
+        </div>
+      }
+      <div class="delivery-info__item" style="display: flex; gap: 0.5em; align-items: center;">
+        <span class="delivery-info__label">Disponibilidad:</span>
+        <span class="delivery-info__value" style="white-space: nowrap; min-width: 120px; display: inline-block;">{{ selectedDeliveryOption() === 'delivery' ? '3-5 días hábiles' : 'Inmediata' }}</span>
       </div>
     </div>
 

@@ -107,9 +107,12 @@ export class ShoppingCart {
   /**
    * Opción de entrega seleccionada para CartSummary
    */
-  readonly selectedDeliveryForSummary = computed<'pickup' | 'delivery'>(() => {
+/*   readonly selectedDeliveryForSummary = computed<'pickup' | 'delivery'>(() => {
     return this.selectedDeliveryOption() || 'pickup';
-  });
+  }); */
+  readonly selectedDeliveryForSummary = computed<'pickup' | 'delivery' | null>(() => {
+  return this.selectedDeliveryOption();
+});
 
   // ========== COMPUTED - UI ==========
   readonly hasUnavailableItems = computed(() =>
