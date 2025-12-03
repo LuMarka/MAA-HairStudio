@@ -51,7 +51,7 @@ export class Search {
   readonly isAuthenticated = computed(() => this.authService.isAuthenticated());
 
   // ========== COMPUTED - Contadores ==========
-  readonly cartItemCount = computed(() => this.cartService.cart()?.summary.totalItems ?? 0);
+  readonly cartItemCount = computed(() => this.cartService.cart()?.summary.totalQuantity ?? 0);
   readonly wishlistItemCount = computed(() => this.wishlistService.totalItems());
 
   // ========== COMPUTED - Badges ==========
