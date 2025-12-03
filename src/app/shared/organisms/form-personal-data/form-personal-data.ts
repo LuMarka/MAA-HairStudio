@@ -82,7 +82,7 @@ export class FormPersonalData {
   );
 
   readonly deliveryBadgeText = computed(() =>
-    this.isDelivery() ? '🚚 Envío' : '🏪 Retiro'
+    this.isDelivery() ? '🚚 ' : '🏪 '
   );
 
   // ========== COMPUTED - ADDRESSES ==========
