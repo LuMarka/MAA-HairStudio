@@ -347,4 +347,19 @@
       outline-offset: 2px;
     }
   }
+
+  &__retry-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    border:1.2px solid v.color('green-700');
+
+    &:hover {
+      background: v.color('green-400');
+      transform: translateY(-4px);
+      color:white;
+      border: none;
+    }
+  }
+
 }
