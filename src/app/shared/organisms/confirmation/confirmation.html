@@ -58,7 +58,7 @@
           <div class="confirmation-section__content">
             <div class="confirmation-item">
               <span class="confirmation-item__label">Cliente:</span>
-              <span class="confirmation-item__value">{{ data.firstName }} {{ data.lastName }}</span>
+              <span class="confirmation-item__value">{{ data.firstName }} </span>
             </div>
             <div class="confirmation-item">
               <span class="confirmation-item__label">Email:</span>
@@ -133,11 +133,11 @@
         </div>
 
         <div class="confirmation-actions__primary">
-          <button 
-            type="button" 
-            class="btn btn--primary btn--large" 
+          <button
+            type="button"
+            class="btn btn--primary btn--large"
             [class.btn--loading]="isProcessing()"
-            [disabled]="!canFinalize()" 
+            [disabled]="!canFinalize()"
             (click)="onFinalizeOrder()">
             @if (isProcessing()) {
             <span class="btn__spinner"></span>

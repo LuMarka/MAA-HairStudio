@@ -8,7 +8,7 @@ type PaymentMethod = 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
 
 interface OrderData {
   firstName: string;
-  lastName: string;
+  /* lastName: string; */
   email: string;
   phone: string;
   deliveryOption: 'pickup' | 'delivery';

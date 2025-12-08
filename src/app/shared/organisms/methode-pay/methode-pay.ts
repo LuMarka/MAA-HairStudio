@@ -16,7 +16,7 @@ interface CartItem {
 
 interface OrderData {
   firstName: string;
-  lastName: string;
+  /* lastName: string; */
   email: string;
   phone: string;
   deliveryOption: DeliveryType;
@@ -131,7 +131,7 @@ export class MethodePay {
   readonly customerName = computed(() => {
     const data = this.orderData();
     if (!data) return '';
-    return `${data.firstName} ${data.lastName}`;
+    return `${data.firstName}`;
   });
 
   readonly hasDeliveryAddress = computed(() => {
@@ -158,7 +158,7 @@ export class MethodePay {
       if (data) {
         console.log('📋 [MethodePay] OrderData recibida:', {
           firstName: data.firstName,
-          lastName: data.lastName,
+          /* lastName: data.lastName, */
           email: data.email,
           phone: data.phone,
           hasAddressId: !!data.addressId,
