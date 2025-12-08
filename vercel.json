@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+
+    {
+      "source": "/landing",
+      "destination": "https://ma-ahair-studio-landing.vercel.app/"
+    },
+
+    {
+      "source": "/landing/:match*",
+      "destination": "https://ma-ahair-studio-landing.vercel.app/:match*"
+    }
+  ]
+}
