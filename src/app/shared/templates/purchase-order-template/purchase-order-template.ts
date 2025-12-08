@@ -20,7 +20,7 @@ interface CartItem {
 
 interface OrderData {
   firstName: string;
-  lastName: string;
+  /* lastName: string; */
   email: string;
   phone: string;
   deliveryOption: DeliveryType;
@@ -342,7 +342,7 @@ export class PurchaseOrderTemplate {
     message += `\n💰 TOTAL: $${total.toFixed(2)}\n\n`;
 
     message += '👤 DATOS DEL CLIENTE:\n';
-    message += `Nombre: ${data.firstName} ${data.lastName}\n`;
+    message += `Nombre y Apellido: ${data.firstName}}\n`;
     message += `Email: ${data.email}\n`;
     message += `Teléfono: ${data.phone}\n\n`;
 

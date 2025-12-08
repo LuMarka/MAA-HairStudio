@@ -1,38 +1,46 @@
 <section class="profile-template">
-	<div class="profile-template__header">
-		<button type="button" class="profile-template__edit-toggle" (click)="toggleEdit()">
-			{{ isEditing ? 'Cancelar' : 'Editar perfil' }}
-		</button>
-		<h2 class="profile-template__title">Mi Perfil</h2>
+  <div class="profile-template__container">
+    <h1 class="profile-template__title">Mi Perfil</h1>
 
-	</div>
-	<form class="profile-template__form" autocomplete="off">
-		<div class="profile-template__field-group">
-			<label for="profile-name" class="profile-template__label">Nombre</label>
-			<input id="profile-name" class="profile-template__input" type="text" placeholder="Nombre completo" [value]="user.name" [disabled]="!isEditing" />
-		</div>
-		<div class="profile-template__field-group">
-			<label for="profile-email" class="profile-template__label">Email</label>
-			<input id="profile-email" class="profile-template__input" type="email" placeholder="Correo electrónico" [value]="user.email" [disabled]="!isEditing" />
-		</div>
-		<div class="profile-template__field-group">
-			<label for="profile-phone" class="profile-template__label">Teléfono</label>
-			<input id="profile-phone" class="profile-template__input" type="tel" placeholder="Teléfono" [value]="user.phone" [disabled]="!isEditing" />
-		</div>
-		<div class="profile-template__field-group">
-			<label for="profile-address1" class="profile-template__label">Dirección 1</label>
-			<input id="profile-address1" class="profile-template__input" type="text" placeholder="Dirección" [value]="user.address" [disabled]="!isEditing" />
-		</div>
-		<div class="profile-template__field-group">
-			<label for="profile-address2" class="profile-template__label">Dirección 2</label>
-			<input id="profile-address2" class="profile-template__input" type="text" placeholder="Dirección" [value]="user.address" [disabled]="!isEditing" />
-		</div>
+    @if (errorMessage()) {
+      <div class="profile-template__error">{{ errorMessage() }}</div>
+    }
 
-		<button type="submit" class="profile-template__button" [disabled]="!isEditing">Guardar cambios</button>
+    @if (isLoading()) {
+      <div class="profile-template__loading">Cargando...</div>
+    }
 
-		<div class="profile-template__actions-row">
-			<button type="button" class="profile-template__action profile-template__action--danger">Eliminar cuenta</button>
-			<button type="button" class="profile-template__action profile-template__action--secondary">Ver mis pedidos</button>
-		</div>
-	</form>
+    @if (userProfile()) {
+      <form [formGroup]="form()" (ngSubmit)="saveChanges()" class="profile-template__form">
+        <div>
+          <label>Nombre</label>
+           <input id="profile-name" class="profile-template__input" type="text" formControlName="name" placeholder="Nombre Apellido" [disabled]="!isEditing()" />
+        </div>
+        <div>
+          <label>Email</label>
+           <input id="profile-email" class="profile-template__input" type="email" formControlName="email" placeholder="usuario@email.com" [disabled]="!isEditing()" />
+        </div>
+        <div>
+          <label>Teléfono</label>
+           <input id="profile-phone" class="profile-template__input" type="tel" formControlName="phone" placeholder="1234567890" [disabled]="!isEditing()" />
+        </div>
+        <div>
+          <label>Dirección</label>
+           <input id="profile-address1" class="profile-template__input" type="text" formControlName="address" placeholder="Calle Falsa 123, Villa María, Córdoba, Argentina" [disabled]="!isEditing()" />
+        </div>
+        <div>
+          <label>Dirección 2</label>
+          <input formControlName="address2" [readonly]="!isEditing()" />
+        </div>
+
+        @if (isEditing()) {
+          <button type="submit" [disabled]="form().invalid || isLoading()">Guardar cambios</button>
+          <button type="button" (click)="toggleEdit()">Cancelar</button>
+        } @else {
+          <button type="button" (click)="toggleEdit()">Editar perfil</button>
+        }
+        <button type="button" class="profile-template__delete-btn" (click)="deleteAccount()">Eliminar cuenta</button>
+      </form>
+    }
+  </div>
 </section>
