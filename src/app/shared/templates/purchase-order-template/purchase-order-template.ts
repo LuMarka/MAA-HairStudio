@@ -66,7 +66,7 @@ export class PurchaseOrderTemplate {
   readonly isProcessing = signal(false);
   readonly personalFormData = signal<Omit<OrderData, 'paymentMethod' | 'deliveryOption'> | null>(null);
 
-  private readonly WHATSAPP_NUMBER = '573185539506';
+  private readonly WHATSAPP_NUMBER = '5493534015655';
   private readonly totalSteps = 3;
 
   // ========== COMPUTED VALUES - CART ==========
