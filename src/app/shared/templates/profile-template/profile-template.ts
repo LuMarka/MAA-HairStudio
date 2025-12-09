@@ -93,6 +93,9 @@ export class ProfileTemplate {
         address: '',
         address2: ''
       });
+      // Deshabilitar inputs de dirección
+      this.form().get('phone')?.disable();
+      this.form().get('address')?.disable();
       return;
     }
 
@@ -105,6 +108,13 @@ export class ProfileTemplate {
         address: selected.streetAddress ?? '',
         address2: selected.addressLine2 ?? ''
       });
+
+      // Habilitar inputs de dirección si estamos en modo edición
+      if (this.isEditing()) {
+        this.form().get('phone')?.enable();
+        this.form().get('address')?.enable();
+      }
+
       console.log('✅ Dirección seleccionada:', selected);
     }
   }
@@ -114,7 +124,7 @@ export class ProfileTemplate {
     this.isEditing.set(editing);
 
     if (editing) {
-      // Habilitar nombre y email
+      // Habilitar nombre, email y select de dirección
       this.form().get('name')?.enable();
       this.form().get('email')?.enable();
       this.form().get('addressSelect')?.enable();
