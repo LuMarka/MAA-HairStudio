@@ -19,7 +19,6 @@ interface CartItem {
 
 interface FormData {
   firstName: string;
-  lastName: string;
   email: string;
   phone: string;
   addressId?: string;
@@ -157,7 +156,6 @@ export class FormPersonalData {
   // ========== FORM ==========
   readonly orderForm: FormGroup = this.fb.group({
     firstName: [this.authService.currentUser()?.name || '', [Validators.required, Validators.minLength(2)]],
-    lastName: ['', [Validators.required, Validators.minLength(2)]],
     email: [this.authService.currentUser()?.email || '', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.pattern(/^\d+$/), Validators.minLength(10)]],
     province: [''],
@@ -342,11 +340,10 @@ export class FormPersonalData {
     const deliveryOption = this.deliveryOption();
 
     const firstNameValid = form.get('firstName')?.valid ?? false;
-    const lastNameValid = form.get('lastName')?.valid ?? false;
     const emailValid = form.get('email')?.valid ?? false;
     const phoneValid = form.get('phone')?.valid ?? false;
 
-    let isValid = firstNameValid && lastNameValid && emailValid && phoneValid;
+    let isValid = firstNameValid && emailValid && phoneValid;
 
     if (deliveryOption === 'delivery') {
       const addressValid = form.get('address')?.valid ?? false;
@@ -370,7 +367,6 @@ export class FormPersonalData {
       const formValue = this.orderForm.value;
       const data: FormData = {
         firstName: formValue.firstName || '',
-        lastName: formValue.lastName || '',
         email: formValue.email || '',
         phone: formValue.phone || '',
         deliveryInstructions: formValue.deliveryInstructions || undefined
@@ -408,7 +404,6 @@ export class FormPersonalData {
 
     const fieldLabels: Record<string, string> = {
       firstName: 'El nombre',
-      lastName: 'El apellido',
       email: 'El email',
       province: 'La provincia',
       phone: 'El teléfono',
@@ -472,7 +467,7 @@ export class FormPersonalData {
     this.isSavingAddress.set(true);
 
     const createAddressDto: CreateAddressDto = {
-      recipientName: `${formValue.firstName} ${formValue.lastName}`.trim(),
+      recipientName: `${formValue.firstName}`.trim(),
       phone: formValue.phone || '',
       province: formValue.province || '',
       city: formValue.city || '',
