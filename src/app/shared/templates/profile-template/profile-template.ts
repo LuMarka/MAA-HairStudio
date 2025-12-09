@@ -201,11 +201,20 @@ export class ProfileTemplate {
           this.form().get('addressSelect')?.setValue('');
           this.loadProfile();
           this.loadAddresses();
+          this.finalizeSave();
         },
         error: (error) => {
           console.error('❌ Error al actualizar dirección:', error);
         }
       });
+  }
+
+  private finalizeSave(): void {
+    console.log('✅ Cambios guardados, recargando página...');
+    // Recargar la página después de 1 segundo para mostrar los cambios
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   }
 
   deleteAccount(): void {
