@@ -9,7 +9,7 @@
   min-height: 400px;
   overflow: hidden;
   background: v.color('gray1');
-  margin: 0 auto; // Centra el carousel
+  margin: 0 ; // Centra el carousel
   box-sizing: border-box; // Incluye padding y border en el ancho
   padding-top: 70px;
 }
@@ -132,7 +132,7 @@
 
 .carousel-indicators {
   position: absolute;
-  bottom: v.$spacing-md;
+  bottom: v.$spacing-lg;
   left: 50%;
   transform: translateX(-50%);
   display: flex;

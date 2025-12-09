@@ -58,7 +58,7 @@
     display: flex;
     gap: v.$spacing-xs;
     align-items: stretch;
-    justify-content: flex-start;
+    justify-content: center;
     padding: v.$spacing-xs 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -169,7 +169,7 @@
     &__container { padding: 0 v.$spacing-xxl; }
     &__track { gap: v.$spacing-xs; justify-content: flex-start; }
     &__track .payments-methods__card {
-      flex: 0 0 calc(100% / 6 - #{v.$spacing-xs});
+      flex: 0 0 calc(100% / 5 - #{v.$spacing-xs});
       max-width: none;
     }
     &__card { min-width: 100px; border-radius: v.$borderRadius-lg; }

@@ -5,7 +5,7 @@
 .floating-cta {
   position: fixed;
   bottom: 10vh;
-  right: v.$spacing-sm; // Mobile first - closer to edge
+  right: v.$spacing-md; // Mobile first - closer to edge
   z-index: 1001;
 
   display: flex;

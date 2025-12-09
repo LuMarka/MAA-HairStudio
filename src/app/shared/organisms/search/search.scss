@@ -31,7 +31,7 @@
 
     @include m.mobile {
       flex-wrap: wrap;
-      justify-content: center;
+      justify-content: space-between;
     }
 
     @include m.tablet-up {
@@ -40,12 +40,17 @@
   }
 
   &__bar {
-    flex: 1;
-    max-width: calc(100% - 180px);
-    min-width: 200px;
+    flex: 1 1 auto;
+/*     max-width: calc(100% - 180px);
+    min-width: 200px; */
 
-    @media (max-width: 360px) {
+   /*  @media (max-width: 360px) {
       max-width: calc(100% - 160px);
+    } */
+     @include m.mobile-only {
+      flex: 1 1 60%; // La barra ocupa el 100% del ancho del contenedor en móvil
+      max-width: 100%; // Aseguramos que nunca exceda el 100%
+
     }
 
     @include m.tablet-up {
