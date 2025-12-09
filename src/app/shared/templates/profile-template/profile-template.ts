@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, effect, DestroyRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UsersService } from '../../../core/services/users.service';
 import { UserProfile, UpdateUserDto } from '../../../core/models/interfaces/users.interface';
 import { Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-profile-template',
@@ -13,24 +14,14 @@ import { Router } from '@angular/router';
   host: { class: 'profile-template-host' }
 })
 export class ProfileTemplate {
- /*  user = {
-    name: 'Nombre Apellido',
-    email: 'usuario@email.com',
-    phone: '1234567890',
-    address: 'Calle Falsa 123, Villa María, Córdoba, Argentina',
-  };
-  isEditing = false;
-
-  toggleEdit() {
-    this.isEditing = !this.isEditing;
-  } */
- private readonly usersService = inject(UsersService);
+  private readonly usersService = inject(UsersService);
   private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly isEditing = signal(false);
   readonly isLoading = computed(() => this.usersService.isLoading());
   readonly errorMessage = computed(() => this.usersService.errorMessage());
-
   readonly userProfile = signal<UserProfile | null>(null);
 
   readonly form = signal<FormGroup>(
@@ -44,61 +35,85 @@ export class ProfileTemplate {
   );
 
   constructor() {
-    this.loadProfile();
-  }
-  private readonly router = inject(Router);
-
-  loadProfile() {
-    this.usersService.getMyProfile().subscribe({
-      next: (profile) => {
-        this.userProfile.set(profile);
-        this.form().patchValue({
-          name: profile.user.name ?? '',
-          email: profile.user.email ?? '',
-          phone: profile.user.phone ?? '',
-          address: profile.user.address ?? '',
-          address2: profile.user.address2 ?? ''
-        });
-      }
+    effect(() => {
+      this.loadProfile();
     });
   }
 
-  verPedidos() {
-    this.router.navigate(['/profile/orders']);
+  private loadProfile(): void {
+    this.usersService.getMyProfile()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (profile) => {
+          this.userProfile.set(profile);
+          this.form().patchValue({
+            name: profile.user.name ?? '',
+            email: profile.user.email ?? '',
+            phone: profile.user.phone ?? '',
+            address: profile.user.address ?? '',
+            address2: profile.user.address2 ?? ''
+          });
+          // Por defecto: formulario deshabilitado
+          this.form().disable();
+        }
+      });
   }
-  toggleEdit() {
-    this.isEditing.update(editing => !editing);
-    if (this.isEditing()) {
-      const user = this.userProfile()?.user;
-      if (user) {
-        this.form().patchValue({
-          name: user.name ?? '',
-          email: user.email ?? '',
-          phone: user.phone ?? '',
-          address: user.address ?? '',
-          address2: user.address2 ?? ''
-        });
-      }
+
+  toggleEdit(): void {
+    const editing = !this.isEditing();
+    this.isEditing.set(editing);
+
+    if (editing) {
+      // Habilitar solo name y email para edición
+      this.form().get('name')?.enable();
+      this.form().get('email')?.enable();
+      // Mantener deshabilitados los otros campos
+      this.form().get('phone')?.disable();
+      this.form().get('address')?.disable();
+      this.form().get('address2')?.disable();
+    } else {
+      // Deshabilitar todo al cancelar
+      this.form().disable();
     }
   }
 
-  saveChanges() {
-    if (!this.form().valid || !this.userProfile()) return;
+  saveChanges(): void {
+    const nameControl = this.form().get('name');
+    const emailControl = this.form().get('email');
+
+    if (!nameControl?.valid || !emailControl?.valid || !this.userProfile()) return;
+
     const userId = this.userProfile()!.user.id;
-    const dto: UpdateUserDto = this.form().value;
-    this.usersService.updateUser(userId, dto).subscribe({
-      next: () => {
-        this.isEditing.set(false);
-        this.loadProfile();
-      }
-    });
+    const dto: UpdateUserDto = {
+      name: nameControl.value,
+      email: emailControl.value
+    };
+
+    this.usersService.updateUser(userId, dto)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isEditing.set(false);
+          this.loadProfile();
+        }
+      });
   }
 
-  deleteAccount() {
-    this.usersService.deleteMyAccount().subscribe({
-      next: () => {
-        // Redirige o muestra mensaje de éxito
-      }
-    });
+  deleteAccount(): void {
+    if (!confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    this.usersService.deleteMyAccount()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/']);
+        }
+      });
+  }
+
+  verPedidos(): void {
+    this.router.navigate(['/profile/orders']);
   }
 }
