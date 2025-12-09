@@ -1,12 +1,13 @@
 <div class="logo" [class.logo--small]="isSmall()">
   <img
-    [src]="'images/IsologoBlanco.png'"
-    [width]="isSmall() ? 70 : 110"
-    [height]="isSmall() ?70 : 110"
+    ngSrc="images/IsologoBlanco.png"
+    [width]="imageSize()"
+    [height]="imageSize()"
     alt="MAA Hair Style Logo"
     class="logo__image"
+    priority
   />
- @if (showText()) {
+  @if (shouldShowText()) {
     <h1 class="logo__text">MAA Hair Studio</h1>
   }
 </div>
