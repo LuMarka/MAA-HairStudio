@@ -16,7 +16,7 @@ import type {
   OrderQueryParams,
   SetShippingCostDto,
   UpdateOrderStatusDto,
-  OrderStatisticsResponse
+  OrderStatisticsResponse,
 } from '../models/interfaces/order.interface';
 
 /**
@@ -59,7 +59,7 @@ export interface CheckoutState {
  * ```
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OrderService {
   private readonly http = inject(HttpClient);
@@ -99,13 +99,13 @@ export class OrderService {
 
   // Computed para filtrar órdenes por estado
   readonly pendingOrders = computed(() =>
-    this._orders$.value.filter(order => order.status === 'pending')
+    this._orders$.value.filter((order) => order.status === 'pending')
   );
   readonly confirmedOrders = computed(() =>
-    this._orders$.value.filter(order => order.status === 'confirmed')
+    this._orders$.value.filter((order) => order.status === 'confirmed')
   );
   readonly deliveredOrders = computed(() =>
-    this._orders$.value.filter(order => order.status === 'delivered')
+    this._orders$.value.filter((order) => order.status === 'delivered')
   );
 
   // ========== COMPUTED - CHECKOUT STATE ==========
@@ -123,7 +123,7 @@ export class OrderService {
     if (!state) return false;
 
     const now = Date.now();
-    const isExpired = (now - state.timestamp) > this.CHECKOUT_EXPIRATION_MS;
+    const isExpired = now - state.timestamp > this.CHECKOUT_EXPIRATION_MS;
 
     if (isExpired) {
       console.warn('⚠️ Checkout expirado, limpiando...');
@@ -186,7 +186,7 @@ export class OrderService {
     const checkoutState: CheckoutState = {
       deliveryType,
       selectedAddressId: addressId,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     this._checkoutState.set(checkoutState);
@@ -195,7 +195,7 @@ export class OrderService {
     console.log('✅ Checkout iniciado:', {
       deliveryType,
       hasAddress: !!addressId,
-      timestamp: new Date(checkoutState.timestamp).toISOString()
+      timestamp: new Date(checkoutState.timestamp).toISOString(),
     });
   }
 
@@ -226,7 +226,7 @@ export class OrderService {
     const updatedState: CheckoutState = {
       ...currentState,
       selectedAddressId: addressId,
-      timestamp: Date.now() // Renovar timestamp al actualizar
+      timestamp: Date.now(), // Renovar timestamp al actualizar
     };
 
     this._checkoutState.set(updatedState);
@@ -357,7 +357,7 @@ export class OrderService {
           orderNumber: response.data.orderNumber,
           deliveryType: response.data.deliveryType,
           total: response.data.total,
-          requiresShippingCost: response.meta.requiresShippingCost
+          requiresShippingCost: response.meta.requiresShippingCost,
         });
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'crear orden')),
@@ -387,21 +387,23 @@ export class OrderService {
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
 
-    return this.http.get<OrderListResponse>(`${this.apiUrl}/my-orders`, { params: httpParams }).pipe(
-      tap((response) => {
-        this._orders$.next(response.data);
-        this._totalOrders.set(response.meta.total);
-        this._currentPage.set(response.meta.page);
-        this._totalPages.set(response.meta.totalPages);
-        console.log('✅ Órdenes cargadas:', {
-          total: response.meta.total,
-          page: response.meta.page,
-          items: response.data.length
-        });
-      }),
-      catchError((error: HttpErrorResponse) => this.handleError(error, 'obtener mis órdenes')),
-      finalize(() => this._isLoading.set(false))
-    );
+    return this.http
+      .get<OrderListResponse>(`${this.apiUrl}/my-orders`, { params: httpParams })
+      .pipe(
+        tap((response) => {
+          this._orders$.next(response.data);
+          this._totalOrders.set(response.meta.total);
+          this._currentPage.set(response.meta.page);
+          this._totalPages.set(response.meta.totalPages);
+          console.log('✅ Órdenes cargadas:', {
+            total: response.meta.total,
+            page: response.meta.page,
+            items: response.data.length,
+          });
+        }),
+        catchError((error: HttpErrorResponse) => this.handleError(error, 'obtener mis órdenes')),
+        finalize(() => this._isLoading.set(false))
+      );
   }
 
   /**
@@ -422,12 +424,23 @@ export class OrderService {
     this._isLoading.set(true);
     this._errorMessage.set(null);
 
-    return this.http.get<OrderData>(`${this.apiUrl}/${orderId}`).pipe(
+    const url = `${this.apiUrl}/${orderId}`;
+    console.log('📡 Llamando GET a:', url);
+
+    return this.http.get<OrderData>(url).pipe(
       tap((order) => {
         this._currentOrder$.next(order);
         console.log('✅ Orden obtenida:', order.orderNumber);
       }),
-      catchError((error: HttpErrorResponse) => this.handleError(error, 'obtener orden')),
+      catchError((error: HttpErrorResponse) => {
+        console.error('❌ Error HTTP:', {
+          url: url,
+          status: error.status,
+          statusText: error.statusText,
+          error: error.error
+        });
+        return this.handleError(error, 'obtener orden');
+      }),
       finalize(() => this._isLoading.set(false))
     );
   }
@@ -446,7 +459,7 @@ export class OrderService {
    * });
    * ```
    */
-  confirmOrder(orderId: string): Observable<OrderInterface> {
+  /* confirmOrder(orderId: string): Observable<OrderInterface> {
     this._isLoading.set(true);
     this._errorMessage.set(null);
 
@@ -457,7 +470,7 @@ export class OrderService {
         this._currentOrder$.next(response.data);
 
         const currentOrders = this._orders$.value;
-        const updatedOrders = currentOrders.map(order =>
+        const updatedOrders = currentOrders.map((order) =>
           order.id === orderId ? response.data : order
         );
         this._orders$.next(updatedOrders);
@@ -467,7 +480,7 @@ export class OrderService {
       catchError((error: HttpErrorResponse) => this.handleError(error, 'confirmar orden')),
       finalize(() => this._isLoading.set(false))
     );
-  }
+  } */
 
   // ========== PUBLIC METHODS - ADMIN OPERATIONS ==========
 
@@ -503,20 +516,24 @@ export class OrderService {
     if (params?.startDate) httpParams = httpParams.set('startDate', params.startDate);
     if (params?.endDate) httpParams = httpParams.set('endDate', params.endDate);
 
-    return this.http.get<OrderListResponse>(`${this.apiUrl}/admin/all`, { params: httpParams }).pipe(
-      tap((response) => {
-        this._orders$.next(response.data);
-        this._totalOrders.set(response.meta.total);
-        this._currentPage.set(response.meta.page);
-        this._totalPages.set(response.meta.totalPages);
-        console.log('✅ Órdenes (admin) cargadas:', {
-          total: response.meta.total,
-          filters: response.meta.filters
-        });
-      }),
-      catchError((error: HttpErrorResponse) => this.handleError(error, 'obtener todas las órdenes')),
-      finalize(() => this._isLoading.set(false))
-    );
+    return this.http
+      .get<OrderListResponse>(`${this.apiUrl}/admin/all`, { params: httpParams })
+      .pipe(
+        tap((response) => {
+          this._orders$.next(response.data);
+          this._totalOrders.set(response.meta.total);
+          this._currentPage.set(response.meta.page);
+          this._totalPages.set(response.meta.totalPages);
+          console.log('✅ Órdenes (admin) cargadas:', {
+            total: response.meta.total,
+            filters: response.meta.filters,
+          });
+        }),
+        catchError((error: HttpErrorResponse) =>
+          this.handleError(error, 'obtener todas las órdenes')
+        ),
+        finalize(() => this._isLoading.set(false))
+      );
   }
 
   /**
@@ -540,7 +557,9 @@ export class OrderService {
       tap((response) => {
         console.log('✅ Órdenes pendientes de envío:', response.meta.total);
       }),
-      catchError((error: HttpErrorResponse) => this.handleError(error, 'obtener órdenes pendientes')),
+      catchError((error: HttpErrorResponse) =>
+        this.handleError(error, 'obtener órdenes pendientes')
+      ),
       finalize(() => this._isLoading.set(false))
     );
   }
@@ -567,17 +586,21 @@ export class OrderService {
     this._isLoading.set(true);
     this._errorMessage.set(null);
 
-    return this.http.patch<OrderInterface>(`${this.apiUrl}/${orderId}/shipping-cost`, shippingData).pipe(
-      tap((response) => {
-        this._currentOrder$.next(response.data);
-        console.log('✅ Costo de envío establecido:', {
-          orderNumber: response.data.orderNumber,
-          shippingCost: response.data.shippingCost
-        });
-      }),
-      catchError((error: HttpErrorResponse) => this.handleError(error, 'establecer costo de envío')),
-      finalize(() => this._isLoading.set(false))
-    );
+    return this.http
+      .patch<OrderInterface>(`${this.apiUrl}/${orderId}/shipping-cost`, shippingData)
+      .pipe(
+        tap((response) => {
+          this._currentOrder$.next(response.data);
+          console.log('✅ Costo de envío establecido:', {
+            orderNumber: response.data.orderNumber,
+            shippingCost: response.data.shippingCost,
+          });
+        }),
+        catchError((error: HttpErrorResponse) =>
+          this.handleError(error, 'establecer costo de envío')
+        ),
+        finalize(() => this._isLoading.set(false))
+      );
   }
 
   /**
@@ -607,7 +630,7 @@ export class OrderService {
         this._currentOrder$.next(response.data);
 
         const currentOrders = this._orders$.value;
-        const updatedOrders = currentOrders.map(order =>
+        const updatedOrders = currentOrders.map((order) =>
           order.id === orderId ? response.data : order
         );
         this._orders$.next(updatedOrders);
@@ -615,10 +638,12 @@ export class OrderService {
         console.log('✅ Estado de orden actualizado:', {
           orderNumber: response.data.orderNumber,
           status: response.data.status,
-          paymentStatus: response.data.paymentStatus
+          paymentStatus: response.data.paymentStatus,
         });
       }),
-      catchError((error: HttpErrorResponse) => this.handleError(error, 'actualizar estado de orden')),
+      catchError((error: HttpErrorResponse) =>
+        this.handleError(error, 'actualizar estado de orden')
+      ),
       finalize(() => this._isLoading.set(false))
     );
   }
@@ -672,7 +697,7 @@ export class OrderService {
       tap((response) => {
         console.log('✅ Estadísticas obtenidas:', {
           totalOrders: response.data.totalOrders,
-          revenue: response.data.revenue.total
+          revenue: response.data.revenue.total,
         });
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'obtener estadísticas')),
@@ -736,7 +761,7 @@ export class OrderService {
 
       // Validar que no haya expirado
       const now = Date.now();
-      if ((now - state.timestamp) > this.CHECKOUT_EXPIRATION_MS) {
+      if (now - state.timestamp > this.CHECKOUT_EXPIRATION_MS) {
         console.warn('⚠️ Checkout state expirado al cargar');
         this.removeCheckoutStateFromStorage();
         return null;
@@ -807,7 +832,7 @@ export class OrderService {
       console.error('❌ Error del servidor:', {
         status: error.status,
         message: errorMessage,
-        operation
+        operation,
       });
     }
 

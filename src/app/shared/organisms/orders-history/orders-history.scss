@@ -1,0 +1,177 @@
+@use '../../../../assets/styles/variables' as v;
+@use 'sass:color';
+
+.orders-history {
+  width: 100%;
+  padding: 2rem;
+
+  &__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: #222;
+  }
+
+  &__loading,
+  &__error,
+  &__empty {
+    text-align: center;
+    padding: 2rem;
+    background: #f5f5f5;
+    border-radius: 0.5rem;
+    color: #666;
+  }
+
+  &__error {
+    background: #fff0f0;
+    color: v.color('secondary');
+  }
+
+  &__list {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  &__card {
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: box-shadow 0.3s;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  &__card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    background: #fafafa;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  &__order-number {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #222;
+  }
+
+  &__status {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: #e3f2fd;
+    color: #1976d2;
+
+    &--pending {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+
+    &--confirmed {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    &--processing {
+      background: #e0f2f1;
+      color: #00796b;
+    }
+
+    &--shipped {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    &--delivered {
+      background: #e8f5e9;
+      color: #388e3c;
+    }
+
+    &--cancelled {
+      background: #ffebee;
+      color: #c62828;
+    }
+  }
+
+  &__card-body {
+    padding: 1.25rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  &__info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__label {
+    font-size: 0.875rem;
+    color: #999;
+    font-weight: 500;
+  }
+
+  &__value {
+    font-size: 1rem;
+    color: #222;
+    font-weight: 600;
+
+    &--amount {
+      color: v.color('primary');
+      font-size: 1.125rem;
+    }
+  }
+
+  &__card-footer {
+    padding: 1rem 1.25rem;
+    background: #fafafa;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  &__button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: v.color('primary');
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background: color.scale(v.color('primary'), $lightness: -20%);
+    }
+  }
+
+  &__pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  &__pagination-btn {
+    padding: 0.75rem 1.5rem;
+    background: v.color('primary');
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover:not(:disabled) {
+      background: color.scale(v.color('primary'), $lightness: -20%);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}

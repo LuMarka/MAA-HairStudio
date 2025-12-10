@@ -1,0 +1,79 @@
+<div class="orders-history">
+  <h2 class="orders-history__title">Historial de Compras</h2>
+
+  @if (isLoading()) {
+    <div class="orders-history__loading">
+      <p>Cargando tus órdenes...</p>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="orders-history__error">
+      <p>{{ errorMessage() }}</p>
+    </div>
+  }
+
+  @if (orders().length === 0 && !isLoading()) {
+    <div class="orders-history__empty">
+      <p>No tienes órdenes registradas</p>
+    </div>
+  }
+
+  @if (orders().length > 0) {
+    <div class="orders-history__list">
+      @for (order of orders(); track order.id) {
+        <div class="orders-history__card">
+          <div class="orders-history__card-header">
+            <h3 class="orders-history__order-number">{{ order.orderNumber }}</h3>
+            <span class="orders-history__status" [class]="'orders-history__status--' + order.status">
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </div>
+
+          <div class="orders-history__card-body">
+            <div class="orders-history__info-group">
+              <span class="orders-history__label">Fecha de Orden:</span>
+              <span class="orders-history__value">{{ order.createdAt | date: 'dd/MM/yyyy' }}</span>
+            </div>
+
+            <div class="orders-history__info-group">
+              <span class="orders-history__label">Total:</span>
+              <span class="orders-history__value orders-history__value--amount">${{ order.total }}</span>
+            </div>
+
+            <div class="orders-history__info-group">
+              <span class="orders-history__label">Tipo de Entrega:</span>
+              <span class="orders-history__value">{{ getDeliveryLabel(order.deliveryType) }}</span>
+            </div>
+
+            <div class="orders-history__info-group">
+              <span class="orders-history__label">Ítems:</span>
+              <span class="orders-history__value">{{ order.items.length }} producto(s)</span>
+            </div>
+          </div>
+
+          <div class="orders-history__card-footer">
+            <button
+              class="orders-history__button"
+              (click)="viewOrderDetails(order.id)"
+            >
+              Ver Detalles
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (hasNextPage()) {
+      <div class="orders-history__pagination">
+        <button
+          class="orders-history__pagination-btn"
+          (click)="onLoadMore()"
+          [disabled]="isLoading()"
+        >
+          Cargar más órdenes
+        </button>
+      </div>
+    }
+  }
+</div>

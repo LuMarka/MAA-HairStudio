@@ -1,0 +1,12 @@
+<div class="order-container">
+  @if (!selectedOrderId()) {
+    <!-- Mostrar historial de órdenes -->
+    <app-orders-history (onViewDetails)="onOrderSelected($event)" />
+  } @else {
+    <!-- Mostrar detalle de orden seleccionada -->
+    <app-order-detail
+      [orderId]="selectedOrderId()"
+      (onBack)="onBackToHistory()"
+    />
+  }
+</div>

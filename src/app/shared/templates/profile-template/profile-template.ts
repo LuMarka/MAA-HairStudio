@@ -232,6 +232,6 @@ export class ProfileTemplate {
   }
 
   verPedidos(): void {
-    this.router.navigate(['/profile/orders']);
+    this.router.navigate(['order-me']);
   }
 }
