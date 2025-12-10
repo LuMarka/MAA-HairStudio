@@ -30,7 +30,7 @@
     min-height: 60px;
 
     @include m.mobile {
-      flex-wrap: wrap;
+      //flex-wrap: wrap;
       justify-content: space-between;
     }
 
@@ -48,7 +48,8 @@
       max-width: calc(100% - 160px);
     } */
      @include m.mobile-only {
-      flex: 1 1 60%; // La barra ocupa el 100% del ancho del contenedor en móvil
+      flex: 1 1 70%;
+      min-width: 150px;
       max-width: 100%; // Aseguramos que nunca exceda el 100%
 
     }
@@ -62,10 +63,13 @@
     display: flex;
     align-items: center;
     gap: v.$spacing-xs;
-    margin-left: auto;
+    //margin-left: auto;
+    flex-shrink: 0; /* Asegura que este contenedor no se encoja */
 
     @media (max-width: 480px) {
       gap: 0.25rem;
+      flex-shrink: 0;
+      flex-grow: 0;
     }
 
     @include m.tablet-up {

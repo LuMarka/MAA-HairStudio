@@ -36,7 +36,7 @@
     transition: padding vars.$transitionDuration vars.$transitionEasing;
 
     @include mixins.mobile-only() {
-      padding: vars.$spacing-md vars.$spacing-md;
+      padding: vars.$spacing-md vars.$spacing-lg;
       min-height: 100px; // Smaller on mobile
     }
 
