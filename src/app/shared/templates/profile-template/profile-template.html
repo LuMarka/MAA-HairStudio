@@ -24,7 +24,7 @@
 
         <!-- Seleccionar dirección -->
         <div>
-          <label>Seleccionar Dirección</label>
+          <label>Ver más datos personales (click en editar)</label>
           <select id="profile-address-select" class="profile-template__input" formControlName="addressSelect" (change)="onAddressSelected($any($event.target).value)">
             <option value="">-- Selecciona una dirección --</option>
             @for (address of addresses(); track address.id) {
