@@ -12,26 +12,44 @@
 
     @if (userProfile()) {
       <form [formGroup]="form()" (ngSubmit)="saveChanges()" class="profile-template__form">
+        <!-- Datos de usuario -->
         <div>
           <label>Nombre</label>
-           <input id="profile-name" class="profile-template__input" type="text" formControlName="name" placeholder="Nombre Apellido" [disabled]="!isEditing()" />
+          <input id="profile-name" class="profile-template__input" type="text" formControlName="name" placeholder="Nombre Apellido" />
         </div>
         <div>
           <label>Email</label>
-           <input id="profile-email" class="profile-template__input" type="email" formControlName="email" placeholder="usuario@email.com" [disabled]="!isEditing()" />
+          <input id="profile-email" class="profile-template__input" type="email" formControlName="email" placeholder="usuario@email.com" />
         </div>
+
+        <!-- Seleccionar dirección -->
         <div>
-          <label>Teléfono</label>
-           <input id="profile-phone" class="profile-template__input" type="tel" formControlName="phone" placeholder="1234567890" [disabled]="!isEditing()" />
+          <label>Seleccionar Dirección</label>
+          <select id="profile-address-select" class="profile-template__input" formControlName="addressSelect" (change)="onAddressSelected($any($event.target).value)">
+            <option value="">-- Selecciona una dirección --</option>
+            @for (address of addresses(); track address.id) {
+              <option value="{{ address.id }}">
+                {{ address.recipientName }} - {{ address.streetAddress }}, {{ address.city }}
+              </option>
+            }
+          </select>
         </div>
-        <div>
-          <label>Dirección</label>
-           <input id="profile-address1" class="profile-template__input" type="text" formControlName="address" placeholder="Calle Falsa 123, Villa María, Córdoba, Argentina" [disabled]="!isEditing()" />
-        </div>
-        <div>
-          <label>Dirección 2</label>
-          <input formControlName="address2" [readonly]="!isEditing()" />
-        </div>
+
+        <!-- Datos de dirección (se rellenan automáticamente) -->
+        @if (selectedAddress()) {
+          <div>
+            <label>Teléfono</label>
+            <input id="profile-phone" class="profile-template__input" type="tel" formControlName="phone" placeholder="1234567890" />
+          </div>
+          <div>
+            <label>Dirección Completa</label>
+            <input id="profile-address1" class="profile-template__input" type="text" formControlName="address" placeholder="Calle Falsa 123, Villa María, Córdoba, Argentina" />
+          </div>
+          <div>
+            <label>Dirección 2 (solo lectura)</label>
+            <input id="profile-address2" class="profile-template__input" type="text" formControlName="address2" />
+          </div>
+        }
 
         @if (isEditing()) {
           <button type="submit" [disabled]="form().invalid || isLoading()">Guardar cambios</button>
@@ -40,7 +58,7 @@
           <button type="button" (click)="toggleEdit()">Editar perfil</button>
         }
         <button type="button" class="profile-template__delete-btn" (click)="deleteAccount()">Eliminar cuenta</button>
-        <button type="button" class="profile-template__action profile-template__action--secondary">Ver mis pedidos</button>
+        <button type="button" class="profile-template__action profile-template__action--secondary" (click)="verPedidos()">Ver mis pedidos</button>
       </form>
     }
   </div>

@@ -1,0 +1,12 @@
+.order {
+  &-container {
+    margin-top: 100px;
+    gap: 2rem;
+    padding: 1rem;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
+  }
+}

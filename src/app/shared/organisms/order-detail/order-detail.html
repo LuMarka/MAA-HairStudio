@@ -1,0 +1,139 @@
+<div class="order-detail">
+  @if (isLoading()) {
+    <div class="order-detail__loading">
+      <p>Cargando detalles de la orden...</p>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="order-detail__error">
+      <p>{{ errorMessage() }}</p>
+    </div>
+  }
+
+  @if (order()) {
+    <div class="order-detail__container">
+      <!-- Header -->
+      <div class="order-detail__header">
+        <div class="order-detail__header-info">
+          <h1 class="order-detail__title">{{ order()!.orderNumber }}</h1>
+          <span class="order-detail__status" [class]="'order-detail__status--' + order()!.status">
+            {{ getStatusLabel(order()!.status) }}
+          </span>
+        </div>
+        <div class="order-detail__header-date">
+          <span class="order-detail__label">Fecha de Orden</span>
+          <span class="order-detail__date">{{ order()!.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+
+      <!-- Información General -->
+      <div class="order-detail__section">
+        <h2 class="order-detail__section-title">Información General</h2>
+        <div class="order-detail__info-grid">
+          <div class="order-detail__info-item">
+            <span class="order-detail__label">Tipo de Entrega</span>
+            <span class="order-detail__value">{{ getDeliveryLabel(order()!.deliveryType) }}</span>
+          </div>
+          <div class="order-detail__info-item">
+            <span class="order-detail__label">Estado de Pago</span>
+            <span class="order-detail__value">{{ getPaymentStatusLabel(order()!.paymentStatus) }}</span>
+          </div>
+          <div class="order-detail__info-item">
+            <span class="order-detail__label">Total de Ítems</span>
+            <span class="order-detail__value">{{ order()!.items.length }}</span>
+          </div>
+          <div class="order-detail__info-item">
+            <span class="order-detail__label">Subtotal</span>
+            <span class="order-detail__value">{{ order()!.subtotal | currency }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ítems de la Orden -->
+      <div class="order-detail__section">
+        <h2 class="order-detail__section-title">Productos Ordenados</h2>
+        <div class="order-detail__items-list">
+          @for (item of order()!.items; track item.id) {
+            <div class="order-detail__item">
+              <div class="order-detail__item-info">
+                <h3 class="order-detail__item-name">{{ item.product.name }}</h3>
+                <p class="order-detail__item-sku">SKU: {{ item.product.sku }}</p>
+              </div>
+              <div class="order-detail__item-quantity">
+                <span>Cantidad: {{ item.quantity }}</span>
+              </div>
+              <div class="order-detail__item-price">
+                <span class="order-detail__item-unit">{{ item.unitPrice | currency }}</span>
+                <span class="order-detail__item-subtotal">{{ item.product.price | currency }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Información de Entrega -->
+      @if (order()!.deliveryType === 'delivery' && order()!.shippingAddress) {
+        <div class="order-detail__section">
+          <h2 class="order-detail__section-title">Dirección de Entrega</h2>
+          <div class="order-detail__address">
+            <p class="order-detail__address-name">{{ order()!.shippingAddress?.recipientName }}</p>
+            <p class="order-detail__address-street">{{ order()!.shippingAddress?.streetAddress }}</p>
+            <p class="order-detail__address-city">
+              {{ order()!.shippingAddress?.city }}, {{ order()!.shippingAddress?.province }}
+            </p>
+            <p class="order-detail__address-postal">{{ order()!.shippingAddress?.postalCode }}</p>
+            <p class="order-detail__address-phone">Tel: {{ order()!.shippingAddress?.phone }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Resumen de Costos -->
+      <div class="order-detail__section">
+        <h2 class="order-detail__section-title">Resumen de Costos</h2>
+        <div class="order-detail__summary">
+          <div class="order-detail__summary-row">
+            <span class="order-detail__summary-label">Subtotal</span>
+            <span class="order-detail__summary-value">{{ order()!.subtotal | currency }}</span>
+          </div>
+          @if (order()!.shippingCost) {
+            <div class="order-detail__summary-row">
+              <span class="order-detail__summary-label">Costo de Envío</span>
+              <span class="order-detail__summary-value">{{ order()!.shippingCost | currency }}</span>
+            </div>
+          }
+          @if (order()!.tax && order()!.tax !== '0') {
+            <div class="order-detail__summary-row">
+              <span class="order-detail__summary-label">Impuestos</span>
+              <span class="order-detail__summary-value">{{ order()!.tax | currency }}</span>
+            </div>
+          }
+          <div class="order-detail__summary-row order-detail__summary-row--total">
+            <span class="order-detail__summary-label">Total</span>
+            <span class="order-detail__summary-value">{{ order()!.total | currency }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notas -->
+      @if (order()!.notes) {
+        <div class="order-detail__section">
+          <h2 class="order-detail__section-title">Notas</h2>
+          <p class="order-detail__notes">{{ order()!.notes }}</p>
+        </div>
+      }
+
+      <!-- Acciones -->
+      <div class="order-detail__actions">
+        <button class="order-detail__button order-detail__button--secondary" (click)="goBack()">
+          Volver al Historial
+        </button>
+        <!-- @if (order()!.status === 'pending' && order()!.paymentStatus === 'pending') {
+          <button class="order-detail__button order-detail__button--primary" (click)="confirmOrder()">
+            Confirmar Orden
+          </button>
+        } -->
+      </div>
+    </div>
+  }
+</div>

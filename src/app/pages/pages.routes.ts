@@ -25,6 +25,7 @@ import { PurchaseOrder } from './purchase-order/purchase-order';
 import { adminGuard } from '../core/guards/admin.guard';
 import { guestGuard } from '../core/guards/guest.guard';
 import { authGuard } from '../core/guards/auth.guard';
+import { OrdersUser } from './orders-user/orders-user';
 
 export const pagesRoutes: Routes = [
   {
@@ -152,6 +153,16 @@ export const pagesRoutes: Routes = [
           title: "Checkout | MAA Hair Studio",
           description: "Proceso de pago.",
           keywords: "checkout, payment, purchase, pago, orden de compra",
+        }
+      },
+      {
+        path: 'order-me',
+        component: OrdersUser,
+        canActivate: [authGuard],
+        data: {
+          title: "Mis Pedidos | MAA Hair Studio",
+          description: "Historial de mis pedidos.",
+          keywords: "my orders, order history, purchase history, mis pedidos, historial de pedidos, historial de compras",
         }
       }
     ]
