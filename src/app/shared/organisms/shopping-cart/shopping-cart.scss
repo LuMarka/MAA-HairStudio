@@ -7,7 +7,7 @@
 .cart {
   padding: calc(v.$spacing-xl + 2rem) v.$spacing-md v.$spacing-lg;
   min-height: 60vh;
-  width: calc(100vw - 2vw);
+  width: calc(100vw - 3vw);
   margin: 0 auto;
 
   // Mobile first approach
@@ -536,23 +536,24 @@
   // Ocultar precio móvil en pantallas grandes (se muestra solo en móvil)
   &__price-mobile {
     display: none;
+
   }
 
   &__original-price {
-    font-size: 0.75rem;
+    font-size: 0.95rem;
     color: v.color('text-muted');
     text-decoration: line-through;
     margin-bottom: 0.125rem;
   }
 
   &__price {
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 600;
     color: v.color('text-dark');
     margin-bottom: 0.125rem;
 
     @include m.tablet {
-      font-size: 1rem;
+      font-size: 1.1rem;
     }
   }
 
@@ -740,6 +741,19 @@
       font-size: 0.9375rem;
     }
 
+    // Agregar etiqueta "Importe" en todos los tamaños
+    &::before {
+      content: 'Importe';
+      font-size: 0.7rem;
+      color: v.color('text-muted');
+      font-weight: 500;
+      margin-bottom: 0.125rem;
+
+      @include m.tablet {
+        font-size: 0.75rem;
+      }
+    }
+
     .cart-item__original-price {
       font-size: 0.7rem;
       text-decoration: line-through;
@@ -801,19 +815,14 @@
   }
 }
 
-// Pantallas muy pequeñas (móviles extremos)
-@media (max-width: 480px) {
+// Media query para pantallas entre 471px y 480px
+@media (min-width: 471px) and (max-width: 480px) {
   .cart {
     padding: v.$spacing-md v.$spacing-sm;
   }
 
   .cart-item {
     padding: v.$spacing-sm;
-
-    &__image {
-      width: 3rem;
-      height: 3rem;
-    }
 
     &__name {
       font-size: 0.95rem;
@@ -830,6 +839,137 @@
 
     &__subtotal {
       font-size: 0.9375rem;
+    }
+  }
+}
+
+// Media query para pantallas entre 481px y 530px - achicar contador
+@media (min-width: 481px) and (max-width: 530px) {
+  .cart-item {
+    &__quantity {
+      transform: scale(0.9);
+    }
+  }
+}
+
+// Media query específica para pantallas menores o iguales a 470px
+@media (max-width: 470px) {
+  .cart {
+    padding: v.$spacing-md v.$spacing-sm;
+  }
+
+  .cart-item {
+    padding: v.$spacing-sm;
+    min-height: 5.5rem;
+    gap: v.$spacing-md; // Aumentar gap para dar más espacio
+
+    &__image {
+      width: 6rem;
+      height: 6rem;
+    }
+
+    &__name {
+      font-size: 0.95rem;
+      line-height: 1.2;
+    }
+
+    &__brand {
+      font-size: 0.75rem;
+    }
+
+    &__info {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      margin-left: v.$spacing-xs;
+    }
+
+    &__details {
+      margin-bottom: v.$spacing-xs;
+      flex: 1;
+    }
+
+    &__controls {
+      margin-top: 0;
+      position: static;
+    }
+
+    // Usar bottom-row pero reorganizado - subtotal y total en misma fila
+    &__bottom-row {
+      display: grid;
+      grid-template-areas:
+        "subtotal total"
+        ". counter";
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 1.1rem;
+      align-items: start;
+      margin-top: v.$spacing-xs;
+    }
+
+    // Contador debajo a la derecha
+    &__quantity {
+      grid-area: counter;
+      margin: 0;
+      transform: scale(0.8);
+      justify-self: end;
+    }
+
+    // Wrapper para precios en el lado derecho
+    &__subtotal-wrapper {
+      grid-area: subtotal;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      margin: 0;
+
+      .cart-item__subtotal-label {
+        font-size: 0.8rem;
+        margin-bottom: 0.125rem;
+        color: v.color('text-muted');
+        font-weight: 500;
+      }
+
+      .cart-item__subtotal {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: v.color('primary');
+      }
+    }
+
+    // Precio unitario debajo del subtotal
+    &__price-mobile {
+      grid-area: total;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      font-size: 0.75rem;
+      margin: 0;
+
+      // Agregar etiqueta "Importe"
+      &::before {
+        content: 'Importe';
+        font-size: 0.7rem;
+        color: v.color('text-muted');
+        font-weight: 500;
+        margin-bottom: 0.125rem;
+      }
+
+      .cart-item__original-price {
+        font-size: 0.75rem;
+        margin-bottom: 0.125rem;
+      }
+
+      .cart-item__price {
+        font-size: 1rem;
+        font-weight: 600;
+        color: v.color('text-dark');
+      }
+    }
+
+    // Asegurar que price-mobile se muestre
+    .cart-item__price-mobile {
+      display: flex !important;
     }
   }
 }
