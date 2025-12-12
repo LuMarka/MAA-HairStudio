@@ -569,6 +569,17 @@
     flex-direction: column;
   }
 
+
+  // Pantallas entre 490px y 767px: 2 productos por fila
+  @media (min-width: 490px) and (max-width: 767px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: v.$spacing-md;
+
+    & .product-card {
+      max-width: 280px;
+    }
+  }
+
   @include m.tablet-up {
     grid-template-columns: repeat(3, 1fr);
     gap: v.$spacing-lg;
