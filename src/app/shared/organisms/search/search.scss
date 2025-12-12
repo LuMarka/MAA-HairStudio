@@ -112,6 +112,12 @@
       padding: v.$spacing-xs v.$spacing-sm;
       min-width: auto;
       height: auto;
+      position: relative; // Para el posicionamiento de la burbuja
+
+      @include m.mobile-only {
+        padding: v.$spacing-xs; // Padding normal, sin espacio extra
+        min-width: auto; // Sin ancho mínimo
+      }
 
       &:hover {
         background: rgba(v.color('primary'), 0.1);
@@ -128,6 +134,10 @@
     display: flex;
     align-items: center;
     gap: v.$spacing-xs;
+
+    @include m.mobile-only {
+      gap: 0; // Solo el ícono en móviles
+    }
   }
 
   &__user-icon {
@@ -146,7 +156,36 @@
     min-width: 0;
 
     @include m.mobile-only {
-      display: none;
+      // Burbuja flotante que no ocupa espacio horizontal - DEBAJO del ícono
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 8px;
+      background: v.color('primary');
+      color: v.color('white1');
+      padding: 8px 12px;
+      border-radius: 16px;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1500; // Más alto que navbar (999) y otros elementos
+      pointer-events: none;
+      flex-direction: column; // Mostrar saludo y nombre en columnas
+      gap: 1px;
+
+      // Flecha apuntando hacia arriba
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 5px solid v.color('primary');
+      }
     }
   }
 
@@ -158,6 +197,14 @@
     letter-spacing: 0.3px;
     font-family: v.$font-family-secondary;
     text-transform: uppercase;
+
+    @include m.mobile-only {
+      font-size: 0.625rem;
+      font-weight: 500;
+      color: v.color('white1'); // Texto blanco en la burbuja
+      margin-bottom: 2px;
+      letter-spacing: 0.2px;
+    }
   }
 
   &__user-name {
@@ -171,12 +218,22 @@
     text-transform: capitalize;
     font-family: v.$font-family-primary;
     max-width: 120px;
+
+    @include m.mobile-only {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: v.color('white1'); // Texto blanco en la burbuja
+      max-width: none; // Sin límite en la burbuja
+      overflow: visible;
+      text-overflow: unset;
+    }
   }
 
   &__user-wrapper {
     position: relative;
     display: flex;
     align-items: center;
+    z-index: 1500; // Asegurar que el contenedor también tenga z-index alto
   }
 
   &__user-menu {
