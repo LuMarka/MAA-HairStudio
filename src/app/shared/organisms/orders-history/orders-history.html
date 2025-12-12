@@ -24,6 +24,7 @@
       @for (order of orders(); track order.id) {
         <div class="orders-history__card">
           <div class="orders-history__card-header">
+            <span class="orders-history__label">Nro. de Orden:</span>
             <h3 class="orders-history__order-number">{{ order.orderNumber }}</h3>
 <!--             <span class="orders-history__status" [class]="'orders-history__status--' + order.status">
               {{ getStatusLabel(order.status) }}
