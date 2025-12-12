@@ -7,7 +7,7 @@
 .cart {
   padding: calc(v.$spacing-xl + 2rem) v.$spacing-md v.$spacing-lg;
   min-height: 60vh;
-  max-width: 1200px;
+  width: calc(100vw - 2vw);
   margin: 0 auto;
 
   // Mobile first approach
@@ -118,7 +118,7 @@
 
   &__summary {
     @include m.desktop {
-      width: 20rem;
+      width: 22rem;
       position: sticky;
       top: v.$spacing-lg;
     }
@@ -404,7 +404,7 @@
   }
 
   &__name {
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: v.color('text-dark');
     margin: 0 0 0.25rem 0;
@@ -632,7 +632,7 @@
   }
 
   &__line {
-    display: flex;
+    //display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: v.$spacing-sm;
@@ -816,12 +816,12 @@
     }
 
     &__name {
-      font-size: 0.8125rem;
+      font-size: 0.95rem;
       line-height: 1.2;
     }
 
     &__brand {
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
     }
 
     &__quantity {
