@@ -16,7 +16,8 @@
       <!-- Header -->
       <div class="order-detail__header">
         <div class="order-detail__header-info">
-          <h1 class="order-detail__title">{{ order()!.orderNumber }}</h1>
+          <span class="order-detail__label">Nro. de Orden
+          <h1 class="order-detail__title">{{ order()!.orderNumber }}</h1></span>
 <!--           <span class="order-detail__status" [class]="'order-detail__status--' + order()!.status">
             {{ getStatusLabel(order()!.status) }}
           </span> -->
@@ -35,10 +36,10 @@
             <span class="order-detail__label">Tipo de Entrega</span>
             <span class="order-detail__value">{{ getDeliveryLabel(order()!.deliveryType) }}</span>
           </div>
-          <div class="order-detail__info-item">
+<!--           <div class="order-detail__info-item">
             <span class="order-detail__label">Estado de Pago</span>
             <span class="order-detail__value">{{ getPaymentStatusLabel(order()!.paymentStatus) }}</span>
-          </div>
+          </div> -->
           <div class="order-detail__info-item">
             <span class="order-detail__label">Total de Ítems</span>
             <span class="order-detail__value">{{ order()!.items.length }}</span>
@@ -64,7 +65,7 @@
                 <span>Cantidad: {{ item.quantity }}</span>
               </div>
               <div class="order-detail__item-price">
-                <span class="order-detail__item-unit">{{ item.unitPrice | currency }}</span>
+                <!-- <span class="order-detail__item-unit">{{ item.unitPrice | currency }}</span> -->
                 <span class="order-detail__item-subtotal">{{ item.product.price | currency }}</span>
               </div>
             </div>
@@ -75,7 +76,7 @@
       <!-- Información de Entrega -->
       @if (order()!.deliveryType === 'delivery' && order()!.shippingAddress) {
         <div class="order-detail__section">
-          <h2 class="order-detail__section-title">Dirección de Entrega</h2>
+          <h2 class="order-detail__section-title">Datos de Entrega</h2>
           <div class="order-detail__address">
             <p class="order-detail__address-name">{{ order()!.shippingAddress?.recipientName }}</p>
             <p class="order-detail__address-street">{{ order()!.shippingAddress?.streetAddress }}</p>
