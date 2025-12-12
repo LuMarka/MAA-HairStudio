@@ -29,8 +29,12 @@
 .purchase-order__header {
   background: v.color('surface');
   border-bottom: 1px solid v.color('gray1');
-  padding: 2rem 0 3rem;
+  padding: 5rem 0 3rem;
   margin-bottom: 2rem;
+
+  @media (max-width: 767px) {
+    padding-top: 4rem;
+  }
 }
 
 .purchase-order__main-title {
@@ -39,9 +43,19 @@
   color: v.color('text-dark');
   text-align: center;
   margin: 0 0 0.5rem 0;
+  // Ensure title is visible
+  position: relative;
+  z-index: 10;
+  padding-top: 1rem;
 
   @include m.tablet {
     font-size: 2.5rem;
+    padding-top: 1.5rem;
+  }
+
+  @media (max-width: 767px) {
+    margin-top: 2rem;
+    padding-top: 2rem;
   }
 }
 
@@ -50,6 +64,13 @@
   color: v.color('text-muted');
   text-align: center;
   margin: 0 0 3rem 0;
+  position: relative;
+  z-index: 10;
+
+  @media (max-width: 767px) {
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+  }
 }
 
 // ==========================

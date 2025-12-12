@@ -86,6 +86,8 @@
   padding: 2rem;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   border: 1px solid v.color('gray1');
+  display: flex;
+  flex-direction: column;
 
   @include m.tablet {
     padding: 2.5rem;
@@ -225,6 +227,9 @@
   padding: 2rem 0 0;
   border-top: 2px solid v.color('gray1');
   margin-top: 2rem;
+  // Ensure form actions appear at the bottom
+  order: 9999;
+  flex-shrink: 0;
 
   @include m.mobile {
     flex-direction: column;
