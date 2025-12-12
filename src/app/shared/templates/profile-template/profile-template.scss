@@ -3,7 +3,7 @@
 
 // ========== BLOQUE: profile-template ==========
 .profile-template {
-  max-width: 480px;
+  max-width: calc(100vw - 15vw);
   margin: 7rem auto;
   background: #fff;
   border-radius: 1rem;
@@ -23,6 +23,7 @@
     font-weight: 700;
     margin-bottom: 1.5rem;
     text-align: center;
+    color: #728F70;
   }
 
   // ========== ELEMENTO: form ==========
@@ -40,33 +41,121 @@
 
     // ========== ELEMENTO: label ==========
     label {
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 500;
-      color: #222;
+      color: v.color('gray4');
+      line-height: 1.4;
+
+      @include m.tablet-up {
+        font-size: 0.95rem;
+      }
     }
 
     // ========== ELEMENTO: input ==========
     input {
       padding: 0.75rem 1rem;
-      border: 1px solid #e0e0e0;
+      border: 1px solid v.color('gray2');
       border-radius: 0.5rem;
-      font-size: 1rem;
-      background: #fafafa;
-      transition: border-color 0.2s, background-color 0.2s;
+      font-size: .9rem;
+      background: v.color('white1');
+      color: #333333;
+      line-height: 1.5;
+      width: 100%;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+      @include m.tablet-up {
+        font-size: 1rem;
+      }
+
+      @include m.desktop-up {
+        font-size: 1.1rem;
+      }
 
       &:focus {
         border-color: v.color('primary');
         outline: none;
+        box-shadow: 0 0 0 3px rgba(v.color('primary'), 0.1);
       }
 
       &:disabled {
-        background: #e8e8e8;
-        color: #999;
+        background: v.color('gray2');
+        color: #666666;
         cursor: not-allowed;
-        border-color: #d0d0d0;
+        border-color: v.color('gray2');
 
         &:focus {
-          border-color: #d0d0d0;
+          border-color: v.color('gray2');
+          box-shadow: none;
+        }
+      }
+    }
+
+    // ========== ELEMENTO: select ==========
+    &__input[type="text"],
+    &__input[type="email"],
+    &__input[type="tel"],
+    select.profile-template__input {
+      padding: 0.75rem 1rem;
+      border: 1px solid v.color('gray2');
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      background: v.color('white1');
+      color: #333333;
+      line-height: 1.5;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      width: 100%;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 1rem;
+      padding-right: 2.5rem;
+
+/*       @include m.tablet-up {
+        font-size: 1.1rem;
+      }
+
+      @include m.desktop-up {
+        font-size: 1.2rem;
+      } */
+
+      &:focus {
+        border-color: v.color('primary');
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(v.color('primary'), 0.1);
+      }
+
+      &:disabled {
+        background: v.color('gray2');
+        color: #666666;
+        cursor: not-allowed;
+        border-color: v.color('gray2');
+
+        &:focus {
+          border-color: v.color('gray2');
+          box-shadow: none;
+        }
+      }
+
+      // Estilos específicos para select
+      &[multiple] {
+        padding-right: 1rem;
+        background-image: none;
+      }
+
+      // Estilos para las opciones
+      option {
+        padding: 0.5rem;
+        background: v.color('white1');
+        color: #333333;
+
+        &:checked {
+          background: v.color('primary');
+          color: v.color('white1');
+        }
+
+        &:hover {
+          background: v.color('bg-light');
         }
       }
     }
