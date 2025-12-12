@@ -42,8 +42,13 @@
 
   &__label {
     font-size: 0.9rem;
-    color: v.color('text-dark');
+    color: v.color('gray4');
     font-weight: 500;
+    line-height: 1.4;
+
+    @include m.tablet-up {
+      font-size: 0.95rem;
+    }
   }
 
   &__input {
@@ -52,12 +57,30 @@
     border: 1px solid v.color('gray2');
     border-radius: 8px;
     width: 100%;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    background: v.color('white1');
+    color: v.color('gray4');
+    line-height: 1.5;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+    @include m.tablet-up {
+      font-size: 1.1rem;
+    }
+
+    @include m.desktop-up {
+      font-size: 1.2rem;
+    }
 
     &:focus {
       outline: none;
       border-color: v.color('primary');
-      box-shadow: 0 0 0 2px rgba(v.color('primary'), 0.1);
+      box-shadow: 0 0 0 3px rgba(v.color('primary'), 0.1);
+    }
+
+    &:disabled {
+      background: v.color('gray2');
+      color: v.color('gray3');
+      cursor: not-allowed;
+      border-color: v.color('gray2');
     }
 
     &--error {
