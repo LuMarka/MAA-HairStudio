@@ -189,7 +189,6 @@ export class FormPersonalData {
     // Effect: Cargar direcciones cuando es delivery y usuario autenticado
     effect(() => {
       if (this.isDelivery() && this.isAuthenticated()) {
-        console.log('🔄 [FormPersonalData] Iniciando carga de direcciones...');
         this.addressService.getAddresses()
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
@@ -288,17 +287,6 @@ export class FormPersonalData {
       const addresses = this.savedAddresses();
       const isLoading = this.isLoadingAddresses();
       const shouldShow = !isLoading && addresses.length > 0;
-
-      console.log('📊 [FormPersonalData DEBUG - Direcciones]', {
-        savedAddressesLength: addresses.length,
-        isLoading,
-        shouldShowSelector: shouldShow,
-        addressesData: addresses.map(a => ({
-          id: a.id,
-          city: a.city,
-          province: a.province
-        }))
-      });
     });
   }
 
@@ -543,7 +531,6 @@ export class FormPersonalData {
           this.continue.emit();
         },
         error: (error) => {
-          console.error('Error al guardar dirección:', error);
           const continueAnyway = confirm(
             'No se pudo guardar la dirección. ¿Deseas continuar de todos modos?'
           );
