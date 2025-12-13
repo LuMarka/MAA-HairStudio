@@ -1,5 +1,6 @@
-import { Component, ChangeDetectionStrategy, input, output, computed, signal, effect, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, signal, effect, inject, DestroyRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
 import { AddressService } from '../../../core/services/address.service';
@@ -55,6 +56,7 @@ export class FormPersonalData {
   private readonly cartService = inject(CartService);
   private readonly addressService = inject(AddressService);
   private readonly orderService = inject(OrderService);
+  private readonly destroyRef = inject(DestroyRef);
 
   // ========== INPUTS ==========
   readonly deliveryOption = input.required<DeliveryType>();
@@ -154,16 +156,25 @@ export class FormPersonalData {
   });
 
   // ========== FORM ==========
-  readonly orderForm: FormGroup = this.fb.group({
-    firstName: [this.authService.currentUser()?.name || '', [Validators.required, Validators.minLength(2)]],
-    email: [this.authService.currentUser()?.email || '', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required, Validators.pattern(/^\d+$/), Validators.minLength(10)]],
-    province: [''],
-    address: [''],
-    city: [''],
-    postalCode: ['', [Validators.pattern(/^\d+$/)]],
-    deliveryInstructions: ['']
-  });
+  readonly orderForm: FormGroup = this.createForm();
+
+  private createForm(): FormGroup {
+    return this.fb.group({
+      firstName: [this.authService.currentUser()?.name || '', [Validators.required, Validators.minLength(2)]],
+      email: [this.authService.currentUser()?.email || '', [Validators.required, Validators.email]],
+      // ✅ Patrón actualizado para aceptar: +, espacios, guiones, paréntesis y dígitos
+      phone: ['', [
+        Validators.required,
+        Validators.pattern(/^(\+\d{1,3})?[\s\-()]*\d{6,15}[\s\-()]*\d*$/),
+        Validators.minLength(8)
+      ]],
+      province: [''],
+      address: [''],
+      city: [''],
+      postalCode: ['', [Validators.pattern(/^\d+$/)]],
+      deliveryInstructions: ['']
+    });
+  }
 
   // ========== CONSTRUCTOR ==========
   constructor() {
@@ -172,22 +183,26 @@ export class FormPersonalData {
       const checkoutState = this.orderService.checkoutState();
       if (checkoutState?.selectedAddressId && this.isDelivery()) {
         this.selectedAddressId.set(checkoutState.selectedAddressId);
-        console.log('✅ AddressId cargado desde CheckoutState:', checkoutState.selectedAddressId);
       }
     });
 
     // Effect: Cargar direcciones cuando es delivery y usuario autenticado
     effect(() => {
       if (this.isDelivery() && this.isAuthenticated()) {
-        console.log('📍 Cargando direcciones guardadas...');
-        this.addressService.getAddresses().subscribe({
-          next: () => {
-            console.log('✅ Direcciones cargadas:', this.savedAddresses().length);
-          },
-          error: (error) => {
-            console.error('❌ Error cargando direcciones:', error);
-          }
-        });
+        console.log('🔄 [FormPersonalData] Iniciando carga de direcciones...');
+        this.addressService.getAddresses()
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: (response) => {
+              console.log('✅ [FormPersonalData] Direcciones cargadas exitosamente:', {
+                total: response.meta.total,
+                addresses: response.data
+              });
+            },
+            error: (error) => {
+              console.error('❌ [FormPersonalData] Error cargando direcciones:', error);
+            }
+          });
       }
     });
 
@@ -195,15 +210,34 @@ export class FormPersonalData {
     effect(() => {
       const selectedAddr = this.selectedAddress();
       if (selectedAddr) {
-        this.orderForm.patchValue({
-          phone: selectedAddr.phone || '',
-          province: selectedAddr.province,
-          address: selectedAddr.streetAddress,
-          city: selectedAddr.city,
-          postalCode: selectedAddr.postalCode,
-          deliveryInstructions: selectedAddr.deliveryInstructions || ''
-        }, { emitEvent: false });
-        console.log('📝 Formulario prellenado con dirección:', selectedAddr.id);
+        setTimeout(() => {
+          this.orderForm.patchValue({
+            phone: selectedAddr.phone || '',
+            province: selectedAddr.province || '',
+            address: selectedAddr.streetAddress || '',
+            city: selectedAddr.city || '',
+            postalCode: selectedAddr.postalCode || '',
+            deliveryInstructions: selectedAddr.deliveryInstructions || ''
+          }, { emitEvent: false });
+
+          // Actualizar validez de cada control
+          const phoneControl = this.orderForm.get('phone');
+          if (phoneControl) {
+            phoneControl.markAsTouched();
+            phoneControl.updateValueAndValidity({ emitEvent: false });
+          }
+
+          // Actualizar todos los controles de dirección
+          ['address', 'city', 'province', 'postalCode'].forEach(controlName => {
+            const control = this.orderForm.get(controlName);
+            if (control) {
+              control.markAsTouched();
+              control.updateValueAndValidity({ emitEvent: false });
+            }
+          });
+
+          this.checkFormValidity();
+        }, 0);
       } else {
         if (this.isDelivery()) {
           this.clearAddressFields();
@@ -235,14 +269,36 @@ export class FormPersonalData {
       }
     });
 
-    // Subscribe: Cambios del formulario
-    this.orderForm.valueChanges.subscribe(() => {
-      this.checkFormValidity();
-      this.emitFormData();
-    });
+    // Subscribe: Cambios del formulario con cleanup automático
+    this.orderForm.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.checkFormValidity();
+        this.emitFormData();
+      });
 
-    this.orderForm.statusChanges.subscribe(() => {
-      this.checkFormValidity();
+    this.orderForm.statusChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.checkFormValidity();
+      });
+
+    // Effect: DEBUG - Monitorear cambios en direcciones
+    effect(() => {
+      const addresses = this.savedAddresses();
+      const isLoading = this.isLoadingAddresses();
+      const shouldShow = !isLoading && addresses.length > 0;
+
+      console.log('📊 [FormPersonalData DEBUG - Direcciones]', {
+        savedAddressesLength: addresses.length,
+        isLoading,
+        shouldShowSelector: shouldShow,
+        addressesData: addresses.map(a => ({
+          id: a.id,
+          city: a.city,
+          province: a.province
+        }))
+      });
     });
   }
 
@@ -260,22 +316,16 @@ export class FormPersonalData {
       this.clearAddressFields();
       this.saveNewAddress.set(false);
 
-      // Limpiar addressId del CheckoutState
       if (this.isDelivery()) {
         this.orderService.updateCheckoutAddress('');
       }
-
-      console.log('📍 Sin dirección seleccionada');
     } else {
       this.selectedAddressId.set(addressId);
       this.saveNewAddress.set(false);
 
-      // Actualizar CheckoutState con la dirección seleccionada
       if (this.isDelivery()) {
         this.orderService.updateCheckoutAddress(addressId);
       }
-
-      console.log('📍 Dirección seleccionada y guardada en CheckoutState:', addressId);
     }
 
     this.checkFormValidity();
@@ -284,7 +334,6 @@ export class FormPersonalData {
   onSaveAddressChange(event: Event): void {
     const checkbox = event.target as HTMLInputElement;
     this.saveNewAddress.set(checkbox.checked);
-    console.log('💾 Guardar dirección:', checkbox.checked);
   }
 
   /**
@@ -302,27 +351,28 @@ export class FormPersonalData {
 
   // ========== MÉTODOS PRIVADOS - VALIDACIÓN ==========
   private updateFormValidators(deliveryOption: DeliveryType): void {
-    const addressControl = this.orderForm.get('address');
-    const provinceControl = this.orderForm.get('province');
-    const cityControl = this.orderForm.get('city');
-    const postalCodeControl = this.orderForm.get('postalCode');
+    const validators = {
+      delivery: {
+        address: [Validators.required, Validators.minLength(5)],
+        province: [Validators.required, Validators.minLength(2)],
+        city: [Validators.required, Validators.minLength(2)],
+        postalCode: [Validators.required, Validators.minLength(4)]
+      },
+      pickup: {
+        address: [],
+        province: [],
+        city: [],
+        postalCode: []
+      }
+    };
 
-    if (deliveryOption === 'delivery') {
-      addressControl?.setValidators([Validators.required, Validators.minLength(5)]);
-      provinceControl?.setValidators([Validators.required, Validators.minLength(2)]);
-      cityControl?.setValidators([Validators.required, Validators.minLength(2)]);
-      postalCodeControl?.setValidators([Validators.required, Validators.minLength(4)]);
-    } else {
-      addressControl?.clearValidators();
-      provinceControl?.clearValidators();
-      cityControl?.clearValidators();
-      postalCodeControl?.clearValidators();
-    }
+    const controlValidators = validators[deliveryOption];
 
-    addressControl?.updateValueAndValidity({ emitEvent: false });
-    provinceControl?.updateValueAndValidity({ emitEvent: false });
-    cityControl?.updateValueAndValidity({ emitEvent: false });
-    postalCodeControl?.updateValueAndValidity({ emitEvent: false });
+    ['address', 'province', 'city', 'postalCode'].forEach(controlName => {
+      const control = this.orderForm.get(controlName);
+      control?.setValidators(controlValidators[controlName as keyof typeof controlValidators] || []);
+      control?.updateValueAndValidity({ emitEvent: false });
+    });
   }
 
   private clearAddressFields(): void {
@@ -450,6 +500,7 @@ export class FormPersonalData {
     if (this.saveNewAddress() && this.isManualAddressComplete() && !this.selectedAddressId()) {
       this.saveAddressAndContinue();
     } else {
+      this.emitFormData();
       this.continue.emit();
     }
   }
@@ -459,7 +510,8 @@ export class FormPersonalData {
     const currentUser = this.authService.currentUser();
 
     if (!currentUser) {
-      console.error('❌ No hay usuario autenticado');
+      console.error('No hay usuario autenticado');
+      this.emitFormData();
       this.continue.emit();
       return;
     }
@@ -477,37 +529,32 @@ export class FormPersonalData {
       isDefault: !this.hasAddresses()
     };
 
-    console.log('💾 Guardando nueva dirección...', createAddressDto);
+    this.addressService.createAddress(createAddressDto)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          const newAddressId = response.data.id;
+          this.selectedAddressId.set(newAddressId);
 
-    this.addressService.createAddress(createAddressDto).subscribe({
-      next: (response) => {
-        const newAddressId = response.data.id;
-        console.log('✅ Dirección guardada exitosamente:', newAddressId);
-
-        // Establecer dirección en el componente
-        this.selectedAddressId.set(newAddressId);
-
-        // Actualizar CheckoutState con la nueva dirección
-        if (this.isDelivery()) {
-          this.orderService.updateCheckoutAddress(newAddressId);
-          console.log('✅ Dirección guardada en CheckoutState:', newAddressId);
-        }
-
-        this.continue.emit();
-      },
-      error: (error) => {
-        console.error('❌ Error al guardar dirección:', error);
-        const continueAnyway = confirm(
-          'No se pudo guardar la dirección. ¿Deseas continuar de todos modos?'
-        );
-        if (continueAnyway) {
+          if (this.isDelivery()) {
+            this.orderService.updateCheckoutAddress(newAddressId);
+          }
+          this.emitFormData();
           this.continue.emit();
+        },
+        error: (error) => {
+          console.error('Error al guardar dirección:', error);
+          const continueAnyway = confirm(
+            'No se pudo guardar la dirección. ¿Deseas continuar de todos modos?'
+          );
+          if (continueAnyway) {
+            this.continue.emit();
+          }
+        },
+        complete: () => {
+          this.isSavingAddress.set(false);
         }
-      },
-      complete: () => {
-        this.isSavingAddress.set(false);
-      }
-    });
+      });
   }
 
   // ========== MÉTODOS PÚBLICOS - API ==========
