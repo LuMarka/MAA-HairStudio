@@ -8,7 +8,7 @@
 // Contenedor principal
 .purchase-order__content {
   //padding-bottom: 4rem;
-  padding:calc(32px + 4rem) 2rem 2rem 2rem;
+  padding:calc(32px + 1rem) 2rem 2rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -19,7 +19,7 @@
   grid-template-columns: 1fr;
   gap: 2rem;
 
-  @include m.desktop {
+  @include m.tablet-up {
     grid-template-columns: 2fr 1fr;
     gap: 3rem;
   }
@@ -75,6 +75,7 @@
   &__text {
     white-space: nowrap;
   }
+
 }
 
 // ==========================
@@ -227,13 +228,37 @@
   padding: 2rem 0 0;
   border-top: 2px solid v.color('gray1');
   margin-top: 2rem;
-  // Ensure form actions appear at the bottom
   order: 9999;
   flex-shrink: 0;
 
-  @include m.mobile {
+  // Ocultar en todas las pantallas con layout de una columna (≤1023px)
+  @media (max-width: 1023px) {
+    display: none;
+  }
+
+  @include m.tablet {
+    padding-top: 2.5rem;
+    margin-top: 2.5rem;
+  }
+}
+
+// Botones móviles - Solo visibles en pantallas con layout de una columna (≤1023px)
+.form-actions--mobile {
+  display: none;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 0;
+  border-top: 2px solid v.color('gray1');
+  margin-top: 2rem;
+  grid-column: 1 / -1;
+
+  // Mostrar en todas las pantallas con layout de una columna
+  @media (max-width: 1023px) {
+    display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    margin-top: 1.5rem;
 
     .btn {
       width: 100%;
@@ -241,9 +266,16 @@
     }
   }
 
-  @include m.tablet {
-    padding-top: 2.5rem;
-    margin-top: 2.5rem;
+  // En pantallas de 489px en adelante (pero manteniendo layout de una columna): botones en fila
+  @media (min-width: 489px) and (max-width: 1023px) {
+    flex-direction: row;
+    gap: 1rem;
+
+    .btn {
+      width: 50;
+      flex: 1;
+      justify-content: center;
+    }
   }
 }
 
@@ -359,9 +391,17 @@
 // ==========================
 .order-sidebar {
   @include m.desktop {
-    position: sticky;
-    top: 2rem;
-    height: fit-content;
+      position: sticky;
+      top: 2rem;
+      height: fit-content;
+    }
+
+    @include m.tablet {
+      margin-top: 7.5rem;
+    }
+
+  @media (min-width: 1400px) {
+    margin-top: 4.5rem;
   }
 }
 
@@ -541,19 +581,34 @@
 // ==========================
 // RESPONSIVE ADJUSTMENTS
 // ==========================
+.delivery-badge{
+
+   @media (max-width: 488px) {
+    width: 100%;
+    justify-content: center;
+
+  }
+    // Hacer más angosto en pantallas de 489px a 767px (solo ancho, mantener alto y legibilidad)
+  @media (min-width: 489px) and (max-width: 767px) {
+    padding: 0.5rem 1rem; // Reducir padding horizontal significativamente
+    gap: 0.25rem; // Reducir gap entre ícono y texto para compactar
+  }
+}
+
+
 @include m.mobile {
   .form-header {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .delivery-badge {
-    width: 100%;
-    justify-content: center;
-  }
 
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .form-title {
+    font-size: 1.3rem;
   }
 }
 

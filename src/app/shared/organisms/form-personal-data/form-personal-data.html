@@ -354,6 +354,19 @@
         [totalWithIva]="totalWithIva()" [selectedDeliveryOption]="selectedDeliveryOption()" [isFormValid]="formValid()"
         [validationMessage]="validationMessage()" [showValidation]="true" />
       </aside>
+
+      <!-- Botones de navegación duplicados para móvil - Solo visibles en móvil/tablet -->
+      <div class="form-actions form-actions--mobile">
+        <button type="button" class="btn btn--secondary" (click)="onEditCart()">
+          <span class="btn__icon">←</span>
+          <span class="btn__text">Editar Carrito</span>
+        </button>
+
+        <button type="button" class="btn btn--primary" (click)="onNextStep()">
+          <span class="btn__text">Continuar</span>
+          <span class="btn__icon">→</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
