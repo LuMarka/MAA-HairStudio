@@ -403,6 +403,8 @@ export class FormPersonalData {
   private emitFormData(): void {
     if (this.formValid()) {
       const formValue = this.orderForm.value;
+      const selectedAddr = this.selectedAddress();
+
       const data: FormData = {
         firstName: formValue.firstName || '',
         email: formValue.email || '',
@@ -411,18 +413,38 @@ export class FormPersonalData {
       };
 
       if (this.isDelivery()) {
-        const selectedAddr = this.selectedAddress();
-
         if (selectedAddr) {
+          // ✅ Si hay dirección seleccionada, emitir addressId Y los datos de dirección del formulario
           data.addressId = selectedAddr.id;
+          data.address = formValue.address || selectedAddr.streetAddress || undefined;
+          data.city = formValue.city || selectedAddr.city || undefined;
+          data.province = formValue.province || selectedAddr.province || undefined;
+          data.postalCode = formValue.postalCode || selectedAddr.postalCode || undefined;
+
+          console.log('📨 [emitFormData] Emitiendo dirección SELECCIONADA:', {
+            addressId: data.addressId,
+            address: data.address,
+            city: data.city,
+            province: data.province,
+            postalCode: data.postalCode
+          });
         } else {
+          // Si NO hay dirección seleccionada, emitir campos manuales
           data.address = formValue.address || undefined;
           data.city = formValue.city || undefined;
-          data.postalCode = formValue.postalCode || undefined;
           data.province = formValue.province || undefined;
+          data.postalCode = formValue.postalCode || undefined;
+
+          console.log('📨 [emitFormData] Emitiendo dirección MANUAL:', {
+            address: data.address,
+            city: data.city,
+            province: data.province,
+            postalCode: data.postalCode
+          });
         }
       }
 
+      console.log('📨 [emitFormData] Datos finales a emitir:', data);
       this.formDataChange.emit(data);
     }
   }

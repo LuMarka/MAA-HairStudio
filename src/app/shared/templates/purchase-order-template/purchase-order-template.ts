@@ -24,6 +24,7 @@ interface OrderData {
   email: string;
   phone: string;
   deliveryOption: DeliveryType;
+  addressId?: string;  // ← Agregar
   address?: string;
   city?: string;
   province?: string;
@@ -98,9 +99,7 @@ export class PurchaseOrderTemplate {
       const checkoutState = this.checkoutState();
       if (checkoutState?.deliveryType) {
         this.selectedDeliveryOption.set(checkoutState.deliveryType);
-        console.log('📦 [PurchaseOrder] Tipo de entrega:', checkoutState.deliveryType);
       } else {
-        console.warn('⚠️ [PurchaseOrder] No hay checkout state, usando pickup por defecto');
         this.selectedDeliveryOption.set('pickup');
       }
     });
@@ -129,6 +128,7 @@ export class PurchaseOrderTemplate {
 
   // ========== STEP 1: FORM PERSONAL DATA HANDLERS ==========
   onPersonalFormDataChange(data: Omit<OrderData, 'paymentMethod' | 'deliveryOption'>): void {
+
     this.personalFormData.set(data);
 
     this.orderData.set({
@@ -197,7 +197,6 @@ export class PurchaseOrderTemplate {
 
     // Si es delivery Y hay addressId guardado
     if (deliveryType === 'delivery' && addressId) {
-      console.log('📦 [PurchaseOrder] Creando orden con addressId:', addressId);
       return {
         ...baseDto,
         shippingAddressId: addressId
@@ -206,7 +205,6 @@ export class PurchaseOrderTemplate {
 
     // Si es delivery sin addressId, cambiar a pickup
     if (deliveryType === 'delivery' && !addressId) {
-      console.log('📦 [PurchaseOrder] Sin addressId, cambiando a pickup');
       return {
       ...baseDto,
       deliveryType: 'pickup'
@@ -214,7 +212,6 @@ export class PurchaseOrderTemplate {
     }
 
     // Si es pickup
-    console.log('🏪 [PurchaseOrder] Creando orden pickup');
     return baseDto;
   }
 
