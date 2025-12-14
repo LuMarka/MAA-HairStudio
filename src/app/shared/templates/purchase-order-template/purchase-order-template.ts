@@ -221,6 +221,30 @@ export class PurchaseOrderTemplate {
     const cartItems = this.cartItems();
     const total = this.totalWithIva();
 
+    // ✅ LOG: Mostrar items del carrito
+    console.log('🛒 [PurchaseOrder] Items en carrito:', {
+      count: cartItems.length,
+      items: cartItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        brand: item.brand,
+        quantity: item.quantity,
+        price: item.price,
+        subtotal: item.price * item.quantity
+      }))
+    });
+
+    // ✅ LOG: Mostrar datos de la orden
+    console.log('📋 [PurchaseOrder] Datos de orden:', {
+      firstName: orderData?.firstName,
+      email: orderData?.email,
+      phone: orderData?.phone,
+      deliveryOption: orderData?.deliveryOption,
+      addressId: orderData?.addressId,
+      paymentMethod,
+      total
+    });
+
     // Validaciones
     if (!orderData || !paymentMethod) {
       console.error('❌ [PurchaseOrder] Datos incompletos');

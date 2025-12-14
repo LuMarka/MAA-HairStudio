@@ -421,30 +421,14 @@ export class FormPersonalData {
           data.province = formValue.province || selectedAddr.province || undefined;
           data.postalCode = formValue.postalCode || selectedAddr.postalCode || undefined;
 
-          console.log('📨 [emitFormData] Emitiendo dirección SELECCIONADA:', {
-            addressId: data.addressId,
-            address: data.address,
-            city: data.city,
-            province: data.province,
-            postalCode: data.postalCode
-          });
         } else {
           // Si NO hay dirección seleccionada, emitir campos manuales
           data.address = formValue.address || undefined;
           data.city = formValue.city || undefined;
           data.province = formValue.province || undefined;
           data.postalCode = formValue.postalCode || undefined;
-
-          console.log('📨 [emitFormData] Emitiendo dirección MANUAL:', {
-            address: data.address,
-            city: data.city,
-            province: data.province,
-            postalCode: data.postalCode
-          });
         }
       }
-
-      console.log('📨 [emitFormData] Datos finales a emitir:', data);
       this.formDataChange.emit(data);
     }
   }
