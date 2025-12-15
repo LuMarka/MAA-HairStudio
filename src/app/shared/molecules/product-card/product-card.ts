@@ -68,12 +68,10 @@ export class ProductCard {
   // ========== MÉTODOS - WISHLIST ==========
 
   onToggleWishlist(): void {
-    console.log('❤️ ProductCard - Toggle Wishlist:', this.product().id);
     this.toggleWishlist.emit(this.product().id);
   }
 
   onRemoveFromWishlist(): void {
-    console.log('🗑️ ProductCard - Remove from Wishlist:', this.product().id);
     this.removeFromWishlist.emit(this.product().id);
   }
 
@@ -85,12 +83,10 @@ export class ProductCard {
       return;
     }
 
-    console.log('🛒 ProductCard - Add to Cart:', this.product().id);
     this.addToCart.emit(this.product().id);
   }
 
   onMoveToCart(): void {
-    console.log('🔄 ProductCard - Move to Cart:', this.product().id);
     this.moveToCart.emit({
       productId: this.product().id,
       quantity: 1
@@ -100,25 +96,18 @@ export class ProductCard {
   // ========== MÉTODOS - CONSULTAR DISPONIBILIDAD ==========
 
   onConsultAvailability(): void {
-    console.log('💬 ProductCard - Consult Availability:', this.product().id);
     const message = this.generateWhatsAppMessage();
-    console.log('📝 Mensaje generado:', message);
     const phoneNumber = '5493534015655';
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    console.log('🔗 URL de WhatsApp:', whatsappUrl);
     window.open(whatsappUrl, '_blank');
     this.consultAvailability.emit(this.product().id);
   }
 
   private generateWhatsAppMessage(): string {
     const product = this.product();
-    console.log('📦 Producto capturado:', product);
-    console.log('📦 Nombre:', product.name);
-    console.log('📦 Marca:', product.brand);
     const productName = product.name || 'Producto sin nombre';
     const productBrand = product.brand || 'Marca no disponible';
     const message = `Hola, quisiera consultar sobre la disponibilidad del producto: ${productName}. Marca: ${productBrand}`;
-    console.log('✅ Mensaje final:', message);
     return message;
   }
 

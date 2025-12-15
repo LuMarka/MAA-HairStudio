@@ -191,12 +191,6 @@ export class OrderService {
 
     this._checkoutState.set(checkoutState);
     this.saveCheckoutStateToStorage(checkoutState);
-
-    console.log('✅ Checkout iniciado:', {
-      deliveryType,
-      hasAddress: !!addressId,
-      timestamp: new Date(checkoutState.timestamp).toISOString(),
-    });
   }
 
   /**
@@ -231,8 +225,6 @@ export class OrderService {
 
     this._checkoutState.set(updatedState);
     this.saveCheckoutStateToStorage(updatedState);
-
-    console.log('✅ Dirección actualizada en checkout:', addressId);
   }
 
   /**
@@ -395,11 +387,6 @@ export class OrderService {
           this._totalOrders.set(response.meta.total);
           this._currentPage.set(response.meta.page);
           this._totalPages.set(response.meta.totalPages);
-          console.log('✅ Órdenes cargadas:', {
-            total: response.meta.total,
-            page: response.meta.page,
-            items: response.data.length,
-          });
         }),
         catchError((error: HttpErrorResponse) => this.handleError(error, 'obtener mis órdenes')),
         finalize(() => this._isLoading.set(false))
@@ -425,12 +412,10 @@ export class OrderService {
     this._errorMessage.set(null);
 
     const url = `${this.apiUrl}/${orderId}`;
-    console.log('📡 Llamando GET a:', url);
 
     return this.http.get<OrderData>(url).pipe(
       tap((order) => {
         this._currentOrder$.next(order);
-        console.log('✅ Orden obtenida:', order.orderNumber);
       }),
       catchError((error: HttpErrorResponse) => {
         console.error('❌ Error HTTP:', {
@@ -766,8 +751,6 @@ export class OrderService {
         this.removeCheckoutStateFromStorage();
         return null;
       }
-
-      console.log('✅ Checkout state cargado desde storage');
       return state;
     } catch (error) {
       console.error('❌ Error al cargar estado de checkout:', error);
@@ -785,7 +768,6 @@ export class OrderService {
 
     try {
       localStorage.setItem(this.CHECKOUT_STATE_KEY, JSON.stringify(state));
-      console.log('💾 Checkout state guardado en storage');
     } catch (error) {
       console.error('❌ Error al guardar estado de checkout:', error);
     }

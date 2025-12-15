@@ -13,9 +13,7 @@ export class OrdersUserTemplate {
   readonly selectedOrderId = signal<string | null>(null);
 
   onOrderSelected(orderId: string): void {
-    console.log('📥 onOrderSelected recibido:', orderId);
     this.selectedOrderId.set(orderId);
-    console.log('✅ selectedOrderId actualizado a:', this.selectedOrderId());
   }
 
   onBackToHistory(): void {

@@ -25,10 +25,10 @@ import {
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-  
+
   // URLs de la API
   private readonly authUrl = `${environment.apiUrl}auth`;
-  
+
   // Claves para almacenamiento seguro
   private readonly TOKEN_KEY = 'maa_access_token';
   private readonly USER_KEY = 'maa_user_data';
@@ -38,7 +38,7 @@ export class AuthService {
   private readonly currentUserSignal = signal<User | null>(null);
   private readonly isLoadingSignal = signal(false);
   private readonly errorSignal = signal<string | null>(null);
-  
+
   // Timer para auto-renovación de token
   private refreshTimer?: ReturnType<typeof setTimeout>;
 
@@ -65,27 +65,12 @@ export class AuthService {
     const token = this.getToken();
     const tokenExpiry = this.getTokenExpiry();
 
-    console.log('AuthService - Inicializando:', { 
-      hasUser: !!storedUser, 
-      hasToken: !!token, 
-      hasExpiry: !!tokenExpiry,
-      isTokenValid: tokenExpiry ? this.isTokenValid(tokenExpiry) : false,
-      userRole: storedUser?.role
-    });
-
     if (storedUser && token && tokenExpiry && this.isTokenValid(tokenExpiry)) {
       // Restaurar estado válido desde localStorage
       this.currentUserSignal.set(storedUser);
       this.scheduleTokenRefresh(tokenExpiry);
-      
-      console.log('AuthService - Estado restaurado:', {
-        email: storedUser.email,
-        name: storedUser.name,
-        role: storedUser.role
-      });
     } else {
       // Limpiar datos inválidos o expirados
-      console.log('AuthService - Limpiando datos inválidos');
       this.clearAuthData();
     }
   }
@@ -114,9 +99,8 @@ export class AuthService {
 
     return this.http.post<LoginResponse>(`${this.authUrl}/login`, data).pipe(
       tap(response => {
-        console.log('Login exitoso:', response.user.email, 'Rol:', response.user.role, response.user.name);
         this.setAuthData(response);
-        
+
         // Navegar según el rol
         const redirectPath = response.user.role === 'admin' ? '/admin' : '/';
         this.router.navigate([redirectPath]);
@@ -205,7 +189,7 @@ export class AuthService {
    */
   logout(): Observable<LogoutResponse> {
     this.clearRefreshTimer();
-    
+
     return this.http.post<LogoutResponse>(`${this.authUrl}/logout`, {}).pipe(
       catchError(() => EMPTY),
       finalize(() => {
@@ -231,7 +215,7 @@ export class AuthService {
   hasValidToken(): boolean {
     const token = this.getToken();
     const expiry = this.getTokenExpiry();
-    
+
     if (!token || !expiry) return false;
     return this.isTokenValid(expiry);
   }
@@ -243,7 +227,7 @@ export class AuthService {
     const user = this.currentUserSignal();
     const token = this.getToken();
     const expiry = this.getTokenExpiry();
-    
+
     return !!(user && token && expiry && this.isTokenValid(expiry));
   }
 
@@ -274,7 +258,7 @@ export class AuthService {
 
   private setAuthData(loginResponse: LoginResponse): void {
     const expiry = this.calculateTokenExpiry(loginResponse.expiresIn);
-    
+
     this.setToken(loginResponse.access_token);
     this.currentUserSignal.set(loginResponse.user);
     this.setTokenExpiry(expiry);
@@ -296,7 +280,7 @@ export class AuthService {
 
   private getStoredUser(): User | null {
     if (typeof window === 'undefined') return null;
-    
+
     try {
       const stored = localStorage.getItem(this.USER_KEY);
       return stored ? JSON.parse(stored) : null;
@@ -313,7 +297,7 @@ export class AuthService {
 
   private getTokenExpiry(): number | null {
     if (typeof window === 'undefined') return null;
-    
+
     const expiry = localStorage.getItem(this.TOKEN_EXPIRY_KEY);
     return expiry ? parseInt(expiry, 10) : null;
   }
@@ -345,7 +329,7 @@ export class AuthService {
 
     const currentTime = Date.now();
     const timeUntilExpiry = expiryTime - currentTime;
-    
+
     // Refrescar 5 minutos antes de que expire, mínimo 1 minuto
     const refreshTime = Math.max(timeUntilExpiry - 300000, 60000);
 
@@ -371,7 +355,7 @@ export class AuthService {
       localStorage.removeItem(this.USER_KEY);
       localStorage.removeItem(this.TOKEN_EXPIRY_KEY);
     }
-    
+
     this.currentUserSignal.set(null);
     this.clearError();
   }
@@ -383,7 +367,7 @@ export class AuthService {
       errorMessage = error.error.message;
     } else {
       const apiError = error.error as ApiError;
-      
+
       switch (error.status) {
         case 400:
           errorMessage = apiError?.message || 'Datos inválidos';

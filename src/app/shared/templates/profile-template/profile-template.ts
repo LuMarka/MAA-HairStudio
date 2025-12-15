@@ -76,9 +76,7 @@ export class ProfileTemplate {
     this.addressService.getAddresses()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
-          console.log('✅ Direcciones cargadas:', this.addresses());
-        },
+        next: () => {},
         error: (error) => {
           console.error('❌ Error cargando direcciones:', error);
         }
@@ -114,8 +112,6 @@ export class ProfileTemplate {
         this.form().get('phone')?.enable();
         this.form().get('address')?.enable();
       }
-
-      console.log('✅ Dirección seleccionada:', selected);
     }
   }
 

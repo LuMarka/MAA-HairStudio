@@ -116,13 +116,11 @@ export class Search {
   // ========== MÉTODOS PÚBLICOS - Búsqueda ==========
 
   onSearch(result: { query: string; timestamp: number }): void {
-    console.log('🔍 Búsqueda realizada:', result.query);
     // TODO: Implementar navegación a resultados de búsqueda
     // this.router.navigate(['/search'], { queryParams: { q: result.query } });
   }
 
   onSearchPerformed(result: SearchResult): void {
-    console.log('🔍 Search performed:', result);
     // TODO: Implementar lógica de búsqueda avanzada
   }
 

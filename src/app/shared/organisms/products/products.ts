@@ -261,9 +261,7 @@ export class Products implements OnInit {
     })
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
-      next: (response) => {
-        console.log('✅ Producto agregado:', response.message);
-      },
+      next: (response) => {},
       error: (error) => {
         console.error('❌ Error al agregar:', error);
       }
@@ -303,7 +301,6 @@ export class Products implements OnInit {
    * ✅ Maneja agregar producto al carrito con toda la lógica
    */
   handleAddToCart(productId: string): void {
-    console.log('🛒 Intentando agregar al carrito:', productId);
 
     // 1️⃣ Verificar autenticación
     if (!this.authService.isAuthenticated() || !this.authService.hasValidToken()) {
@@ -355,13 +352,11 @@ export class Products implements OnInit {
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (response) => {
-        console.log('✅ Producto agregado al carrito:', response.message);
-        
         // Opcionalmente: mostrar notificación o navegar
         const shouldGoToCart = confirm(
           `"${productName}" se agregó al carrito.\n\n¿Quieres ir al carrito?`
         );
-        
+
         if (shouldGoToCart) {
           this.router.navigate(['/cart']);
         }
@@ -479,9 +474,7 @@ export class Products implements OnInit {
     this.categoryService.getAllCategories()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (categories) => {
-          console.log('Categories loaded:', categories.length);
-        },
+        next: (categories) => {},
         error: (error) => {
           console.error('Error loading categories:', error);
         }
@@ -497,7 +490,6 @@ export class Products implements OnInit {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (subCategories) => {
-            console.log(`Subcategories loaded for category ${categoryId}:`, subCategories.length);
           },
           error: (error) => {
             console.error('Error loading subcategories:', error);

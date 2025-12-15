@@ -133,7 +133,6 @@ export class CartService {
         this.cartData.set(response.cart);
         this.updateCartProductIds(response.cart);
         this.isLoadingSignal.set(false);
-        console.log('✅ Producto agregado:', response.message);
       }),
       catchError((err) => {
         this.handleError(err);
@@ -159,7 +158,6 @@ export class CartService {
         this.cartData.set(response.cart);
         this.updateCartProductIds(response.cart);
         this.isLoadingSignal.set(false);
-        console.log('✅ Carrito actualizado:', response.message);
       }),
       catchError((err) => {
         this.handleError(err);
@@ -219,7 +217,6 @@ export class CartService {
         this.cartData.set(response.cart);
         this.updateCartProductIds(response.cart);
         this.isLoadingSignal.set(false);
-        console.log('✅ Producto eliminado:', response.message);
       }),
       catchError((err) => {
         this.handleError(err);
@@ -240,7 +237,6 @@ export class CartService {
         this.cartData.set(response.cart);
         this.cartProductIds.set(new Set());
         this.isLoadingSignal.set(false);
-        console.log('✅ Carrito limpiado:', response.message);
       }),
       catchError((err) => {
         this.handleError(err);
@@ -326,9 +322,7 @@ export class CartService {
     }
 
     this.getCart().subscribe({
-      next: () => {
-        console.log('✅ Carrito sincronizado con servidor');
-      },
+      next: () => {},
       error: (err) => {
         console.error('❌ Error al sincronizar carrito:', err);
       }

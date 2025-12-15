@@ -1,22 +1,17 @@
 import {
   Component,
   OnInit,
-  AfterViewInit,
-  OnDestroy,
   inject,
-  PLATFORM_ID,
   DestroyRef,
   signal,
   computed,
   ChangeDetectionStrategy
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { tap, catchError, finalize } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
 import { ShoppingCart } from '../../organisms/shopping-cart/shopping-cart';
-import { ScrollAnimationService } from '../../../core/services/scroll-animation.service';
 import { CartService } from '../../../core/services/cart.service';
 import { PaginationEvent } from '../../molecules/paginator/paginator';
 import type { CartInterface, CartQueryParams } from '../../../core/models/interfaces/cart.interface';
@@ -28,10 +23,9 @@ import type { CartInterface, CartQueryParams } from '../../../core/models/interf
   styleUrl: './cart-template.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
+export class CartTemplate implements OnInit {
   // Dependencias inyectadas
-  private readonly scrollAnimationService = inject(ScrollAnimationService);
-  private readonly platformId = inject(PLATFORM_ID);
+
   private readonly destroyRef = inject(DestroyRef);
   private readonly cartService = inject(CartService);
   private readonly router = inject(Router);
@@ -68,18 +62,7 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
   isProcessing = signal(false);
 
   ngOnInit(): void {
-    console.log('🛒 CartTemplate - Inicializando');
     this.loadCart();
-  }
-
-  ngAfterViewInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.initializeScrollAnimations();
-    }
-  }
-
-  ngOnDestroy(): void {
-    console.log('🛒 CartTemplate - Destruyendo');
   }
 
   // ========== MÉTODOS PÚBLICOS - EVENTOS DEL HIJO ==========
@@ -88,7 +71,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
    * Maneja el cambio de página
    */
   onPageChange(event: PaginationEvent): void {
-    console.log('📄 Cambio de página:', event);
 
     const newParams: CartQueryParams = {
       page: event.page,
@@ -103,7 +85,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
    * Maneja la eliminación de un item
    */
   onItemRemoved(productId: string): void {
-    console.log('🗑️ Eliminando item:', productId);
 
     this._localLoading.set(true);
 
@@ -111,7 +92,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
       .pipe(
         tap((response) => {
           this._cartData.set(response.cart);
-          console.log('✅ Item eliminado:', response.message);
         }),
         catchError((error) => {
           console.error('❌ Error al eliminar item:', error);
@@ -128,7 +108,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
    * Maneja el incremento de cantidad
    */
   onQuantityIncreased(productId: string): void {
-    console.log('➕ Incrementando cantidad:', productId);
 
     this._isProcessing.set(true); // ✅ Activar processing
     this._localLoading.set(true);
@@ -137,7 +116,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
       .pipe(
         tap((response) => {
           this._cartData.set(response.cart);
-          console.log('✅ Cantidad incrementada:', response.message);
         }),
         catchError((error) => {
           console.error('❌ Error al incrementar:', error);
@@ -157,7 +135,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
    * Maneja el decremento de cantidad
    */
   onQuantityDecreased(productId: string): void {
-    console.log('➖ Decrementando cantidad:', productId);
 
     this._isProcessing.set(true); // ✅ Activar processing
     this._localLoading.set(true);
@@ -166,7 +143,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
       .pipe(
         tap((response) => {
           this._cartData.set(response.cart);
-          console.log('✅ Cantidad decrementada:', response.message);
         }),
         catchError((error) => {
           console.error('❌ Error al decrementar:', error);
@@ -186,7 +162,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
    * Maneja la limpieza del carrito
    */
   onCartCleared(): void {
-    console.log('🗑️ Limpiando carrito completo');
 
     this._localLoading.set(true);
 
@@ -194,7 +169,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
       .pipe(
         tap((response) => {
           this._cartData.set(response.cart);
-          console.log('✅ Carrito limpiado:', response.message);
         }),
         catchError((error) => {
           console.error('❌ Error al limpiar carrito:', error);
@@ -211,7 +185,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
    * Maneja el inicio del checkout
    */
   onCheckoutInitiated(): void {
-    console.log('🛒 Iniciando checkout');
 
     // Validar carrito antes de continuar
     this.cartService.validateCart()
@@ -244,7 +217,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
    * Maneja continuar comprando
    */
   onContinueShopping(): void {
-    console.log('🛍️ Continuar comprando');
     this.router.navigate(['/products']);
   }
 
@@ -254,7 +226,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
    * Recarga el carrito manualmente
    */
   reloadCart(): void {
-    console.log('🔄 Recargando carrito manualmente');
     this.loadCart();
   }
 
@@ -269,7 +240,6 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
    * Maneja el reintento después de un error
    */
   onRetry(): void {
-    console.log('🔄 Reintentando cargar carrito');
     this.clearError();
     this.reloadCart();
   }
@@ -301,17 +271,10 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
     this._localLoading.set(true);
     this._localError.set(null);
 
-    console.log('📦 Cargando carrito con parámetros:', params);
-
     this.cartService.getCart(params)
       .pipe(
         tap((response: CartInterface) => {
           this._cartData.set(response);
-          console.log('✅ Carrito cargado:', {
-            items: response.data.length,
-            total: response.summary.totalItems,
-            page: response.meta.page
-          });
         }),
         catchError((error) => {
           const errorMessage = error?.error?.message || 'Error al cargar el carrito';
@@ -323,27 +286,5 @@ export class CartTemplate implements OnInit, AfterViewInit, OnDestroy {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
-  }
-
-  private initializeScrollAnimations(): void {
-    if (!this.hasItems()) {
-      console.log('⏭️ Sin items para animar');
-      return;
-    }
-
-    console.log('🎬 Inicializando animaciones de scroll');
-    this.scrollAnimationService.observeElements('.cart__header');
-
-    setTimeout(() => {
-      const cartItems = document.querySelectorAll('.cart-item');
-      cartItems.forEach((item, index) => {
-        (item as HTMLElement).style.transitionDelay = `${index * 0.05}s`;
-      });
-      this.scrollAnimationService.observeElements('.cart-item');
-    }, 300);
-
-    this.scrollAnimationService.observeElements('.cart__summary');
-    this.scrollAnimationService.observeElements('.cart__pagination');
-    this.scrollAnimationService.observeElements('.cart__footer');
   }
 }

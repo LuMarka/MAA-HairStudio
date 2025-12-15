@@ -82,10 +82,6 @@ export class AddressService {
       tap((response) => {
         this._addresses.set(response.data);
         this._defaultAddressId.set(response.meta.defaultAddressId || null);
-        console.log('✅ Direcciones cargadas:', {
-          total: response.meta.total,
-          hasValidated: response.meta.hasValidatedAddresses
-        });
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'cargar direcciones')),
       finalize(() => this._isLoading.set(false))
@@ -144,8 +140,6 @@ export class AddressService {
         if (response.data.isDefault) {
           this._defaultAddressId.set(response.data.id);
         }
-
-        console.log('✅ Dirección creada exitosamente:', response.data.id);
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'crear dirección')),
       finalize(() => this._isLoading.set(false))

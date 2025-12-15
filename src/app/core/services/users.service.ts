@@ -98,7 +98,6 @@ export class UsersService {
     return this.http.get<UserProfile>(`${this.apiUrl}/me/profile`).pipe(
       tap((profile) => {
         this._currentUser$.next(profile.user);
-        console.log('✅ Perfil cargado:', profile.user.name);
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'cargar perfil')),
       finalize(() => this._isLoading.set(false))

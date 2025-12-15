@@ -46,7 +46,6 @@ export class OrdersHistory implements OnInit {
   }
 
   viewOrderDetails(orderId: string): void {
-    console.log('📤 Emitiendo onViewDetails con orderId:', orderId);
     this.onViewDetails.emit(orderId);
   }
 

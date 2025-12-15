@@ -192,12 +192,7 @@ export class FormPersonalData {
         this.addressService.getAddresses()
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
-            next: (response) => {
-              console.log('✅ [FormPersonalData] Direcciones cargadas exitosamente:', {
-                total: response.meta.total,
-                addresses: response.data
-              });
-            },
+            next: (response) => {},
             error: (error) => {
               console.error('❌ [FormPersonalData] Error cargando direcciones:', error);
             }
