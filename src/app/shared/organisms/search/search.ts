@@ -103,7 +103,6 @@ export class Search {
   logout(): void {
     this.authService.logout().subscribe({
       next: () => {
-        console.log('✅ Sesión cerrada exitosamente');
         this.closeUserMenu();
         this.router.navigate(['/login']);
       },

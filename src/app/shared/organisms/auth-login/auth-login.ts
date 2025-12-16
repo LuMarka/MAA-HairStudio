@@ -65,7 +65,6 @@ export class AuthLogin {
       )
       .subscribe({
         next: (response) => {
-          console.log('Login exitoso:', response);
           this.redirectAfterLogin(response.user.role);
         },
         error: (err) => {
