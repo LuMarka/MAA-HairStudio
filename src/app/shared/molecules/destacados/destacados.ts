@@ -376,11 +376,11 @@ export class Destacados implements AfterViewInit, OnInit {
         } else if (result.breakpoints[Breakpoints.Small] || result.breakpoints[Breakpoints.Medium]) {
           this.itemsPerPageSignal.set(2);
         } else {
-          this.itemsPerPageSignal.set(3);
+          this.itemsPerPageSignal.set(4);
         }
 
         if (this.currentPage() >= this.totalPages()) {
-          this.currentPageSignal.set(Math.max(0, this.totalPages() - 1));
+          this.goToPage(this.totalPages() - 1);
         }
       });
   }
