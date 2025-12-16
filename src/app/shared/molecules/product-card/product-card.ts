@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { Datum } from '../../../core/models/interfaces/Product.interface';
 
@@ -19,8 +19,10 @@ export class ProductCard {
   readonly isInWishlist = input<boolean>(false);
   readonly isInCart = input<boolean>(false);
   readonly cartQuantity = input<number>(0);
-  readonly isWishlistLoading = input<boolean>(false);
-  readonly isCartLoading = input<boolean>(false);
+
+  // ========== SIGNALS - Local state ==========
+  private readonly _isWishlistLoading = signal(false);
+  private readonly _isCartLoading = signal(false);
 
   // ========== OUTPUTS ==========
   readonly toggleWishlist = output<string>();
@@ -32,6 +34,10 @@ export class ProductCard {
   // ========== COMPUTED - Contexto ==========
   readonly isWishlistContext = computed(() => this.context() === 'wishlist');
   readonly isCatalogContext = computed(() => this.context() === 'catalog');
+
+  // ========== COMPUTED - Loading states (LOCAL) ==========
+  readonly isWishlistLoading = this._isWishlistLoading.asReadonly();
+  readonly isCartLoading = this._isCartLoading.asReadonly();
 
   // ========== COMPUTED - Estado del Cart ==========
   readonly isAddToCartDisabled = computed(() => {
@@ -68,11 +74,20 @@ export class ProductCard {
   // ========== MÉTODOS - WISHLIST ==========
 
   onToggleWishlist(): void {
+    this._isWishlistLoading.set(true);
     this.toggleWishlist.emit(this.product().id);
   }
 
   onRemoveFromWishlist(): void {
+    this._isWishlistLoading.set(true);
     this.removeFromWishlist.emit(this.product().id);
+  }
+
+  /**
+   * Método público para que el padre controle el loading del wishlist
+   */
+  setWishlistLoading(isLoading: boolean): void {
+    this._isWishlistLoading.set(isLoading);
   }
 
   // ========== MÉTODOS - CART ==========
@@ -83,14 +98,23 @@ export class ProductCard {
       return;
     }
 
+    this._isCartLoading.set(true);
     this.addToCart.emit(this.product().id);
   }
 
   onMoveToCart(): void {
+    this._isCartLoading.set(true);
     this.moveToCart.emit({
       productId: this.product().id,
       quantity: 1
     });
+  }
+
+  /**
+   * Método público para que el padre controle el loading del carrito
+   */
+  setCartLoading(isLoading: boolean): void {
+    this._isCartLoading.set(isLoading);
   }
 
   // ========== MÉTODOS - CONSULTAR DISPONIBILIDAD ==========
