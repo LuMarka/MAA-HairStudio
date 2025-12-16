@@ -24,12 +24,9 @@ export class OrderDetail {
   readonly errorMessage = computed(() => this.orderService.errorMessage());
 
   constructor() {
-    console.log('🔨 OrderDetail component inicializado');
-    console.log('Input orderId:', this.orderId);
 
     effect(() => {
       const id = this.orderId();
-      console.log('effect disparado - orderId:', id);
       if (id) {
         this.loadOrderDetail(id);
       }
@@ -37,13 +34,11 @@ export class OrderDetail {
   }
 
   private loadOrderDetail(id: string): void {
-    console.log('🔍 Cargando orden con ID:', id);
 
     this.orderService.getOrderById(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (order) => {
-          console.log('✅ Orden cargada:', order);
           this.order.set(order);
         },
         error: (error) => {

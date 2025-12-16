@@ -19,8 +19,6 @@ import type {
   AbandonedCartsResponse
 } from '../models/interfaces/cart.interface';
 
-
-
 @Injectable({
   providedIn: 'root',
 })
@@ -29,11 +27,6 @@ export class CartService {
   private readonly authService = inject(AuthService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly baseUrl = `${environment.apiUrl}cart`;
-
-  // Keys para localStorage
-  private readonly CART_IDS_KEY = 'maa_cart_product_ids';
-  private readonly CART_DATA_KEY = 'maa_cart_data';
-  private readonly CART_SUMMARY_KEY = 'maa_cart_summary';
 
   // Verificar si estamos en el navegador
   private readonly isBrowser = isPlatformBrowser(this.platformId);
@@ -68,27 +61,12 @@ export class CartService {
   readonly isEmpty = computed(() => !this.hasItems());
 
   constructor() {
-    // Solo restaurar en el navegador
-    if (this.isBrowser) {
-      this.restoreStateFromStorage();
-    }
-
-    // Sincronizar con servidor cuando el usuario esté autenticado
+    // ✅ SIMPLIFICADO: Solo sincronizar con servidor cuando el usuario esté autenticado
     effect(() => {
       if (this.authService.isAuthenticated() && this.isBrowser) {
         this.syncWithServer();
       } else {
         this.resetState();
-      }
-    });
-
-    // Persistir cambios en localStorage (solo en navegador)
-    effect(() => {
-      const ids = this.cartProductIds();
-      const data = this.cartData();
-
-      if ((ids.size > 0 || data) && this.isBrowser) {
-        this.saveStateToStorage();
       }
     });
   }
@@ -143,7 +121,6 @@ export class CartService {
    * Agrega un producto al carrito
    */
   addToCart(request: AddToCartRequest): Observable<CartActionResponse> {
-    // Verificar si ya está en el carrito antes de hacer la petición
     if (this.isProductInCart(request.productId)) {
       console.warn('⚠️ El producto ya está en el carrito. Usa updateCart para modificar la cantidad.');
     }
@@ -156,7 +133,6 @@ export class CartService {
         this.cartData.set(response.cart);
         this.updateCartProductIds(response.cart);
         this.isLoadingSignal.set(false);
-        console.log('✅ Producto agregado:', response.message);
       }),
       catchError((err) => {
         this.handleError(err);
@@ -182,7 +158,6 @@ export class CartService {
         this.cartData.set(response.cart);
         this.updateCartProductIds(response.cart);
         this.isLoadingSignal.set(false);
-        console.log('✅ Carrito actualizado:', response.message);
       }),
       catchError((err) => {
         this.handleError(err);
@@ -242,7 +217,6 @@ export class CartService {
         this.cartData.set(response.cart);
         this.updateCartProductIds(response.cart);
         this.isLoadingSignal.set(false);
-        console.log('✅ Producto eliminado:', response.message);
       }),
       catchError((err) => {
         this.handleError(err);
@@ -263,7 +237,6 @@ export class CartService {
         this.cartData.set(response.cart);
         this.cartProductIds.set(new Set());
         this.isLoadingSignal.set(false);
-        console.log('✅ Carrito limpiado:', response.message);
       }),
       catchError((err) => {
         this.handleError(err);
@@ -278,7 +251,6 @@ export class CartService {
   getCartSummary(): Observable<CartSummaryResponse> {
     return this.http.get<CartSummaryResponse>(`${this.baseUrl}/summary`).pipe(
       tap((response) => {
-        // Actualizar solo el resumen si tenemos datos del carrito
         const currentCart = this.cartData();
         if (currentCart) {
           this.cartData.update(cart => {
@@ -342,7 +314,7 @@ export class CartService {
   // ========== MÉTODOS PRIVADOS ==========
 
   /**
-   * Sincroniza con el servidor
+   * Sincroniza con el servidor cuando el usuario se autentica
    */
   private syncWithServer(): void {
     if (!this.authService.hasValidToken()) {
@@ -350,9 +322,7 @@ export class CartService {
     }
 
     this.getCart().subscribe({
-      next: () => {
-        console.log('✅ Carrito sincronizado con servidor');
-      },
+      next: () => {},
       error: (err) => {
         console.error('❌ Error al sincronizar carrito:', err);
       }
@@ -368,65 +338,6 @@ export class CartService {
   }
 
   /**
-   * Guarda el estado en localStorage (solo navegador)
-   */
-  private saveStateToStorage(): void {
-    if (!this.isBrowser) return;
-
-    try {
-      const ids = Array.from(this.cartProductIds());
-      localStorage.setItem(this.CART_IDS_KEY, JSON.stringify(ids));
-
-      const data = this.cartData();
-      if (data) {
-        localStorage.setItem(this.CART_DATA_KEY, JSON.stringify(data));
-        localStorage.setItem(this.CART_SUMMARY_KEY, JSON.stringify(data.summary));
-      }
-    } catch (error) {
-      console.error('Error al guardar carrito en localStorage:', error);
-    }
-  }
-
-  /**
-   * Restaura el estado desde localStorage (solo navegador)
-   */
-  private restoreStateFromStorage(): void {
-    if (!this.isBrowser) return;
-
-    try {
-      const idsJson = localStorage.getItem(this.CART_IDS_KEY);
-      if (idsJson) {
-        const ids = JSON.parse(idsJson) as string[];
-        this.cartProductIds.set(new Set(ids));
-      }
-
-      const dataJson = localStorage.getItem(this.CART_DATA_KEY);
-      if (dataJson) {
-        const data = JSON.parse(dataJson) as CartInterface;
-        this.cartData.set(data);
-      }
-    } catch (error) {
-      console.error('Error al restaurar carrito desde localStorage:', error);
-      this.clearStorage();
-    }
-  }
-
-  /**
-   * Limpia el localStorage (solo navegador)
-   */
-  private clearStorage(): void {
-    if (!this.isBrowser) return;
-
-    try {
-      localStorage.removeItem(this.CART_IDS_KEY);
-      localStorage.removeItem(this.CART_DATA_KEY);
-      localStorage.removeItem(this.CART_SUMMARY_KEY);
-    } catch (error) {
-      console.error('Error al limpiar localStorage:', error);
-    }
-  }
-
-  /**
    * Resetea el estado del servicio
    */
   resetState(): void {
@@ -434,7 +345,6 @@ export class CartService {
     this.cartProductIds.set(new Set());
     this.isLoadingSignal.set(false);
     this.error.set(null);
-    this.clearStorage();
   }
 
   /**

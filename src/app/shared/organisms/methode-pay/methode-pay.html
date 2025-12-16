@@ -106,7 +106,7 @@
                           <span class="address-saved__text">Dirección guardada seleccionada</span>
                         </div>
                         @if (data.addressId) {
-                          <div class="address-saved__id">ID: {{ data.addressId }}</div>
+                          <div class="address-saved__id"> {{ data.address }}</div>
                           @if (data.city) { {{ data.city }} }
                           @if (data.province) { , {{ data.province }} }
                           @if (data.postalCode) { ({{ data.postalCode }}) }

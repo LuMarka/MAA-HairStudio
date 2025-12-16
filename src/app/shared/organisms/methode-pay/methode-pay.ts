@@ -155,23 +155,6 @@ export class MethodePay {
     // Effect para debug
     effect(() => {
       const data = this.orderData();
-      if (data) {
-        console.log('📋 [MethodePay] OrderData recibida:', {
-          firstName: data.firstName,
-          /* lastName: data.lastName, */
-          email: data.email,
-          phone: data.phone,
-          hasAddressId: !!data.addressId,
-          addressId: data.addressId,
-          hasManualAddress: !!data.address,
-          address: data.address,
-          city: data.city,
-          province: data.province,
-          postalCode: data.postalCode,
-          deliveryOption: data.deliveryOption,
-          deliveryInstructions: data.deliveryInstructions
-        });
-      }
     });
   }
 

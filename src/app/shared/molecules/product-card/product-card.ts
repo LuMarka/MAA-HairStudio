@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { Datum } from '../../../core/models/interfaces/Product.interface';
 
@@ -19,8 +19,10 @@ export class ProductCard {
   readonly isInWishlist = input<boolean>(false);
   readonly isInCart = input<boolean>(false);
   readonly cartQuantity = input<number>(0);
-  readonly isWishlistLoading = input<boolean>(false);
-  readonly isCartLoading = input<boolean>(false);
+
+  // ========== SIGNALS - Local state ==========
+  private readonly _isWishlistLoading = signal(false);
+  private readonly _isCartLoading = signal(false);
 
   // ========== OUTPUTS ==========
   readonly toggleWishlist = output<string>();
@@ -32,6 +34,10 @@ export class ProductCard {
   // ========== COMPUTED - Contexto ==========
   readonly isWishlistContext = computed(() => this.context() === 'wishlist');
   readonly isCatalogContext = computed(() => this.context() === 'catalog');
+
+  // ========== COMPUTED - Loading states (LOCAL) ==========
+  readonly isWishlistLoading = this._isWishlistLoading.asReadonly();
+  readonly isCartLoading = this._isCartLoading.asReadonly();
 
   // ========== COMPUTED - Estado del Cart ==========
   readonly isAddToCartDisabled = computed(() => {
@@ -68,13 +74,20 @@ export class ProductCard {
   // ========== MÉTODOS - WISHLIST ==========
 
   onToggleWishlist(): void {
-    console.log('❤️ ProductCard - Toggle Wishlist:', this.product().id);
+    this._isWishlistLoading.set(true);
     this.toggleWishlist.emit(this.product().id);
   }
 
   onRemoveFromWishlist(): void {
-    console.log('🗑️ ProductCard - Remove from Wishlist:', this.product().id);
+    this._isWishlistLoading.set(true);
     this.removeFromWishlist.emit(this.product().id);
+  }
+
+  /**
+   * Método público para que el padre controle el loading del wishlist
+   */
+  setWishlistLoading(isLoading: boolean): void {
+    this._isWishlistLoading.set(isLoading);
   }
 
   // ========== MÉTODOS - CART ==========
@@ -85,40 +98,40 @@ export class ProductCard {
       return;
     }
 
-    console.log('🛒 ProductCard - Add to Cart:', this.product().id);
+    this._isCartLoading.set(true);
     this.addToCart.emit(this.product().id);
   }
 
   onMoveToCart(): void {
-    console.log('🔄 ProductCard - Move to Cart:', this.product().id);
+    this._isCartLoading.set(true);
     this.moveToCart.emit({
       productId: this.product().id,
       quantity: 1
     });
   }
 
+  /**
+   * Método público para que el padre controle el loading del carrito
+   */
+  setCartLoading(isLoading: boolean): void {
+    this._isCartLoading.set(isLoading);
+  }
+
   // ========== MÉTODOS - CONSULTAR DISPONIBILIDAD ==========
 
   onConsultAvailability(): void {
-    console.log('💬 ProductCard - Consult Availability:', this.product().id);
     const message = this.generateWhatsAppMessage();
-    console.log('📝 Mensaje generado:', message);
     const phoneNumber = '5493534015655';
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    console.log('🔗 URL de WhatsApp:', whatsappUrl);
     window.open(whatsappUrl, '_blank');
     this.consultAvailability.emit(this.product().id);
   }
 
   private generateWhatsAppMessage(): string {
     const product = this.product();
-    console.log('📦 Producto capturado:', product);
-    console.log('📦 Nombre:', product.name);
-    console.log('📦 Marca:', product.brand);
     const productName = product.name || 'Producto sin nombre';
     const productBrand = product.brand || 'Marca no disponible';
     const message = `Hola, quisiera consultar sobre la disponibilidad del producto: ${productName}. Marca: ${productBrand}`;
-    console.log('✅ Mensaje final:', message);
     return message;
   }
 

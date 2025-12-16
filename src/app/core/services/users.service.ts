@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, throwError, BehaviorSubject } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { tap, catchError, finalize } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ForgotPasswordDto, User, ForgotPasswordResponse, VerifyResetCodeDto, ApiResponse, CleanCodesResponse, ResetPasswordDto, UpdatePasswordDto, UpdateRoleDto, UpdateUserDto, UserOrdersResponse, UserProfile, UsersResponse, UserStatistics, UserStats, UserSummary, VerifyCodeResponse } from '../models/interfaces/users.interface';
@@ -16,12 +16,12 @@ export class UsersService {
   // ========== SIGNALS - Estado interno ==========
   private readonly _isLoading = signal(false);
   private readonly _errorMessage = signal<string | null>(null);
-  private readonly _currentUser$ = new BehaviorSubject<User | null>(null);
+  private readonly _currentUser = signal<User | null>(null);
 
   // ========== COMPUTED - Estado público ==========
   readonly isLoading = this._isLoading.asReadonly();
   readonly errorMessage = this._errorMessage.asReadonly();
-  readonly currentUser = computed(() => this._currentUser$.value);
+  readonly currentUser = this._currentUser.asReadonly();
 
   // ========== MÉTODOS PÚBLICOS - ENDPOINTS SIN AUTENTICACIÓN ==========
 
@@ -97,8 +97,7 @@ export class UsersService {
 
     return this.http.get<UserProfile>(`${this.apiUrl}/me/profile`).pipe(
       tap((profile) => {
-        this._currentUser$.next(profile.user);
-        console.log('✅ Perfil cargado:', profile.user.name);
+        this._currentUser.set(profile.user);
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'cargar perfil')),
       finalize(() => this._isLoading.set(false))
@@ -138,7 +137,7 @@ export class UsersService {
 
     return this.http.delete<ApiResponse<null>>(`${this.apiUrl}/me`).pipe(
       tap((response) => {
-        this._currentUser$.next(null);
+        this._currentUser.set(null);
         console.log('✅ Cuenta eliminada:', response.message);
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'eliminar cuenta')),
@@ -323,8 +322,8 @@ export class UsersService {
         console.log(`✅ Usuario actualizado: ${user.name}`);
 
         // Si es el usuario actual, actualizar el estado
-        if (this._currentUser$.value?.id === userId) {
-          this._currentUser$.next(user);
+        if (this._currentUser()?.id === userId) {
+          this._currentUser.set(user);
         }
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'actualizar usuario')),

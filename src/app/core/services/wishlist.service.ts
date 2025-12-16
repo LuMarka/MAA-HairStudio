@@ -31,10 +31,6 @@ export class WishlistService {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly baseUrl = `${environment.apiUrl}wishlist`;
 
-  // Keys para localStorage
-  private readonly WISHLIST_IDS_KEY = 'maa_wishlist_ids';
-  private readonly WISHLIST_DATA_KEY = 'maa_wishlist_data';
-
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
   // Signals para estado reactivo
@@ -43,7 +39,7 @@ export class WishlistService {
   private readonly error = signal<string | null>(null);
   private readonly wishlistedProductIds = signal<Set<string>>(new Set());
 
-  // ✅ NUEVO: Signal para productos completos (formato Datum)
+  // Signal para productos completos (formato Datum)
   private readonly fullProductsSignal = signal<ProductDatum[]>([]);
   private readonly isLoadingProductsSignal = signal<boolean>(false);
 
@@ -57,7 +53,7 @@ export class WishlistService {
   readonly availableItems = computed(() => this.wishlistData()?.summary.availableItems ?? 0);
   readonly itemsOnSale = computed(() => this.wishlistData()?.summary.itemsOnSale ?? 0);
 
-  // ✅ NUEVO: Computed para productos completos
+  // Computed para productos completos
   readonly fullProducts = this.fullProductsSignal.asReadonly();
   readonly isLoadingProducts = this.isLoadingProductsSignal.asReadonly();
   readonly productIds = computed(() =>
@@ -65,10 +61,7 @@ export class WishlistService {
   );
 
   constructor() {
-    if (this.isBrowser) {
-      this.restoreStateFromStorage();
-    }
-
+    // Sincronizar con servidor cuando el usuario esté autenticado
     effect(() => {
       if (this.authService.isAuthenticated() && this.isBrowser) {
         this.syncWithServer();
@@ -76,18 +69,9 @@ export class WishlistService {
         this.resetState();
       }
     });
-
-    effect(() => {
-      const ids = this.wishlistedProductIds();
-      const data = this.wishlistData();
-
-      if ((ids.size > 0 || data) && this.isBrowser) {
-        this.saveStateToStorage();
-      }
-    });
   }
 
-  // ========== MÉTODOS PÚBLICOS EXISTENTES ==========
+  // ========== MÉTODOS PÚBLICOS ==========
 
   isProductInWishlist(productId: string): boolean {
     return this.wishlistedProductIds().has(productId);
@@ -99,9 +83,7 @@ export class WishlistService {
     }
 
     this.getWishlist().subscribe({
-      next: () => {
-        console.log('✅ Wishlist sincronizada con servidor');
-      },
+      next: () => {},
       error: (err) => {
         console.error('❌ Error al sincronizar wishlist:', err);
       }
@@ -133,11 +115,8 @@ export class WishlistService {
     );
   }
 
-  // ========== ✅ NUEVOS MÉTODOS PARA PRODUCTOS COMPLETOS ==========
-
   /**
-   * ✅ Obtiene la wishlist con productos completos en formato Datum
-   * Útil para product-card que espera la interfaz Datum de products
+   * Obtiene la wishlist con productos completos en formato Datum
    */
   getWishlistWithFullProducts(params?: WishlistQueryParams): Observable<ProductDatum[]> {
     return this.getWishlist(params).pipe(
@@ -158,8 +137,7 @@ export class WishlistService {
   }
 
   /**
-   * ✅ Obtiene productos completos por IDs (formato Datum)
-   * Usa el endpoint de ProductsService que devuelve productos completos
+   * Obtiene productos completos por IDs (formato Datum)
    */
   getFullProductsByIds(productIds: string[]): Observable<ProductDatum[]> {
     if (productIds.length === 0) {
@@ -176,7 +154,6 @@ export class WishlistService {
       map(response => response.data),
       tap(products => {
         this.fullProductsSignal.set(products);
-        console.log('✅ Productos completos cargados:', products.length);
       }),
       catchError(error => {
         console.error('❌ Error al obtener productos completos:', error);
@@ -189,15 +166,12 @@ export class WishlistService {
   }
 
   /**
-   * ✅ Refresca los productos completos de la wishlist actual
-   * Útil después de agregar/eliminar productos
+   * Refresca los productos completos de la wishlist actual
    */
   refreshFullProducts(): Observable<ProductDatum[]> {
     const currentIds = this.productIds();
     return this.getFullProductsByIds(currentIds);
   }
-
-  // ========== MÉTODOS DE ACCIÓN ACTUALIZADOS ==========
 
   addToWishlist(request: AddToWishlistRequest): Observable<WishlistActionResponse> {
     if (this.isProductInWishlist(request.productId)) {
@@ -214,7 +188,6 @@ export class WishlistService {
         this.updateWishlistedProductIds(response.wishlist);
         this.isLoadingSignal.set(false);
 
-        // ✅ Refrescar productos completos automáticamente
         if (this.fullProducts().length > 0) {
           this.refreshFullProducts().subscribe();
         }
@@ -248,7 +221,6 @@ export class WishlistService {
         this.updateWishlistedProductIds(response.wishlist);
         this.isLoadingSignal.set(false);
 
-        // ✅ Actualizar productos completos removiendo el eliminado
         this.fullProductsSignal.update(products =>
           products.filter(product => product.id !== productId)
         );
@@ -270,7 +242,6 @@ export class WishlistService {
         this.updateWishlistedProductIds(response.wishlist);
         this.isLoadingSignal.set(false);
 
-        // ✅ Si se remueve de wishlist, actualizar productos completos
         if (request.removeFromWishlist) {
           this.fullProductsSignal.update(products =>
             products.filter(product => product.id !== request.productId)
@@ -292,7 +263,7 @@ export class WishlistService {
       tap((response) => {
         this.wishlistData.set(response.wishlist);
         this.wishlistedProductIds.set(new Set());
-        this.fullProductsSignal.set([]); // ✅ Limpiar productos completos
+        this.fullProductsSignal.set([]);
         this.isLoadingSignal.set(false);
       }),
       catchError((err) => {
@@ -301,8 +272,6 @@ export class WishlistService {
       })
     );
   }
-
-  // ========== MÉTODOS EXISTENTES (sin cambios) ==========
 
   checkProductInWishlist(productId: string): Observable<WishlistCheckResponse> {
     return this.http.get<WishlistCheckResponse>(`${this.baseUrl}/check/${productId}`).pipe(
@@ -398,62 +367,13 @@ export class WishlistService {
     this.wishlistedProductIds.set(productIds);
   }
 
-  private saveStateToStorage(): void {
-    if (!this.isBrowser) return;
-
-    try {
-      const ids = Array.from(this.wishlistedProductIds());
-      localStorage.setItem(this.WISHLIST_IDS_KEY, JSON.stringify(ids));
-
-      const data = this.wishlistData();
-      if (data) {
-        localStorage.setItem(this.WISHLIST_DATA_KEY, JSON.stringify(data));
-      }
-    } catch (error) {
-      console.error('Error al guardar wishlist en localStorage:', error);
-    }
-  }
-
-  private restoreStateFromStorage(): void {
-    if (!this.isBrowser) return;
-
-    try {
-      const idsJson = localStorage.getItem(this.WISHLIST_IDS_KEY);
-      if (idsJson) {
-        const ids = JSON.parse(idsJson) as string[];
-        this.wishlistedProductIds.set(new Set(ids));
-      }
-
-      const dataJson = localStorage.getItem(this.WISHLIST_DATA_KEY);
-      if (dataJson) {
-        const data = JSON.parse(dataJson) as DataWishlist;
-        this.wishlistData.set(data);
-      }
-    } catch (error) {
-      console.error('Error al restaurar wishlist desde localStorage:', error);
-      this.clearStorage();
-    }
-  }
-
-  private clearStorage(): void {
-    if (!this.isBrowser) return;
-
-    try {
-      localStorage.removeItem(this.WISHLIST_IDS_KEY);
-      localStorage.removeItem(this.WISHLIST_DATA_KEY);
-    } catch (error) {
-      console.error('Error al limpiar localStorage:', error);
-    }
-  }
-
   resetState(): void {
     this.wishlistData.set(null);
     this.wishlistedProductIds.set(new Set());
-    this.fullProductsSignal.set([]); // ✅ Limpiar productos completos
+    this.fullProductsSignal.set([]);
     this.isLoadingSignal.set(false);
     this.isLoadingProductsSignal.set(false);
     this.error.set(null);
-    this.clearStorage();
   }
 
   private handleError(error: unknown): void {

@@ -212,7 +212,6 @@ export class Confirmation {
     };
 
     if (deliveryType === 'delivery' && addressId) {
-      console.log('📦 Creando orden con delivery y addressId:', addressId);
       return {
         ...baseDto,
         shippingAddressId: addressId
@@ -220,7 +219,6 @@ export class Confirmation {
     }
 
     if (deliveryType === 'delivery' && !addressId) {
-      console.log('📦 Creando orden con delivery pero sin addressId guardado');
       return {
         ...baseDto
       } as CreateOrderDto;

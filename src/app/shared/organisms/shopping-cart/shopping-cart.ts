@@ -220,7 +220,6 @@ export class ShoppingCart {
 
     this.showDeliveryOptions.set(true);
     this.checkoutError.set(null);
-    console.log('🛒 Iniciando checkout...');
   }
 
   /**
@@ -229,7 +228,6 @@ export class ShoppingCart {
   onSelectDeliveryOption(option: DeliveryType): void {
     this.selectedDeliveryOption.set(option);
     this.checkoutError.set(null);
-    console.log('📦 Tipo de entrega seleccionado:', option);
   }
 
   /**
@@ -239,7 +237,6 @@ export class ShoppingCart {
     this.showDeliveryOptions.set(false);
     this.selectedDeliveryOption.set(null);
     this.checkoutError.set(null);
-    console.log('❌ Cancelando selección de entrega');
   }
 
   /**
@@ -257,10 +254,8 @@ export class ShoppingCart {
 
     // 1. Guardar el estado de checkout en el servicio
     this.orderService.initCheckout(deliveryType);
-    console.log('✅ Estado de checkout guardado:', deliveryType);
 
     // 2. Redirigir a purchase-order donde se manejará todo
-    console.log('🚀 Redirigiendo a purchase-order...');
     this.router.navigate(['/purchase-order']);
 
     // 3. Cerrar el modal de opciones de entrega

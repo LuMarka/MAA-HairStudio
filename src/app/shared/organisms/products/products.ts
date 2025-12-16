@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, input, output, OnInit, signal, computed, DestroyRef, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, input, output, OnInit, signal, computed, DestroyRef, effect, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -216,6 +216,9 @@ export class Products implements OnInit {
     this.loadCategories();
   }
 
+  // ========== TEMPLATE REFS ==========
+  @ViewChildren(ProductCard) productCards!: QueryList<ProductCard>;
+
   // ========== MÉTODOS PÚBLICOS - WISHLIST ==========
 
   /**
@@ -232,25 +235,28 @@ export class Products implements OnInit {
     // 1️⃣ Verificar autenticación
     if (!this.authService.isAuthenticated() || !this.authService.hasValidToken()) {
       console.warn('❌ Usuario NO autenticado');
-      // TODO: Mostrar modal de login o redirigir
       this.router.navigate(['/login']);
       return;
     }
 
-    // 2️⃣ Verificar estado actual
+    // 2️⃣ Obtener referencia de la tarjeta específica
+    const productCard = this.productCards.find(card => card.product().id === productId);
+    if (!productCard) return;
+
+    // 3️⃣ Verificar estado actual
     const isInWishlist = this.wishlistService.isProductInWishlist(productId);
 
-    // 3️⃣ Ejecutar acción
+    // 4️⃣ Ejecutar acción
     if (isInWishlist) {
-      this.removeFromWishlist(productId);
+      this.removeFromWishlist(productId, productCard);
     } else {
-      this.addToWishlist(productId);
+      this.addToWishlist(productId, productCard);
     }
   }
 
   // ========== MÉTODOS PRIVADOS - WISHLIST ==========
 
-  private addToWishlist(productId: string): void {
+  private addToWishlist(productId: string, productCard: ProductCard): void {
     const products = this.dataApi()?.data || [];
     const product = products.find(p => p.id === productId);
 
@@ -263,22 +269,26 @@ export class Products implements OnInit {
     .subscribe({
       next: (response) => {
         console.log('✅ Producto agregado:', response.message);
+        productCard.setWishlistLoading(false); // ✅ Solo esta tarjeta
       },
       error: (error) => {
         console.error('❌ Error al agregar:', error);
+        productCard.setWishlistLoading(false); // ✅ Solo esta tarjeta
       }
     });
   }
 
-  private removeFromWishlist(productId: string): void {
+  private removeFromWishlist(productId: string, productCard: ProductCard): void {
     this.wishlistService.removeFromWishlist(productId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
           console.log('✅ Producto removido:', response.message);
+          productCard.setWishlistLoading(false); // ✅ Solo esta tarjeta
         },
         error: (error) => {
           console.error('❌ Error al remover:', error);
+          productCard.setWishlistLoading(false); // ✅ Solo esta tarjeta
         }
       });
   }
@@ -303,7 +313,6 @@ export class Products implements OnInit {
    * ✅ Maneja agregar producto al carrito con toda la lógica
    */
   handleAddToCart(productId: string): void {
-    console.log('🛒 Intentando agregar al carrito:', productId);
 
     // 1️⃣ Verificar autenticación
     if (!this.authService.isAuthenticated() || !this.authService.hasValidToken()) {
@@ -312,41 +321,44 @@ export class Products implements OnInit {
       return;
     }
 
-    // 2️⃣ Verificar si ya está en el carrito
+    // 2️⃣ Obtener referencia de la tarjeta específica
+    const productCard = this.productCards.find(card => card.product().id === productId);
+    if (!productCard) return;
+
+    // 3️⃣ Verificar si ya está en el carrito
     if (this.cartService.isProductInCart(productId)) {
       console.warn('⚠️ El producto ya está en el carrito');
-      // Opcionalmente: navegar al carrito o mostrar mensaje
+      productCard.setCartLoading(false);
       alert('Este producto ya está en tu carrito. Ve al carrito para modificar la cantidad.');
       this.router.navigate(['/cart']);
       return;
     }
 
-    // 3️⃣ Obtener información del producto
+    // 4️⃣ Obtener información del producto
     const products = this.dataApi()?.data || [];
     const product = products.find(p => p.id === productId);
 
     if (!product) {
       console.error('❌ Producto no encontrado');
+      productCard.setCartLoading(false);
       return;
     }
 
-    // 4️⃣ Validar disponibilidad
+    // 5️⃣ Validar disponibilidad
     if (!product.isAvailable || product.stock <= 0) {
       console.warn('⚠️ Producto no disponible');
+      productCard.setCartLoading(false);
       alert(`Lo sentimos, "${product.name}" no está disponible en este momento.`);
       return;
     }
 
-    // 5️⃣ Agregar al carrito
-    this.addToCart(productId, product.name);
+    // 6️⃣ Agregar al carrito
+    this.addToCart(productId, product.name, productCard);
   }
 
   // ========== MÉTODOS PRIVADOS - CART ==========
 
-  /**
-   * Agrega un producto al carrito
-   */
-  private addToCart(productId: string, productName: string): void {
+  private addToCart(productId: string, productName: string, productCard: ProductCard): void {
     this.cartService.addToCart({
       productId,
       quantity: 1,
@@ -356,20 +368,11 @@ export class Products implements OnInit {
     .subscribe({
       next: (response) => {
         console.log('✅ Producto agregado al carrito:', response.message);
-        
-        // Opcionalmente: mostrar notificación o navegar
-        const shouldGoToCart = confirm(
-          `"${productName}" se agregó al carrito.\n\n¿Quieres ir al carrito?`
-        );
-        
-        if (shouldGoToCart) {
-          this.router.navigate(['/cart']);
-        }
+        productCard.setCartLoading(false); // ✅ Solo esta tarjeta
       },
       error: (error) => {
         console.error('❌ Error al agregar al carrito:', error);
-        const errorMessage = error?.error?.message || 'No se pudo agregar el producto al carrito';
-        alert(errorMessage);
+        productCard.setCartLoading(false); // ✅ Solo esta tarjeta
       }
     });
   }
@@ -479,9 +482,7 @@ export class Products implements OnInit {
     this.categoryService.getAllCategories()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (categories) => {
-          console.log('Categories loaded:', categories.length);
-        },
+        next: (categories) => {},
         error: (error) => {
           console.error('Error loading categories:', error);
         }
@@ -497,7 +498,6 @@ export class Products implements OnInit {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (subCategories) => {
-            console.log(`Subcategories loaded for category ${categoryId}:`, subCategories.length);
           },
           error: (error) => {
             console.error('Error loading subcategories:', error);

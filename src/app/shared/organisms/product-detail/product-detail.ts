@@ -309,7 +309,6 @@ export class ProductDetail implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          console.log('✅ Producto agregado al carrito:', response.message);
           this.addToCartSuccess.set(true);
 
           // Mostrar notificación
@@ -334,7 +333,6 @@ export class ProductDetail implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          console.log('✅ Cantidad actualizada en el carrito:', response.message);
           this.addToCartSuccess.set(true);
 
           // Mostrar notificación

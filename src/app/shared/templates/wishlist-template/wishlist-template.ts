@@ -1,24 +1,18 @@
 import {
   Component,
   OnInit,
-  AfterViewInit,
-  OnDestroy,
   inject,
-  PLATFORM_ID,
   DestroyRef,
   signal,
   computed,
   ChangeDetectionStrategy
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { tap, catchError, finalize } from 'rxjs/operators';
 import { EMPTY, throwError } from 'rxjs';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { CartService } from '../../../core/services/cart.service'; // ✅ Agregar import
-import { AuthService } from '../../../core/services/auth.service';
-import { ScrollAnimationService } from '../../../core/services/scroll-animation.service';
 import { ProductCard } from '../../molecules/product-card/product-card';
 import { Paginator, PaginationEvent } from '../../molecules/paginator/paginator';
 import type { DataWishlist, WishlistQueryParams } from '../../../core/models/interfaces/wishlist.interface';
@@ -31,13 +25,10 @@ import type { Datum as ProductDatum } from '../../../core/models/interfaces/Prod
   styleUrl: './wishlist-template.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
-  private readonly scrollAnimationService = inject(ScrollAnimationService);
-  private readonly platformId = inject(PLATFORM_ID);
+export class WishlistTemplate implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly wishlistService = inject(WishlistService);
   private readonly cartService = inject(CartService); // ✅ Inyectar CartService
-  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
   // State management con signals
@@ -95,25 +86,12 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
   };
 
   ngOnInit(): void {
-    console.log('💝 WishlistTemplate - Inicializando');
     this.loadWishlist();
-  }
-
-  ngAfterViewInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.initializeScrollAnimations();
-    }
-  }
-
-  ngOnDestroy(): void {
-    console.log('💝 WishlistTemplate - Destruyendo');
   }
 
   // ========== MÉTODOS PÚBLICOS - PAGINACIÓN ==========
 
   onPageChange(event: PaginationEvent): void {
-    console.log('📄 Cambio de página:', event);
-
     this.updateParams({
       page: event.page,
       limit: event.limit
@@ -125,7 +103,6 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
   // ========== MÉTODOS PÚBLICOS - ACCIONES ==========
 
   handleRemove(productId: string): void {
-    console.log('🗑️ Eliminando de wishlist:', productId);
 
     this._localLoading.set(true);
 
@@ -135,9 +112,7 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
           this._wishlistData.set(response.wishlist);
           this._fullProducts.update(products =>
             products.filter(p => p.id !== productId)
-          );
-          console.log('✅ Producto removido:', response.message);
-        }),
+          );        }),
         catchError((error) => {
           console.error('❌ Error al remover:', error);
           this._localError.set('No se pudo eliminar el producto');
@@ -161,8 +136,6 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
       })
       .pipe(
         tap((response) => {
-          console.log('✅ Producto movido al carrito:', response.message);
-
           // Actualizar wishlist local
           this._wishlistData.set(response.wishlist);
           this._fullProducts.update((products) =>
@@ -171,7 +144,7 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
 
           // ✅ NUEVO: Recargar el carrito para actualizar el badge
           this.cartService.getCart().subscribe({
-            next: () => console.log('✅ Badge del carrito actualizado'),
+            next: () => {},
             error: (err) => console.error('❌ Error al actualizar carrito:', err)
           });
         }),
@@ -195,8 +168,6 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    console.log('🗑️ Limpiando wishlist completa');
-
     this._localLoading.set(true);
 
     this.wishlistService.clearWishlist()
@@ -204,7 +175,6 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
         tap((response) => {
           this._wishlistData.set(response.wishlist);
           this._fullProducts.set([]);
-          console.log('✅ Wishlist limpiada:', response.message);
         }),
         catchError((error) => {
           console.error('❌ Error al limpiar wishlist:', error);
@@ -218,18 +188,15 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
   }
 
   navigateToProducts(): void {
-    console.log('🛍️ Navegando a productos');
     this.router.navigate(['/products']);
   }
 
   retryLoad(): void {
-    console.log('🔄 Reintentando cargar wishlist');
     this.clearError();
     this.reloadWishlist();
   }
 
   reloadWishlist(): void {
-    console.log('🔄 Recargando wishlist manualmente');
     this.loadWishlist();
   }
 
@@ -256,20 +223,12 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
     this._localLoading.set(true);
     this._localError.set(null);
 
-    console.log('📦 Cargando wishlist con parámetros:', params);
-
     this.wishlistService.getWishlistWithFullProducts(params)
       .pipe(
         tap((products: ProductDatum[]) => {
           const wishlistData = this.wishlistService.wishlist();
           this._wishlistData.set(wishlistData);
           this._fullProducts.set(products);
-
-          console.log('✅ Wishlist cargada:', {
-            items: products.length,
-            total: wishlistData?.summary.totalItems ?? 0,
-            page: wishlistData?.meta.page ?? 1
-          });
         }),
         catchError((error) => {
           const errorMessage = error?.error?.message || 'Error al cargar la wishlist';
@@ -281,26 +240,5 @@ export class WishlistTemplate implements OnInit, AfterViewInit, OnDestroy {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
-  }
-
-  private initializeScrollAnimations(): void {
-    if (!this.hasItems()) {
-      console.log('⏭️ Sin items para animar');
-      return;
-    }
-
-    console.log('🎬 Inicializando animaciones de scroll');
-    this.scrollAnimationService.observeElements('.wishlist-template__header');
-
-    setTimeout(() => {
-      const wishlistItems = document.querySelectorAll('.product-card');
-      wishlistItems.forEach((item, index) => {
-        (item as HTMLElement).style.transitionDelay = `${index * 0.05}s`;
-      });
-      this.scrollAnimationService.observeElements('.product-card');
-    }, 300);
-
-    this.scrollAnimationService.observeElements('.wishlist-template__pagination');
-    this.scrollAnimationService.observeElements('.wishlist-template__explore-more');
   }
 }

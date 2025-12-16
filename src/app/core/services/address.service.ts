@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, BehaviorSubject } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { tap, catchError, finalize } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import type {
@@ -12,8 +12,6 @@ import type {
   UpdateAddressDto,
   AddressValidationResponse
 } from '../models/interfaces/address.interface';
-
-
 
 /**
  * Servicio para gestión de direcciones de envío
@@ -50,42 +48,31 @@ export class AddressService {
   private readonly apiUrl = `${environment.apiUrl}address`;
 
   // ========== STATE MANAGEMENT ==========
-
-  private readonly _addresses$ = new BehaviorSubject<AddressData[]>([]);
+  // ✅ Cambiar de BehaviorSubject a signal para reactividad con computed
+  private readonly _addresses = signal<AddressData[]>([]);
   private readonly _isLoading = signal(false);
   private readonly _errorMessage = signal<string | null>(null);
   private readonly _defaultAddressId = signal<string | null>(null);
 
   // ========== COMPUTED VALUES ==========
-
-  readonly addresses = computed(() => this._addresses$.value);
+  readonly addresses = computed(() => this._addresses());
   readonly isLoading = computed(() => this._isLoading());
   readonly errorMessage = computed(() => this._errorMessage());
-  readonly hasAddresses = computed(() => this._addresses$.value.length > 0);
+  readonly hasAddresses = computed(() => this._addresses().length > 0);
   readonly defaultAddress = computed(() =>
-    this._addresses$.value.find(addr => addr.id === this._defaultAddressId())
+    this._addresses().find(addr => addr.id === this._defaultAddressId())
   );
   readonly validatedAddresses = computed(() =>
-    this._addresses$.value.filter(addr => addr.isValidated)
+    this._addresses().filter(addr => addr.isValidated)
   );
   readonly activeAddresses = computed(() =>
-    this._addresses$.value.filter(addr => addr.isActive)
+    this._addresses().filter(addr => addr.isActive)
   );
 
   // ========== PUBLIC METHODS - CRUD OPERATIONS ==========
 
   /**
    * Obtiene todas las direcciones del usuario autenticado
-   *
-   * @returns Observable con la respuesta de direcciones
-   *
-   * @example
-   * ```typescript
-   * addressService.getAddresses().subscribe({
-   *   next: (response) => console.log('Direcciones:', response.data),
-   *   error: (error) => console.error('Error:', error)
-   * });
-   * ```
    */
   getAddresses(): Observable<AddressInterface> {
     this._isLoading.set(true);
@@ -93,12 +80,8 @@ export class AddressService {
 
     return this.http.get<AddressInterface>(this.apiUrl).pipe(
       tap((response) => {
-        this._addresses$.next(response.data);
+        this._addresses.set(response.data);
         this._defaultAddressId.set(response.meta.defaultAddressId || null);
-        console.log('✅ Direcciones cargadas:', {
-          total: response.meta.total,
-          hasValidated: response.meta.hasValidatedAddresses
-        });
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'cargar direcciones')),
       finalize(() => this._isLoading.set(false))
@@ -107,17 +90,6 @@ export class AddressService {
 
   /**
    * Obtiene una dirección específica por ID
-   *
-   * @param addressId - ID de la dirección
-   * @returns Observable con la dirección
-   *
-   * @example
-   * ```typescript
-   * addressService.getAddressById('uuid-here').subscribe({
-   *   next: (response) => console.log('Dirección:', response.data),
-   *   error: (error) => console.error('Error:', error)
-   * });
-   * ```
    */
   getAddressById(addressId: string): Observable<AddressOperationResponse> {
     this._isLoading.set(true);
@@ -134,21 +106,6 @@ export class AddressService {
 
   /**
    * Obtiene la dirección predeterminada del usuario
-   *
-   * @returns Observable con la dirección predeterminada o null
-   *
-   * @example
-   * ```typescript
-   * addressService.getDefaultAddress().subscribe({
-   *   next: (response) => {
-   *     if (response.data) {
-   *       console.log('Dirección por defecto:', response.data);
-   *     } else {
-   *       console.log('Sin dirección por defecto');
-   *     }
-   *   }
-   * });
-   * ```
    */
   getDefaultAddress(): Observable<DefaultAddressResponse> {
     this._isLoading.set(true);
@@ -170,25 +127,6 @@ export class AddressService {
 
   /**
    * Crea una nueva dirección
-   *
-   * @param addressData - Datos de la dirección a crear
-   * @returns Observable con la dirección creada
-   *
-   * @example
-   * ```typescript
-   * addressService.createAddress({
-   *   recipientName: 'María González',
-   *   phone: '+5491134567890',
-   *   province: 'Buenos Aires',
-   *   city: 'La Plata',
-   *   postalCode: 'B1900',
-   *   streetAddress: 'Calle 50 N° 456',
-   *   isDefault: true
-   * }).subscribe({
-   *   next: (response) => console.log('Dirección creada:', response.data),
-   *   error: (error) => console.error('Error:', error)
-   * });
-   * ```
    */
   createAddress(addressData: CreateAddressDto): Observable<AddressOperationResponse> {
     this._isLoading.set(true);
@@ -197,14 +135,11 @@ export class AddressService {
     return this.http.post<AddressOperationResponse>(this.apiUrl, addressData).pipe(
       tap((response) => {
         // Actualizar la lista local de direcciones
-        const currentAddresses = this._addresses$.value;
-        this._addresses$.next([...currentAddresses, response.data]);
+        this._addresses.update(current => [...current, response.data]);
 
         if (response.data.isDefault) {
           this._defaultAddressId.set(response.data.id);
         }
-
-        console.log('✅ Dirección creada exitosamente:', response.data.id);
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'crear dirección')),
       finalize(() => this._isLoading.set(false))
@@ -213,21 +148,6 @@ export class AddressService {
 
   /**
    * Actualiza una dirección existente
-   *
-   * @param addressId - ID de la dirección a actualizar
-   * @param addressData - Datos a actualizar (parcial)
-   * @returns Observable con la dirección actualizada
-   *
-   * @example
-   * ```typescript
-   * addressService.updateAddress('uuid-here', {
-   *   phone: '+5491145678901',
-   *   deliveryInstructions: 'Llamar antes de entregar'
-   * }).subscribe({
-   *   next: (response) => console.log('Dirección actualizada:', response.data),
-   *   error: (error) => console.error('Error:', error)
-   * });
-   * ```
    */
   updateAddress(addressId: string, addressData: UpdateAddressDto): Observable<AddressOperationResponse> {
     this._isLoading.set(true);
@@ -236,11 +156,11 @@ export class AddressService {
     return this.http.patch<AddressOperationResponse>(`${this.apiUrl}/${addressId}`, addressData).pipe(
       tap((response) => {
         // Actualizar la dirección en la lista local
-        const currentAddresses = this._addresses$.value;
-        const updatedAddresses = currentAddresses.map(addr =>
-          addr.id === addressId ? response.data : addr
+        this._addresses.update(current =>
+          current.map(addr =>
+            addr.id === addressId ? response.data : addr
+          )
         );
-        this._addresses$.next(updatedAddresses);
 
         console.log('✅ Dirección actualizada exitosamente:', addressId);
       }),
@@ -251,17 +171,6 @@ export class AddressService {
 
   /**
    * Establece una dirección como predeterminada
-   *
-   * @param addressId - ID de la dirección a establecer como predeterminada
-   * @returns Observable con la dirección actualizada
-   *
-   * @example
-   * ```typescript
-   * addressService.setDefaultAddress('uuid-here').subscribe({
-   *   next: (response) => console.log('Dirección predeterminada:', response.data),
-   *   error: (error) => console.error('Error:', error)
-   * });
-   * ```
    */
   setDefaultAddress(addressId: string): Observable<AddressOperationResponse> {
     this._isLoading.set(true);
@@ -270,12 +179,12 @@ export class AddressService {
     return this.http.patch<AddressOperationResponse>(`${this.apiUrl}/${addressId}/set-default`, {}).pipe(
       tap((response) => {
         // Actualizar todas las direcciones en la lista local
-        const currentAddresses = this._addresses$.value;
-        const updatedAddresses = currentAddresses.map(addr => ({
-          ...addr,
-          isDefault: addr.id === addressId
-        }));
-        this._addresses$.next(updatedAddresses);
+        this._addresses.update(current =>
+          current.map(addr => ({
+            ...addr,
+            isDefault: addr.id === addressId
+          }))
+        );
         this._defaultAddressId.set(addressId);
 
         console.log('✅ Dirección establecida como predeterminada:', addressId);
@@ -287,22 +196,6 @@ export class AddressService {
 
   /**
    * Valida una dirección
-   *
-   * @param addressId - ID de la dirección a validar
-   * @returns Observable con el resultado de la validación
-   *
-   * @example
-   * ```typescript
-   * addressService.validateAddress('uuid-here').subscribe({
-   *   next: (response) => {
-   *     if (response.data.isValid) {
-   *       console.log('Dirección válida');
-   *     } else {
-   *       console.log('Dirección inválida:', response.data.validationNotes);
-   *     }
-   *   }
-   * });
-   * ```
    */
   validateAddress(addressId: string): Observable<AddressValidationResponse> {
     this._isLoading.set(true);
@@ -311,18 +204,18 @@ export class AddressService {
     return this.http.post<AddressValidationResponse>(`${this.apiUrl}/${addressId}/validate`, {}).pipe(
       tap((response) => {
         // Actualizar el estado de validación en la lista local
-        const currentAddresses = this._addresses$.value;
-        const updatedAddresses = currentAddresses.map(addr => {
-          if (addr.id === addressId) {
-            return {
-              ...addr,
-              isValidated: response.data.isValid,
-              validationStatus: response.data.validationStatus
-            };
-          }
-          return addr;
-        });
-        this._addresses$.next(updatedAddresses);
+        this._addresses.update(current =>
+          current.map(addr => {
+            if (addr.id === addressId) {
+              return {
+                ...addr,
+                isValidated: response.data.isValid,
+                validationStatus: response.data.validationStatus
+              };
+            }
+            return addr;
+          })
+        );
 
         console.log('✅ Dirección validada:', {
           addressId,
@@ -337,17 +230,6 @@ export class AddressService {
 
   /**
    * Elimina una dirección (soft delete)
-   *
-   * @param addressId - ID de la dirección a eliminar
-   * @returns Observable con la dirección eliminada
-   *
-   * @example
-   * ```typescript
-   * addressService.deleteAddress('uuid-here').subscribe({
-   *   next: (response) => console.log('Dirección eliminada:', response.data),
-   *   error: (error) => console.error('Error:', error)
-   * });
-   * ```
    */
   deleteAddress(addressId: string): Observable<AddressOperationResponse> {
     this._isLoading.set(true);
@@ -356,9 +238,9 @@ export class AddressService {
     return this.http.delete<AddressOperationResponse>(`${this.apiUrl}/${addressId}`).pipe(
       tap((response) => {
         // Remover la dirección de la lista local
-        const currentAddresses = this._addresses$.value;
-        const updatedAddresses = currentAddresses.filter(addr => addr.id !== addressId);
-        this._addresses$.next(updatedAddresses);
+        this._addresses.update(current =>
+          current.filter(addr => addr.id !== addressId)
+        );
 
         if (this._defaultAddressId() === addressId) {
           this._defaultAddressId.set(null);
@@ -384,14 +266,12 @@ export class AddressService {
    * Limpia la lista de direcciones del estado local
    */
   clearAddresses(): void {
-    this._addresses$.next([]);
+    this._addresses.set([]);
     this._defaultAddressId.set(null);
   }
 
   /**
    * Recarga las direcciones del usuario
-   *
-   * @returns Observable con la respuesta de direcciones
    */
   reloadAddresses(): Observable<AddressInterface> {
     console.log('🔄 Recargando direcciones...');
@@ -402,20 +282,14 @@ export class AddressService {
 
   /**
    * Maneja errores HTTP de manera centralizada
-   *
-   * @param error - Error HTTP recibido
-   * @param operation - Nombre de la operación que falló
-   * @returns Observable que emite el error
    */
   private handleError(error: HttpErrorResponse, operation: string): Observable<never> {
     let errorMessage = `Error al ${operation}`;
 
     if (error.error instanceof ErrorEvent) {
-      // Error del lado del cliente
       errorMessage = `Error de red: ${error.error.message}`;
       console.error('❌ Error del cliente:', error.error.message);
     } else {
-      // Error del lado del servidor
       const serverMessage = error.error?.message;
 
       if (Array.isArray(serverMessage)) {

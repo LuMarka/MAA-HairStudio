@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, throwError, BehaviorSubject } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { tap, catchError, finalize } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import type {
@@ -71,8 +71,8 @@ export class OrderService {
 
   // ========== STATE MANAGEMENT ==========
 
-  private readonly _orders$ = new BehaviorSubject<OrderData[]>([]);
-  private readonly _currentOrder$ = new BehaviorSubject<OrderData | null>(null);
+  private readonly _orders = signal<OrderData[]>([]);
+  private readonly _currentOrder = signal<OrderData | null>(null);
   private readonly _isLoading = signal(false);
   private readonly _errorMessage = signal<string | null>(null);
   private readonly _totalOrders = signal(0);
@@ -86,11 +86,11 @@ export class OrderService {
 
   // ========== COMPUTED VALUES ==========
 
-  readonly orders = computed(() => this._orders$.value);
-  readonly currentOrder = computed(() => this._currentOrder$.value);
-  readonly isLoading = computed(() => this._isLoading());
-  readonly errorMessage = computed(() => this._errorMessage());
-  readonly hasOrders = computed(() => this._orders$.value.length > 0);
+  readonly orders = this._orders.asReadonly();
+  readonly currentOrder = this._currentOrder.asReadonly();
+  readonly isLoading = this._isLoading.asReadonly();
+  readonly errorMessage = this._errorMessage.asReadonly();
+  readonly hasOrders = computed(() => this._orders().length > 0);
   readonly totalOrders = computed(() => this._totalOrders());
   readonly currentPage = computed(() => this._currentPage());
   readonly totalPages = computed(() => this._totalPages());
@@ -99,13 +99,13 @@ export class OrderService {
 
   // Computed para filtrar órdenes por estado
   readonly pendingOrders = computed(() =>
-    this._orders$.value.filter((order) => order.status === 'pending')
+    this._orders().filter((order) => order.status === 'pending')
   );
   readonly confirmedOrders = computed(() =>
-    this._orders$.value.filter((order) => order.status === 'confirmed')
+    this._orders().filter((order) => order.status === 'confirmed')
   );
   readonly deliveredOrders = computed(() =>
-    this._orders$.value.filter((order) => order.status === 'delivered')
+    this._orders().filter((order) => order.status === 'delivered')
   );
 
   // ========== COMPUTED - CHECKOUT STATE ==========
@@ -191,12 +191,6 @@ export class OrderService {
 
     this._checkoutState.set(checkoutState);
     this.saveCheckoutStateToStorage(checkoutState);
-
-    console.log('✅ Checkout iniciado:', {
-      deliveryType,
-      hasAddress: !!addressId,
-      timestamp: new Date(checkoutState.timestamp).toISOString(),
-    });
   }
 
   /**
@@ -231,8 +225,6 @@ export class OrderService {
 
     this._checkoutState.set(updatedState);
     this.saveCheckoutStateToStorage(updatedState);
-
-    console.log('✅ Dirección actualizada en checkout:', addressId);
   }
 
   /**
@@ -352,7 +344,7 @@ export class OrderService {
 
     return this.http.post<OrderInterface>(`${this.apiUrl}/from-cart`, orderData).pipe(
       tap((response) => {
-        this._currentOrder$.next(response.data);
+        this._currentOrder.set(response.data);
         console.log('✅ Orden creada exitosamente:', {
           orderNumber: response.data.orderNumber,
           deliveryType: response.data.deliveryType,
@@ -391,15 +383,10 @@ export class OrderService {
       .get<OrderListResponse>(`${this.apiUrl}/my-orders`, { params: httpParams })
       .pipe(
         tap((response) => {
-          this._orders$.next(response.data);
+          this._orders.set(response.data);
           this._totalOrders.set(response.meta.total);
           this._currentPage.set(response.meta.page);
           this._totalPages.set(response.meta.totalPages);
-          console.log('✅ Órdenes cargadas:', {
-            total: response.meta.total,
-            page: response.meta.page,
-            items: response.data.length,
-          });
         }),
         catchError((error: HttpErrorResponse) => this.handleError(error, 'obtener mis órdenes')),
         finalize(() => this._isLoading.set(false))
@@ -425,12 +412,10 @@ export class OrderService {
     this._errorMessage.set(null);
 
     const url = `${this.apiUrl}/${orderId}`;
-    console.log('📡 Llamando GET a:', url);
 
     return this.http.get<OrderData>(url).pipe(
       tap((order) => {
-        this._currentOrder$.next(order);
-        console.log('✅ Orden obtenida:', order.orderNumber);
+        this._currentOrder.set(order);
       }),
       catchError((error: HttpErrorResponse) => {
         console.error('❌ Error HTTP:', {
@@ -467,13 +452,13 @@ export class OrderService {
 
     return this.http.patch<OrderInterface>(`${this.apiUrl}/${orderId}/confirm`, confirmDto).pipe(
       tap((response) => {
-        this._currentOrder$.next(response.data);
+        this._currentOrder.set(response.data);
 
-        const currentOrders = this._orders$.value;
+        const currentOrders = this._orders();
         const updatedOrders = currentOrders.map((order) =>
           order.id === orderId ? response.data : order
         );
-        this._orders$.next(updatedOrders);
+        this._orders.set(updatedOrders);
 
         console.log('✅ Orden confirmada exitosamente:', response.data.orderNumber);
       }),
@@ -520,7 +505,7 @@ export class OrderService {
       .get<OrderListResponse>(`${this.apiUrl}/admin/all`, { params: httpParams })
       .pipe(
         tap((response) => {
-          this._orders$.next(response.data);
+          this._orders.set(response.data);
           this._totalOrders.set(response.meta.total);
           this._currentPage.set(response.meta.page);
           this._totalPages.set(response.meta.totalPages);
@@ -590,7 +575,7 @@ export class OrderService {
       .patch<OrderInterface>(`${this.apiUrl}/${orderId}/shipping-cost`, shippingData)
       .pipe(
         tap((response) => {
-          this._currentOrder$.next(response.data);
+          this._currentOrder.set(response.data);
           console.log('✅ Costo de envío establecido:', {
             orderNumber: response.data.orderNumber,
             shippingCost: response.data.shippingCost,
@@ -627,13 +612,13 @@ export class OrderService {
 
     return this.http.patch<OrderInterface>(`${this.apiUrl}/${orderId}/status`, statusData).pipe(
       tap((response) => {
-        this._currentOrder$.next(response.data);
+        this._currentOrder.set(response.data);
 
-        const currentOrders = this._orders$.value;
+        const currentOrders = this._orders();
         const updatedOrders = currentOrders.map((order) =>
           order.id === orderId ? response.data : order
         );
-        this._orders$.next(updatedOrders);
+        this._orders.set(updatedOrders);
 
         console.log('✅ Estado de orden actualizado:', {
           orderNumber: response.data.orderNumber,
@@ -668,7 +653,7 @@ export class OrderService {
 
     return this.http.get<OrderInterface>(`${this.apiUrl}/admin/search/${orderNumber}`).pipe(
       tap((response) => {
-        this._currentOrder$.next(response.data);
+        this._currentOrder.set(response.data);
         console.log('✅ Orden encontrada:', response.data.orderNumber);
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'buscar orden')),
@@ -718,8 +703,8 @@ export class OrderService {
    * Limpia la lista de órdenes del estado local
    */
   clearOrders(): void {
-    this._orders$.next([]);
-    this._currentOrder$.next(null);
+    this._orders.set([]);
+    this._currentOrder.set(null);
     this._totalOrders.set(0);
     this._currentPage.set(1);
     this._totalPages.set(0);
@@ -729,7 +714,7 @@ export class OrderService {
    * Limpia la orden actual
    */
   clearCurrentOrder(): void {
-    this._currentOrder$.next(null);
+    this._currentOrder.set(null);
   }
 
   /**
@@ -766,8 +751,6 @@ export class OrderService {
         this.removeCheckoutStateFromStorage();
         return null;
       }
-
-      console.log('✅ Checkout state cargado desde storage');
       return state;
     } catch (error) {
       console.error('❌ Error al cargar estado de checkout:', error);
@@ -785,7 +768,6 @@ export class OrderService {
 
     try {
       localStorage.setItem(this.CHECKOUT_STATE_KEY, JSON.stringify(state));
-      console.log('💾 Checkout state guardado en storage');
     } catch (error) {
       console.error('❌ Error al guardar estado de checkout:', error);
     }

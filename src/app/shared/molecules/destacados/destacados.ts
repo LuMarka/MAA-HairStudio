@@ -1,35 +1,18 @@
-import {
-  Component,
-  signal,
-  computed,
-  ViewChildren,
-  ViewChild,
-  QueryList,
-  ElementRef,
-  AfterViewInit,
-  inject,
-  DestroyRef,
-  effect,
-  PLATFORM_ID,
-  ChangeDetectionStrategy,
-  OnInit
-} from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { fromEvent } from 'rxjs';
-import { debounceTime, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
-import { Router } from '@angular/router';
+import { Component, ChangeDetectionStrategy, inject, AfterViewInit, OnInit, signal, computed, DestroyRef, effect, ViewChild, ViewChildren, QueryList, ElementRef, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { fromEvent, of, finalize, catchError, debounceTime } from 'rxjs';
+import { ProductCard } from '../../molecules/product-card/product-card';
 import { ProductsService, Product } from '../../../core/services/products.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
-import { ProductCard } from '../product-card/product-card';
+import { Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-destacados',
-  imports: [ProductCard],
+  imports: [ProductCard, CommonModule],
   templateUrl: './destacados.html',
   styleUrls: ['./destacados.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,7 +36,8 @@ export class Destacados implements AfterViewInit, OnInit {
   private readonly router = inject(Router);
 
   @ViewChild('productGrid') productGrid?: ElementRef<HTMLElement>;
-  @ViewChildren('productCard') productCards!: QueryList<ElementRef<HTMLElement>>;
+  @ViewChildren('productCard') productCardElements!: QueryList<ElementRef<HTMLElement>>;
+  @ViewChildren(ProductCard) productCards!: QueryList<ProductCard>;
 
   // Products data
   private readonly allProducts = signal<Product[]>([]);
@@ -91,23 +75,11 @@ export class Destacados implements AfterViewInit, OnInit {
   readonly loading = this.isLoading.asReadonly();
   readonly errorMessage = this.error.asReadonly();
 
-  // ========== COMPUTED - Wishlist ==========
-  readonly isWishlistLoading = computed(() => this.wishlistService.isLoading());
-
-  // ========== COMPUTED - Cart ==========
-  readonly isCartLoading = computed(() => this.cartService.isLoading());
-
   constructor() {
     effect(() => {
       const currentProducts = this.visibleProducts();
       setTimeout(() => {
-        currentProducts.forEach(product => {
-          this.visibleItems.update(set => {
-            const newSet = new Set(set);
-            newSet.add(product.id);
-            return newSet;
-          });
-        });
+        this.observeVisibleItems();
       }, 100);
     });
   }
@@ -131,11 +103,7 @@ export class Destacados implements AfterViewInit, OnInit {
 
     setTimeout(() => {
       this.visibleProducts().forEach(product => {
-        this.visibleItems.update(set => {
-          const newSet = new Set(set);
-          newSet.add(product.id);
-          return newSet;
-        });
+        this.onImageLoad(product.id);
       });
     }, 300);
   }
@@ -162,20 +130,23 @@ export class Destacados implements AfterViewInit, OnInit {
       return;
     }
 
+    const productCard = this.productCards.find(card => card.product().id === productId);
+    if (!productCard) return;
+
     // 2️⃣ Verificar estado actual
     const isInWishlist = this.wishlistService.isProductInWishlist(productId);
 
     // 3️⃣ Ejecutar acción
     if (isInWishlist) {
-      this.removeFromWishlist(productId);
+      this.removeFromWishlist(productId, productCard);
     } else {
-      this.addToWishlist(productId);
+      this.addToWishlist(productId, productCard);
     }
   }
 
   // ========== MÉTODOS PRIVADOS - WISHLIST ==========
 
-  private addToWishlist(productId: string): void {
+  private addToWishlist(productId: string, productCard: ProductCard): void {
     const product = this.allProducts().find(p => p.id === productId);
 
     this.wishlistService.addToWishlist({
@@ -187,24 +158,28 @@ export class Destacados implements AfterViewInit, OnInit {
     .subscribe({
       next: (response) => {
         console.log('✅ Producto agregado a wishlist:', response.message);
+        productCard.setWishlistLoading(false);
       },
       error: (error) => {
         console.error('❌ Error al agregar a wishlist:', error);
+        productCard.setWishlistLoading(false);
         const errorMessage = error?.error?.message || 'No se pudo agregar a favoritos';
         alert(errorMessage);
       }
     });
   }
 
-  private removeFromWishlist(productId: string): void {
+  private removeFromWishlist(productId: string, productCard: ProductCard): void {
     this.wishlistService.removeFromWishlist(productId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
           console.log('✅ Producto removido de wishlist:', response.message);
+          productCard.setWishlistLoading(false);
         },
         error: (error) => {
           console.error('❌ Error al remover de wishlist:', error);
+          productCard.setWishlistLoading(false);
           const errorMessage = error?.error?.message || 'No se pudo remover de favoritos';
           alert(errorMessage);
         }
@@ -240,9 +215,13 @@ export class Destacados implements AfterViewInit, OnInit {
       return;
     }
 
+    const productCard = this.productCards.find(card => card.product().id === productId);
+    if (!productCard) return;
+
     // 2️⃣ Verificar si ya está en el carrito
     if (this.cartService.isProductInCart(productId)) {
       console.warn('⚠️ El producto ya está en el carrito');
+      productCard.setCartLoading(false);
       alert('Este producto ya está en tu carrito. Ve al carrito para modificar la cantidad.');
       this.router.navigate(['/cart']);
       return;
@@ -253,23 +232,25 @@ export class Destacados implements AfterViewInit, OnInit {
 
     if (!product) {
       console.error('❌ Producto no encontrado');
+      productCard.setCartLoading(false);
       return;
     }
 
     // 4️⃣ Validar disponibilidad
     if (!product.isAvailable || product.stock <= 0) {
       console.warn('⚠️ Producto no disponible');
+      productCard.setCartLoading(false);
       alert(`Lo sentimos, "${product.name}" no está disponible en este momento.`);
       return;
     }
 
     // 5️⃣ Agregar al carrito
-    this.addToCart(productId, product.name);
+    this.addToCart(productId, product.name, productCard);
   }
 
   // ========== MÉTODOS PRIVADOS - CART ==========
 
-  private addToCart(productId: string, productName: string): void {
+  private addToCart(productId: string, productName: string, productCard: ProductCard): void {
     this.cartService.addToCart({
       productId,
       quantity: 1,
@@ -279,6 +260,7 @@ export class Destacados implements AfterViewInit, OnInit {
     .subscribe({
       next: (response) => {
         console.log('✅ Producto agregado al carrito:', response.message);
+        productCard.setCartLoading(false);
 
         const shouldGoToCart = confirm(
           `"${productName}" se agregó al carrito.\n\n¿Quieres ir al carrito?`
@@ -290,6 +272,7 @@ export class Destacados implements AfterViewInit, OnInit {
       },
       error: (error) => {
         console.error('❌ Error al agregar al carrito:', error);
+        productCard.setCartLoading(false);
         const errorMessage = error?.error?.message || 'No se pudo agregar el producto al carrito';
         alert(errorMessage);
       }
@@ -318,7 +301,7 @@ export class Destacados implements AfterViewInit, OnInit {
             this.allProducts.set(response.data);
             this.isLoading.set(false);
           } else {
-            this.error.set('No se pudieron cargar los productos destacados');
+            this.error.set('No se pudieron cargar los productos');
             this.isLoading.set(false);
           }
         },
@@ -393,25 +376,24 @@ export class Destacados implements AfterViewInit, OnInit {
         } else if (result.breakpoints[Breakpoints.Small] || result.breakpoints[Breakpoints.Medium]) {
           this.itemsPerPageSignal.set(2);
         } else {
-          this.itemsPerPageSignal.set(4);
+          this.itemsPerPageSignal.set(3);
         }
 
         if (this.currentPage() >= this.totalPages()) {
-          this.goToPage(this.totalPages() - 1);
+          this.currentPageSignal.set(Math.max(0, this.totalPages() - 1));
         }
       });
   }
 
   private setupIntersectionObserver(): void {
-    if (!this.productCards) return;
+    if (!this.productCardElements) return;
 
     this.observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        const id = entry.target.getAttribute('data-product-id');
-        if (entry.isIntersecting && id) {
+        if (entry.isIntersecting) {
           this.visibleItems.update(set => {
             const newSet = new Set(set);
-            newSet.add(id);
+            newSet.add(entry.target.getAttribute('data-product-id') || '');
             return newSet;
           });
         }
@@ -422,12 +404,18 @@ export class Destacados implements AfterViewInit, OnInit {
       threshold: 0.1
     });
 
-    this.productCards.forEach(card => {
+    this.productCardElements.forEach(card => {
       const element = card.nativeElement;
-      const productId = element.getAttribute('data-product-id');
-      if (productId) {
-        this.observer?.observe(element);
-      }
+      this.observer?.observe(element);
     });
+  }
+
+  private observeVisibleItems(): void {
+    if (this.observer && this.productCardElements) {
+      this.productCardElements.forEach(card => {
+        const element = card.nativeElement;
+        this.observer?.observe(element);
+      });
+    }
   }
 }
