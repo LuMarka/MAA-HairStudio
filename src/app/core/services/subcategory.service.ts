@@ -68,7 +68,7 @@ export class SubCategoryService {
   readonly subCategorySelectOptions = computed((): SelectOption[] => {
     const subCategories = this.subCategoriesSignal();
     return [
-      { label: 'Todas las subcategorías', value: '' },
+      { label: 'Todas las colecciones', value: '' },
       ...subCategories
         .sort((a, b) => a.displayOrder - b.displayOrder)
         .map(sub => ({
@@ -92,7 +92,7 @@ export class SubCategoryService {
         .filter(sub => sub.categoryId === categoryId);
 
       if (byCategorySubCategories.length === 0) {
-        return [{ label: 'Todas las subcategorías', value: '' }];
+        return [{ label: 'Todas las colecciones', value: '' }];
       }
 
       const activeSubCategories = byCategorySubCategories
@@ -100,7 +100,7 @@ export class SubCategoryService {
         .sort((a, b) => a.displayOrder - b.displayOrder);
 
       return [
-        { label: 'Todas las subcategorías', value: '' },
+        { label: 'Todas las colecciones', value: '' },
         ...activeSubCategories.map(sub => ({
           label: sub.name,
           value: sub.id,
@@ -115,7 +115,7 @@ export class SubCategoryService {
   readonly allSubCategorySelectOptions = computed((): SelectOption[] => {
     const allSubs = this.allSubCategoriesSignal();
     return [
-      { label: 'Todas las subcategorías', value: '' },
+      { label: 'Todas las colecciones', value: '' },
       ...allSubs.map(sub => ({
         label: sub.name,
         value: sub.id,

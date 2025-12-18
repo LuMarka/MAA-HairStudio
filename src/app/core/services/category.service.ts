@@ -41,7 +41,7 @@ export class CategoryService {
 
   readonly hasCategories = computed(() => this.categoriesSignal().length > 0);
   readonly totalCategories = computed(() => this.metaSignal()?.total ?? 0);
-  readonly activeCategories = computed(() => 
+  readonly activeCategories = computed(() =>
     this.allCategoriesSignal().filter(cat => cat.isActive !== false)
   );
 
@@ -49,11 +49,11 @@ export class CategoryService {
   readonly categorySelectOptions = computed(() => {
     const categories = this.activeCategories();
     return [
-      { label: 'Todas las categorías', value: '' },
+      { label: 'Todas las marcas', value: '' },
       ...categories
         .sort((a, b) => a.displayOrder - b.displayOrder)
-        .map(cat => ({ 
-          label: cat.name, 
+        .map(cat => ({
+          label: cat.name,
           value: cat.id,
           color: cat.color,
           icon: cat.icon
@@ -98,7 +98,7 @@ export class CategoryService {
             isActive: cat.isActive ?? true,
             slug: cat.slug ?? cat.name.toLowerCase().replace(/\s+/g, '-')
           }));
-          
+
           this.allCategoriesSignal.set(normalizedCategories);
         }),
         catchError(error => this.handleError(error)),
@@ -248,7 +248,7 @@ export class CategoryService {
     this.categoriesSignal.update(categories =>
       categories.map(cat => cat.id === id ? updatedCategory : cat)
     );
-    
+
     this.allCategoriesSignal.update(categories =>
       categories.map(cat => cat.id === id ? updatedCategory : cat)
     );
@@ -262,7 +262,7 @@ export class CategoryService {
     this.categoriesSignal.update(categories =>
       categories.filter(cat => cat.id !== id)
     );
-    
+
     this.allCategoriesSignal.update(categories =>
       categories.filter(cat => cat.id !== id)
     );
@@ -306,7 +306,7 @@ export class CategoryService {
 
     this.errorSignal.set(errorMessage);
     console.error('Error en CategoryService:', error);
-    
+
     return throwError(() => new Error(errorMessage));
   }
 }
