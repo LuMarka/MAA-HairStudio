@@ -11,7 +11,7 @@ export interface ProductFilters {
   brand?: string;                     // Filtro por marca
   collection?: string;                // Filtro por colección
   type_hair?: 'Graso' | 'Seco' | 'Mixto' | 'Rizado' | 'Liso' | 'Ondulado' | 'Teñido' | 'Dañado'| 'Sensible';
-  desired_result?: 'Hidratación' | 'Volumen' | 'Anticaspa' | 'Reparación' | 'Brillo' | 'Control de grasa' | 'Crecimiento' | 'Protección del color' | 'Definición';
+  desired_result?: 'Hidratación' | 'Volumen' | 'Anti-caspa' | 'Reparación' | 'Brillo' | 'Control de grasa' | 'Crecimiento' | 'Protección del color' | 'Definición';
   type_product?: 'Shampoo' | 'Acondicionador' | 'Mascarilla' | 'Serum' | 'Aceite' | 'Spray' | 'Crema' | 'Gel' | 'Mousse' | 'Cera' | 'Pomada' | 'Tratamiento' | 'Tinte' | 'Decolorante' | 'Protector Térmico' | 'Leave-in' | 'Ampolla' | 'Tónico' | 'Exfoliante';
   minPrice?: number;
   maxPrice?: number;

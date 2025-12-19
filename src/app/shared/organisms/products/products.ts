@@ -26,6 +26,7 @@ export enum ProductType {
   CERA = 'Cera',
   PROTECTOR_TERMICO = 'Crema termoprotectora',
   LEAVE_IN = 'Leave-in',
+  ANTI_CASPA = 'Anti-caspa'
 }
 
 interface SelectOption {
@@ -125,6 +126,7 @@ export class Products implements OnInit {
     { label: 'Gel', value: ProductType.GEL },
     { label: 'Crema para peinar', value: ProductType.CREMA },
     { label: 'Termoprotector', value: ProductType.PROTECTOR_TERMICO },
+   /*  { label: 'Anti-caspa', value: ProductType.ANTI_CASPA }, */
   ]);
 
   readonly sortOptions = computed((): SortOption[] => [
