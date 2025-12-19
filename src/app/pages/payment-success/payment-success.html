@@ -1,0 +1,47 @@
+<section class="payment-success">
+  @if (_isLoading()) {
+    <div class="payment-success__loading">
+      <div class="payment-success__spinner"></div>
+      <p class="payment-success__loading-text">Verificando tu pago...</p>
+    </div>
+  } @else if (_errorMessage()) {
+    <div class="payment-success__error">
+      <svg class="payment-success__icon payment-success__icon--error" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" stroke-width="2"/>
+        <path d="M15 9l-6 6M9 9l6 6" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <h1 class="payment-success__title">Error en la verificación</h1>
+      <p class="payment-success__message">{{ _errorMessage() }}</p>
+      <button class="payment-success__button" (click)="goToHome()">
+        Volver al inicio
+      </button>
+    </div>
+  } @else {
+    <div class="payment-success__content">
+      <svg class="payment-success__icon payment-success__icon--success" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" stroke-width="2"/>
+        <path d="M9 12l2 2 4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1 class="payment-success__title">¡Pago exitoso!</h1>
+      <p class="payment-success__message">Tu pago ha sido procesado correctamente.</p>
+      <div class="payment-success__details">
+        <p class="payment-success__detail">
+          <span class="payment-success__label">Número de orden:</span>
+          <span class="payment-success__value">#{{ _orderId() }}</span>
+        </p>
+        <p class="payment-success__detail">
+          <span class="payment-success__label">ID de pago:</span>
+          <span class="payment-success__value">{{ _paymentId() }}</span>
+        </p>
+      </div>
+      <div class="payment-success__actions">
+        <button class="payment-success__button payment-success__button--primary" (click)="goToOrders()">
+          Ver mis pedidos
+        </button>
+        <button class="payment-success__button payment-success__button--secondary" (click)="goToHome()">
+          Volver al inicio
+        </button>
+      </div>
+    </div>
+  }
+</section>

@@ -1,0 +1,28 @@
+<section class="payment-failure">
+  <div class="payment-failure__content">
+    <svg class="payment-failure__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <circle cx="12" cy="12" r="10" stroke-width="2"/>
+      <path d="M15 9l-6 6M9 9l6 6" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <h1 class="payment-failure__title">Pago rechazado</h1>
+    <p class="payment-failure__message">
+      Tu pago no pudo ser procesado. Por favor, verifica tus datos e intenta nuevamente.
+    </p>
+    @if (_orderId()) {
+      <div class="payment-failure__details">
+        <p class="payment-failure__detail">
+          <span class="payment-failure__label">Número de orden:</span>
+          <span class="payment-failure__value">#{{ _orderId() }}</span>
+        </p>
+      </div>
+    }
+    <div class="payment-failure__actions">
+      <button class="payment-failure__button payment-failure__button--primary" (click)="retryPayment()">
+        Intentar nuevamente
+      </button>
+      <button class="payment-failure__button payment-failure__button--secondary" (click)="goToHome()">
+        Volver al inicio
+      </button>
+    </div>
+  </div>
+</section>

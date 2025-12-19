@@ -1,0 +1,39 @@
+<section class="payment-pending">
+  <div class="payment-pending__content">
+    <svg class="payment-pending__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <circle cx="12" cy="12" r="10" stroke-width="2"/>
+      <path d="M12 6v6l4 2" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <h1 class="payment-pending__title">Pago pendiente</h1>
+    <p class="payment-pending__message">
+      Tu pago está siendo procesado. Te notificaremos cuando se complete.
+    </p>
+    @if (_orderId()) {
+      <div class="payment-pending__details">
+        <p class="payment-pending__detail">
+          <span class="payment-pending__label">Número de orden:</span>
+          <span class="payment-pending__value">#{{ _orderId() }}</span>
+        </p>
+        @if (_paymentId()) {
+          <p class="payment-pending__detail">
+            <span class="payment-pending__label">ID de pago:</span>
+            <span class="payment-pending__value">{{ _paymentId() }}</span>
+          </p>
+        }
+      </div>
+    }
+    <div class="payment-pending__info">
+      <p class="payment-pending__info-text">
+        El procesamiento del pago puede tardar unos minutos. Puedes revisar el estado en tu historial de pedidos.
+      </p>
+    </div>
+    <div class="payment-pending__actions">
+      <button class="payment-pending__button payment-pending__button--primary" (click)="goToOrders()">
+        Ver mis pedidos
+      </button>
+      <button class="payment-pending__button payment-pending__button--secondary" (click)="goToHome()">
+        Volver al inicio
+      </button>
+    </div>
+  </div>
+</section>

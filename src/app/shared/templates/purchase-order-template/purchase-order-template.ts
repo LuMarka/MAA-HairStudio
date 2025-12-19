@@ -6,6 +6,7 @@ import { MethodePay } from "../../organisms/methode-pay/methode-pay";
 import { Confirmation } from "../../organisms/confirmation/confirmation";
 import { OrderService } from "../../../core/services/order.service";
 import { CartService } from "../../../core/services/cart.service";
+import { PaymentService } from "../../../core/services/payment.service";
 import type { DeliveryType, CreateOrderDto } from "../../../core/models/interfaces/order.interface";
 
 type PaymentMethod = 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
@@ -57,6 +58,7 @@ export class PurchaseOrderTemplate {
   private readonly router = inject(Router);
   private readonly orderService = inject(OrderService);
   private readonly cartService = inject(CartService);
+  private readonly paymentService = inject(PaymentService);
 
   // ========== STATE SIGNALS ==========
   readonly currentStep = signal(1);
@@ -285,7 +287,15 @@ export class PurchaseOrderTemplate {
           hasShippingAddress: !!response.data.shippingAddress
         });
 
-        // Limpiar carrito
+        const orderId = response.data.id;
+
+        // ✅ Si el método de pago es Mercado Pago, crear preferencia y redirigir
+        if (paymentMethod === 'mercadopago' || paymentMethod === 'mercadopago-card') {
+          this.handleMercadoPagoPayment(orderId, orderData, cartItems, total, response.data.orderNumber);
+          return;
+        }
+
+        // ✅ Para otros métodos de pago (efectivo, transferencia), flujo tradicional
         this.cartService.clearCart().subscribe({
           next: () => {
             console.log('✅ [PurchaseOrder] Carrito limpiado');
@@ -305,6 +315,65 @@ export class PurchaseOrderTemplate {
         console.error('❌ [PurchaseOrder] Error al crear orden:', error);
         this.isProcessing.set(false);
         alert('Hubo un error al crear tu pedido. Por favor intenta nuevamente.');
+      }
+    });
+  }
+
+  /**
+   * Maneja el flujo de pago con Mercado Pago
+   */
+  private handleMercadoPagoPayment(
+    orderId: string,
+    orderData: OrderData,
+    cartItems: CartItem[],
+    total: number,
+    orderNumber: string
+  ): void {
+    console.log('💳 [PurchaseOrder] Iniciando pago con Mercado Pago para orden:', orderId);
+
+    this.paymentService.createPreference(orderId.toString()).subscribe({
+      next: (response) => {
+        console.log('✅ [PurchaseOrder] Preferencia de Mercado Pago creada:', response.data);
+
+        // Limpiar carrito antes de redirigir
+        this.cartService.clearCart().subscribe({
+          next: () => {
+            console.log('✅ [PurchaseOrder] Carrito limpiado');
+            this.orderService.clearCheckoutState();
+
+            // Redirigir a Mercado Pago
+            this.paymentService.redirectToMercadoPago(
+              response.data.initPoint,
+              response.data.sandboxInitPoint,
+              true // ← cambiar a false para producción
+            );
+          },
+          error: (error) => {
+            console.error('⚠️ [PurchaseOrder] Error al limpiar carrito:', error);
+            this.orderService.clearCheckoutState();
+
+            // Redirigir de todas formas
+            this.paymentService.redirectToMercadoPago(
+              response.data.initPoint,
+              response.data.sandboxInitPoint,
+              false // ← cambiar a false para producción
+            );
+          }
+        });
+      },
+      error: (error) => {
+        console.error('❌ [PurchaseOrder] Error al crear preferencia de Mercado Pago:', error);
+        this.isProcessing.set(false);
+
+        // Fallback: enviar a WhatsApp
+        alert('Hubo un error al procesar el pago con Mercado Pago. Te redirigiremos a WhatsApp para completar tu pedido.');
+        this.cartService.clearCart().subscribe({
+          next: () => {
+            this.sendToWhatsApp(orderData, cartItems, total, orderNumber.toString());
+            this.orderService.clearCheckoutState();
+            this.handleOrderSuccess();
+          }
+        });
       }
     });
   }
