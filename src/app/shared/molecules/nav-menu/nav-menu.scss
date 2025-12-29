@@ -56,7 +56,7 @@
     // Estado activo
     &--active {
       background-color: v.color(accent);
-      color: v.color(text-darker);
+      color: v.color(text-dark);
       font-weight: 900;
 
       &::after {

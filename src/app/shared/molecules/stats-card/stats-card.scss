@@ -1,0 +1,267 @@
+@use '../../../../assets/styles/variables' as *;
+@use '../../../../assets/styles/mixins' as *;
+
+.stats-card {
+  background: color(white1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  border: 1px solid color(gray0);
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  @include mobile-only {
+    padding: 1.25rem;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+
+  // Color variants
+  &--primary {
+    border-left: 4px solid color(primary);
+
+    .stats-card__icon-wrapper {
+      background-color: color(green-50);
+    }
+
+    .stats-card__value {
+      color: color(primary);
+    }
+  }
+
+  &--success {
+    border-left: 4px solid color(success);
+
+    .stats-card__icon-wrapper {
+      background-color: rgba(33, 184, 54, 0.1);
+    }
+
+    .stats-card__value {
+      color: color(success);
+    }
+  }
+
+  &--warning {
+    border-left: 4px solid color(warning);
+
+    .stats-card__icon-wrapper {
+      background-color: rgba(245, 158, 11, 0.1);
+    }
+
+    .stats-card__value {
+      color: color(warning);
+    }
+  }
+
+  &--info {
+    border-left: 4px solid color(info);
+
+    .stats-card__icon-wrapper {
+      background-color: rgba(37, 99, 235, 0.1);
+    }
+
+    .stats-card__value {
+      color: color(info);
+    }
+  }
+
+  &--secondary {
+    border-left: 4px solid color(secondary);
+
+    .stats-card__icon-wrapper {
+      background-color: rgba(194, 65, 12, 0.1);
+    }
+
+    .stats-card__value {
+      color: color(secondary);
+    }
+  }
+
+  // Content structure
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  &__icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background-color: color(green-50);
+
+    @include mobile-only {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  &__icon {
+    font-size: 1.25rem;
+
+    @include mobile-only {
+      font-size: 1rem;
+    }
+  }
+
+  &__trend {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+
+    &--up {
+      color: color(success);
+      background-color: rgba(33, 184, 54, 0.1);
+    }
+
+    &--down {
+      color: color(error);
+      background-color: rgba(220, 38, 38, 0.1);
+    }
+
+    &--neutral {
+      color: color(text-muted);
+      background-color: color(bg-gray2);
+    }
+  }
+
+  &__trend-icon {
+    font-size: 1rem;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: color(text-muted);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: color(text-dark);
+    margin: 0.5rem 0 0 0;
+    line-height: 1.1;
+
+    @include mobile-only {
+      font-size: 1.5rem;
+    }
+
+    @include tablet-up {
+      font-size: 2rem;
+    }
+  }
+
+  &__subtitle {
+    font-size: 0.8rem;
+    color: color(text-muted);
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  &__trend-label {
+    font-size: 0.75rem;
+    color: color(text-muted);
+    margin: 0;
+    font-style: italic;
+  }
+
+  // Loading state
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__skeleton {
+    background: linear-gradient(
+      90deg,
+      color(bg-gray2) 25%,
+      rgba(203, 213, 225, 0.5) 50%,
+      color(bg-gray2) 75%
+    );
+    background-size: 200% 100%;
+    border-radius: 4px;
+    animation: shimmer 1.5s infinite;
+
+    &--icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+    }
+
+    &--text {
+      height: 1rem;
+      width: 60%;
+    }
+
+    &--value {
+      height: 2rem;
+      width: 80%;
+    }
+  }
+
+
+// Shimmer animation for loading skeleton
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Responsive adjustments
+@include mobile-only {
+  .stats-card {
+    padding: 1.25rem;
+
+    &__value {
+      font-size: 1.75rem;
+    }
+
+    &__icon-wrapper {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    &__icon {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+// Focus states
+.stats-card:focus-within {
+  @include focused;
+}
+}

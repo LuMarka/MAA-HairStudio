@@ -1,12 +1,126 @@
-<section class="admin-wishlist-template">
-	<h2>Mi Wishlist</h2>
-	<!-- @if (products().length > 0) {
-		<div class="admin-wishlist-template__grid">
-			@for (product of products(); track product.id) {
-				<app-product-card [product]="product"></app-product-card>
-			}
-		</div>
-	} @else {
-		<p class="admin-wishlist-template__empty">No tienes productos en tu wishlist.</p>
-	} -->
-</section>
+<!-- Admin Wishlist Analytics -->
+<div class="admin-wishlist-analytics">
+  <!-- Header -->
+  <header class="admin-wishlist-analytics__header">
+    <div class="admin-wishlist-analytics__header-content">
+      <h1 class="admin-wishlist-analytics__title">Estadísticas de Lista de Deseos</h1>
+      <p class="admin-wishlist-analytics__subtitle">
+        Analiza las preferencias de tus clientes y productos más deseados
+      </p>
+    </div>
+  </header>
+
+  <!-- Stats Cards Grid -->
+  <section class="admin-wishlist-analytics__stats" aria-label="Estadísticas de wishlist">
+    <div class="stats-grid">
+      @for (card of statsCards(); track card.title) {
+        <app-stats-card [data]="card" />
+      }
+    </div>
+  </section>
+
+  <!-- Most Wished Products -->
+  <section class="admin-wishlist-analytics__products" aria-label="Productos más deseados">
+    <div class="section-header">
+      <h2 class="section-header__title">
+        <span class="section-header__icon">🏆</span>
+        Productos Más Deseados
+      </h2>
+      <p class="section-header__description">
+        Los productos que más aparecen en las listas de deseos de tus clientes
+      </p>
+    </div>
+
+    @if (isLoadingProducts()) {
+      <div class="products-loading">
+        <div class="products-skeleton">
+          @for (item of [1,2,3,4,5]; track $index) {
+            <div class="product-skeleton-card">
+              <div class="product-skeleton-card__image"></div>
+              <div class="product-skeleton-card__content">
+                <div class="product-skeleton-card__title"></div>
+                <div class="product-skeleton-card__price"></div>
+                <div class="product-skeleton-card__stats"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="products-grid">
+        @for (item of mostWishedProducts(); track item.product.id) {
+          <div class="product-card">
+            <div class="product-card__image-wrapper">
+              <img
+                class="product-card__image"
+                [src]="item.product.image"
+                [alt]="item.product.name"
+                loading="lazy"
+              >
+              <div class="product-card__rank">
+                <span class="product-card__rank-number">{{ $index + 1 }}</span>
+              </div>
+            </div>
+
+            <div class="product-card__content">
+              <h3 class="product-card__title">{{ item.product.name }}</h3>
+              <p class="product-card__brand">{{ item.product.brand }}</p>
+
+              <div class="product-card__price">
+                @if (item.product.discountPercentage !== '0') {
+                  <span class="product-card__price-original">
+                    {{ formatPrice(item.product.originalPrice) }}
+                  </span>
+                  <span class="product-card__price-current">
+                    {{ formatPrice(item.product.price) }}
+                  </span>
+                  <span class="product-card__discount">
+                    -{{ item.product.discountPercentage }}%
+                  </span>
+                } @else {
+                  <span class="product-card__price-current">
+                    {{ formatPrice(item.product.price) }}
+                  </span>
+                }
+              </div>
+
+              <div class="product-card__stats">
+                <div class="product-stat">
+                  <span class="product-stat__icon">❤️</span>
+                  <span class="product-stat__label">En {{ item.wishlistCount }} wishlists</span>
+                </div>
+
+                @if (item.conversionRate) {
+                  <div class="product-stat">
+                    <span
+                      class="product-stat__badge product-stat__badge--{{ getConversionColor(item.conversionRate) }}"
+                    >
+                      {{ item.conversionRate.toFixed(1) }}% conversión
+                    </span>
+                  </div>
+                }
+              </div>
+
+              <div class="product-card__meta">
+                <span class="product-meta-item">
+                  <strong>{{ item.product.rating.toFixed(1) }}</strong> ⭐
+                  ({{ item.product.reviewCount }} reseñas)
+                </span>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="products-empty">
+            <div class="products-empty__content">
+              <span class="products-empty__icon">💔</span>
+              <h3 class="products-empty__title">No hay datos disponibles</h3>
+              <p class="products-empty__description">
+                Aún no hay suficientes datos de wishlist para mostrar estadísticas.
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>

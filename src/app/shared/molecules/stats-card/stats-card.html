@@ -1,0 +1,40 @@
+<div class="stats-card" [class]="'stats-card--' + cardColor()">
+      @if (data().loading) {
+        <div class="stats-card__loading">
+          <div class="stats-card__skeleton stats-card__skeleton--icon"></div>
+          <div class="stats-card__skeleton stats-card__skeleton--text"></div>
+          <div class="stats-card__skeleton stats-card__skeleton--value"></div>
+        </div>
+      } @else {
+        <div class="stats-card__content">
+          <div class="stats-card__header">
+            <div class="stats-card__icon-wrapper">
+              <span class="stats-card__icon">{{ data().icon }}</span>
+            </div>
+            @if (data().trend; as trend) {
+              <div class="stats-card__trend stats-card__trend--{{ trend.direction }}">
+                <span class="stats-card__trend-icon">
+                  @switch (trend.direction) {
+                    @case ('up') { ↗️ }
+                    @case ('down') { ↘️ }
+                    @default { ➡️ }
+                  }
+                </span>
+                <span class="stats-card__trend-value">{{ formatTrend(trend.value) }}%</span>
+              </div>
+            }
+          </div>
+
+          <div class="stats-card__body">
+            <h3 class="stats-card__title">{{ data().title }}</h3>
+            <div class="stats-card__value">{{ formatValue(data().value) }}</div>
+            @if (data().subtitle) {
+              <p class="stats-card__subtitle">{{ data().subtitle }}</p>
+            }
+            @if (data().trend?.label) {
+              <p class="stats-card__trend-label">{{ data().trend?.label }}</p>
+            }
+          </div>
+        </div>
+      }
+    </div>

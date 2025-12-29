@@ -1,0 +1,104 @@
+ <div class="orders-table">
+      @if (loading()) {
+        <div class="orders-table__loading">
+          <div class="orders-table__skeleton">
+            @for (row of skeletonRows; track $index) {
+              <div class="orders-table__skeleton-row">
+                @for (col of columns(); track col.key) {
+                  <div class="orders-table__skeleton-cell"></div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="orders-table__wrapper">
+          <table class="orders-table__table">
+            <thead class="orders-table__header">
+              <tr>
+                @for (column of columns(); track column.key) {
+                  <th
+                    class="orders-table__header-cell"
+                    [class.orders-table__header-cell--sortable]="column.sortable"
+                    [style.width]="column.width"
+                    (click)="column.sortable && handleSort(column.key)"
+                  >
+                    {{ column.label }}
+                    @if (column.sortable) {
+                      <span class="orders-table__sort-icon">⇅</span>
+                    }
+                  </th>
+                }
+              </tr>
+            </thead>
+            <tbody class="orders-table__body">
+              @for (order of orders(); track order.id) {
+                <tr class="orders-table__row">
+                  @for (column of columns(); track column.key) {
+                    <td class="orders-table__cell">
+                      @switch (column.type) {
+                        @case ('date') {
+                          {{ formatDate(getCellValue(order, column.key)) }}
+                        }
+                        @case ('currency') {
+                          {{ formatCurrency(getCellValue(order, column.key)) }}
+                        }
+                        @case ('status') {
+                          <span
+                            class="orders-table__status orders-table__status--{{ getStatusClass(getCellValue(order, column.key)) }}"
+                          >
+                            {{ getStatusLabel(getCellValue(order, column.key)) }}
+                          </span>
+                        }
+                        @case ('badge') {
+                          <span
+                            class="orders-table__badge orders-table__badge--{{ getBadgeClass(getCellValue(order, column.key)) }}"
+                          >
+                            {{ getCellValue(order, column.key) }}
+                          </span>
+                        }
+                        @case ('actions') {
+                          <div class="orders-table__actions">
+                            <button
+                              class="orders-table__action-btn orders-table__action-btn--view"
+                              (click)="onViewOrder.emit(order)"
+                              aria-label="Ver detalles del pedido"
+                            >
+                              👁️
+                            </button>
+                            @if (canChangeStatus(order)) {
+                              <button
+                                class="orders-table__action-btn orders-table__action-btn--edit"
+                                (click)="onChangeStatus.emit(order)"
+                                aria-label="Cambiar estado del pedido"
+                              >
+                                ✏️
+                              </button>
+                            }
+                          </div>
+                        }
+                        @default {
+                          {{ getCellValue(order, column.key) }}
+                        }
+                      }
+                    </td>
+                  }
+                </tr>
+              } @empty {
+                <tr>
+                  <td [attr.colspan]="columns().length" class="orders-table__empty">
+                    <div class="orders-table__empty-content">
+                      <span class="orders-table__empty-icon">📦</span>
+                      <h3 class="orders-table__empty-title">No hay pedidos</h3>
+                      <p class="orders-table__empty-description">
+                        No se encontraron pedidos con los filtros aplicados.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>

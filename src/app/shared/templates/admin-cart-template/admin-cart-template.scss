@@ -1,0 +1,77 @@
+@use '../../../../assets/styles/variables' as *;
+@use '../../../../assets/styles/mixins' as *;
+
+.admin-dashboard {
+  padding: 2rem;
+  min-height: 100vh;
+  background: color(bg-gray1);
+  width: 100%;
+  box-sizing: border-box;
+
+  &__header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid color(gray0);
+  }
+
+  &__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: color(text-dark);
+    margin: 0 0 0.5rem 0;
+
+    @include mobile-only {
+      font-size: 1.5rem;
+    }
+  }
+
+  &__subtitle {
+    font-size: 0.95rem;
+    color: color(text-muted);
+    margin: 0;
+    line-height: 1.5;
+
+    @include mobile-only {
+      font-size: 0.875rem;
+    }
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+
+    @include mobile-only {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+  }
+
+  &__orders {
+    background: color(white1);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    border: 1px solid color(gray0);
+  }
+
+  &__orders-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid color(gray0);
+    background: color(white1);
+  }
+
+  &__orders-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: color(text-dark);
+  }
+
+  &__orders-content {
+    padding: 0;
+  }
+}

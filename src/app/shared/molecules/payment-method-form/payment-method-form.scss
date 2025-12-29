@@ -9,7 +9,7 @@
   &__title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: v.color('text-darker');
+    color: v.color('text-dark');
     margin: 0 0 v.$spacing-lg 0;
     font-family: v.$font-family-primary;
     letter-spacing: 0.3px;
@@ -125,7 +125,7 @@
   &__label {
     font-size: 1rem;
     font-weight: 500;
-    color: v.color('text-darker');
+    color: v.color('text-dark');
     font-family: v.$font-family-secondary;
     transition: color 0.3s ease;
     line-height: 1.2;

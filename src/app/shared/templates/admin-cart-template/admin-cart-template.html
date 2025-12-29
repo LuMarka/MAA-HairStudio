@@ -1,1 +1,50 @@
-<p>admin-cart-template works!</p>
+<!-- Dashboard Estilo Render Profesional -->
+<div class="admin-dashboard">
+  <!-- Header -->
+  <header class="admin-dashboard__header">
+    <div class="admin-dashboard__header-content">
+      <h1 class="admin-dashboard__title">Dashboard</h1>
+      <p class="admin-dashboard__subtitle">Gestión y control de pedidos</p>
+    </div>
+  </header>
+
+  <!-- Stats Cards -->
+  <section class="admin-dashboard__stats">
+    @for (card of statsCards(); track card.title) {
+      <app-stats-card [data]="card" />
+    }
+  </section>
+
+  <!-- Orders Section -->
+  <section class="admin-dashboard__orders">
+    <div class="section-header">
+      <h2 class="section-header__title">
+        <span class="section-header__icon">📋</span>
+        Gestión de Pedidos
+      </h2>
+      <p class="section-header__description">
+        Administra el estado de los pedidos y revisa los detalles
+      </p>
+    </div>
+
+    <div class="orders-container">
+      <app-orders-table
+        [orders]="orders()"
+        [columns]="orderColumns"
+        [loading]="isLoadingOrders()"
+        (onViewOrder)="onViewOrder($event)"
+        (onChangeStatus)="onChangeStatus($event)"
+        (onSort)="onSortOrders($event)"
+      />
+    </div>
+  </section>
+
+  <!-- Status Change Modal -->
+  <app-status-change-modal
+    [isVisible]="showStatusModal()"
+    [order]="selectedOrder()"
+    [loading]="isUpdatingStatus()"
+    (onClose)="onCloseStatusModal()"
+    (onSave)="onSaveStatusChange($event)"
+  />
+</div>

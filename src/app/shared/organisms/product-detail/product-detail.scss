@@ -136,7 +136,7 @@
 .product-detail__price {
   font-size: 2.5rem; // 40px (en mobile)
   font-weight: 700;
-  color: v.color(text-darker);
+  color: v.color(text-dark);
   line-height: 1;
 }
 
@@ -286,7 +286,7 @@
     border-bottom: 1px solid v.color(green-100);
 
     strong {
-      color: v.color(text-darker);
+      color: v.color(text-dark);
       margin-right: v.$spacing-md;
     }
   }
