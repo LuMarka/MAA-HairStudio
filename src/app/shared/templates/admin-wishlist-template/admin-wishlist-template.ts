@@ -42,6 +42,9 @@ export class AdminWishlistTemplate implements OnInit {
     conversionRate?: number;
   }>>([]);
 
+  // Modal state
+  protected readonly selectedImage = signal<{ url: string; alt: string; price: number; originalPrice?: number; discount?: string } | null>(null);
+
   // Computed stats cards
   protected readonly statsCards = computed((): StatsCardData[] => {
     const stats = this.wishlistStats();
@@ -171,15 +174,29 @@ export class AdminWishlistTemplate implements OnInit {
   }
 
   protected formatPrice(price: number): string {
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat('es-MX', {
       style: 'currency',
-      currency: 'EUR'
+      currency: 'MXN'
     }).format(price);
   }
 
   protected getConversionColor(rate: number): string {
-    if (rate >= 20) return 'success';
-    if (rate >= 15) return 'warning';
-    return 'info';
+    if (rate >= 20) return 'high';
+    if (rate >= 15) return 'medium';
+    return 'low';
+  }
+
+  protected openImageModal(imageUrl: string, productName: string, price: number, originalPrice?: number, discount?: string): void {
+    this.selectedImage.set({
+      url: imageUrl,
+      alt: productName,
+      price,
+      originalPrice,
+      discount
+    });
+  }
+
+  protected closeImageModal(): void {
+    this.selectedImage.set(null);
   }
 }
