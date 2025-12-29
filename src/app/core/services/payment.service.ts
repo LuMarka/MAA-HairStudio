@@ -448,7 +448,7 @@ export class PaymentService {
     );
 
     // ✅ Abrir en nueva pestaña sin cerrar la aplicación
-    window.open(url, '_blank', 'width=1024,height=768');
+    window.location.href = url;
   }
 
   /**
