@@ -2,10 +2,10 @@
 @use '../../../../assets/styles/mixins' as *;
 
 .orders-table {
-  background: color(surface);
+  background: color('surface');
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid color(bg-gray2);
+  border: 1px solid color('bg-gray2');
 
   &__wrapper {
     overflow-x: auto;
@@ -22,40 +22,40 @@
 
     @include mobile-only {
       min-width: 700px;
+    }
+  }
 
   // Header
   &__header {
-    background-color: color(bg-gray1);
+    background-color: color('bg-gray1');
   }
 
   &__header-cell {
-    padding: 0.75rem;
+    padding: 0.75rem 0.5rem 0.5rem 0.5rem;
     text-align: left;
     font-weight: 600;
-    color: color(text-dark);
-    border-bottom: 2px solid color(bg-gray2);
+    color: color('text-dark');
+    border-bottom: 3px solid color('primary');
     white-space: nowrap;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.025em;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: color('bg-gray2');
+    }
 
     &--sortable {
       cursor: pointer;
       user-select: none;
-      transition: background-color 0.2s ease;
-
-      &:hover {
-        background-color: color(bg-gray2);
-      }
-
-      &--active {
-        background-color: rgba(99, 102, 241, 0.1);
-        color: color(primary);
-      }
     }
 
-    &:hover {
-      background-color: color(bg-gray2);
+    &--active {
+      background-color: rgba(99, 102, 241, 0.1);
+      color: color('primary');
     }
   }
 
@@ -65,22 +65,22 @@
     font-size: 0.8rem;
     display: inline-block;
     transition: opacity 0.2s ease;
+  }
 
-    .orders-table__header-cell--active & {
-      opacity: 1;
-      color: color(primary);
-    }
+  &__header-cell--active &__sort-icon {
+    opacity: 1;
+    color: color('primary');
   }
 
   // Body
   &__body {
     tr:hover {
-      background-color: color(bg-gray1);
+      background-color: color('bg-gray1');
     }
   }
 
   &__row {
-    border-bottom: 1px solid color(bg-gray2);
+    border-bottom: 1px solid color('bg-gray2');
     transition: background-color 0.2s ease;
 
     &:last-child {
@@ -89,11 +89,12 @@
   }
 
   &__cell {
-    padding: 0.875rem 0.75rem;
-    color: color(text-dark);
+    padding: 0.75rem 0.5rem;
+    color: color('text-dark');
     vertical-align: middle;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid color('bg-gray2');
     font-size: 0.8rem;
+  }
 
   // Status badges
   &__status {
@@ -109,32 +110,33 @@
 
     &--success {
       background-color: rgba(33, 184, 54, 0.1);
-      color: color(success);
+      color: color('success');
       border: 1px solid rgba(33, 184, 54, 0.2);
     }
 
     &--warning {
       background-color: rgba(245, 158, 11, 0.1);
-      color: color(warning);
-      border: 1px solid rgba(245, 158, 11, 0.2);
+      color: color('warning');
+      font-weight: 700;
+      border: 1px solid rgba(245, 159, 11, 0.716);
     }
 
     &--info {
       background-color: rgba(37, 99, 235, 0.1);
-      color: color(info);
+      color: color('info');
       border: 1px solid rgba(37, 99, 235, 0.2);
     }
 
     &--error {
       background-color: rgba(220, 38, 38, 0.1);
-      color: color(error);
+      color: color('error');
       border: 1px solid rgba(220, 38, 38, 0.2);
     }
 
     &--default {
-      background-color: color(bg-gray2);
+      background-color: color('bg-gray2');
       color: color(text-muted);
-      border: 1px solid color(bg-gray2);
+      border: 1px solid color('bg-gray2');
     }
   }
 
@@ -147,8 +149,8 @@
     font-weight: 500;
 
     &--default {
-      background-color: color(bg-gray2);
-      color: color(text-muted);
+      background-color: color('bg-gray2');
+      color: color('text-muted');
     }
   }
 
@@ -172,25 +174,25 @@
     font-size: 0.875rem;
 
     &--view {
-      background-color: color(bg-gray2);
-      color: color(text-muted);
+      background-color: color('bg-gray2');
+      color: color('text-muted');
 
       &:hover,
       &:focus {
-        background-color: color(info);
-        color: color(surface);
+        background-color: color('info');
+        color: color('surface');
         transform: scale(1.05);
       }
     }
 
     &--edit {
-      background-color: color(bg-gray2);
-      color: color(text-muted);
+      background-color: color('bg-gray2');
+      color: color('text-muted');
 
       &:hover,
       &:focus {
-        background-color: color(primary);
-        color: color(surface);
+        background-color: color('primary');
+        color: color('surface');
         transform: scale(1.05);
       }
     }
@@ -219,12 +221,12 @@
   &__empty-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: color(text-dark);
+    color: color('text-dark');
     margin: 0;
   }
 
   &__empty-description {
-    color: color(text-muted);
+    color: color('text-muted');
     margin: 0;
   }
 
@@ -249,9 +251,9 @@
     height: 1.5rem;
     background: linear-gradient(
       90deg,
-      color(bg-gray2) 25%,
+      color('bg-gray2') 25%,
       rgba(203, 213, 225, 0.5) 50%,
-      color(bg-gray2) 75%
+      color('bg-gray2') 75%
     );
     background-size: 200% 100%;
     border-radius: 4px;
@@ -275,7 +277,12 @@
       min-width: 800px; // Force horizontal scroll on mobile
     }
 
-    &__header-cell,
+    &__header-cell {
+      padding: 0.75rem 0.5rem 0.5rem 0.5rem;
+      font-size: 0.75rem;
+      border-bottom: 3px solid color(primary);
+    }
+
     &__cell {
       padding: 0.75rem 0.5rem;
       font-size: 0.8rem;
@@ -303,4 +310,4 @@
     background-position: 200% 0;
   }
 }
-  }}
+

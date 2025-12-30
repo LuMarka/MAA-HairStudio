@@ -60,13 +60,6 @@
                         }
                         @case ('actions') {
                           <div class="orders-table__actions">
-                            <button
-                              class="orders-table__action-btn orders-table__action-btn--view"
-                              (click)="onViewOrder.emit(order)"
-                              aria-label="Ver detalles del pedido"
-                            >
-                              👁️
-                            </button>
                             @if (canChangeStatus(order)) {
                               <button
                                 class="orders-table__action-btn orders-table__action-btn--edit"

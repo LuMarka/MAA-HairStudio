@@ -1,0 +1,32 @@
+<!-- Gestión de Pedidos -->
+<div class="admin-orders">
+  <!-- Header -->
+  <header class="admin-orders__header">
+    <div class="admin-orders__header-content">
+      <h1 class="admin-orders__title">Gestión de Pedidos</h1>
+      <p class="admin-orders__subtitle">Administra el estado de los pedidos y revisa los detalles</p>
+    </div>
+  </header>
+
+  <!-- Orders Section -->
+  <section class="admin-orders__section">
+    <div class="orders-container">
+      <app-orders-table
+        [orders]="orders()"
+        [columns]="orderColumns"
+        [loading]="isLoadingOrders()"
+        (onChangeStatus)="onChangeStatus($event)"
+        (onSort)="onSortOrders($event)"
+      />
+    </div>
+  </section>
+
+  <!-- Status Change Modal -->
+  <app-status-change-modal
+    [isVisible]="showStatusModal()"
+    [order]="selectedOrder()"
+    [loading]="isUpdatingStatus()"
+    (onClose)="onCloseStatusModal()"
+    (onSave)="onSaveStatusChange($event)"
+  />
+</div>

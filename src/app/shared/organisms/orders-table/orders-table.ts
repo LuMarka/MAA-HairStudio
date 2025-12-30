@@ -21,7 +21,6 @@ export class OrdersTable {
   readonly columns = input.required<OrderTableColumn[]>();
   readonly loading = input<boolean>(false);
 
-  readonly onViewOrder = output<OrderData>();
   readonly onChangeStatus = output<OrderData>();
   readonly onSort = output<{key: string, direction: 'asc' | 'desc'}>();
 

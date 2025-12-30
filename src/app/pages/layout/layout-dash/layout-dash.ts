@@ -34,7 +34,7 @@ export class LayoutDash {
     {
       id: 'orders',
       label: 'Pedidos',
-      path: '/admin/cart',
+      path: '/admin/orders',
       icon: '🛒',
       description: 'Gestión de pedidos y ventas'
     },

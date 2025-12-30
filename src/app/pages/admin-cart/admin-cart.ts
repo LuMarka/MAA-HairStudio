@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { AdminCartTemplate } from "../../shared/templates/admin-cart-template/admin-cart-template";
+import { AdminOrdersTemplate } from "../../shared/templates/admin-orders-template/admin-orders-template";
 
 @Component({
   selector: 'app-admin-cart',
-  imports: [AdminCartTemplate],
+  imports: [AdminOrdersTemplate],
   templateUrl: './admin-cart.html',
   styleUrl: './admin-cart.scss'
 })

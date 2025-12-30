@@ -6,6 +6,7 @@ import { Services } from './services/services';
 import { Products } from './products/products';
 import { LayoutHome } from './layout/layout-home/layout-home';
 import { LayoutDash } from './layout/layout-dash/layout-dash';
+import { AdminDashboard } from './admin-dashboard/admin-dashboard';
 import { AdminCart } from './admin-cart/admin-cart';
 import { AdminCategory } from './admin-category/admin-category';
 import { AdminProducts } from './admin-products/admin-products';
@@ -193,11 +194,20 @@ export const pagesRoutes: Routes = [
     children: [
       {
         path: '',
-        component: AdminCart,
+        component: AdminDashboard,
         data: {
           title: "Dashboard | MAA Hair Studio",
           description: "Panel de administración.",
           keywords: "admin, dashboard, management",
+        }
+      },
+      {
+        path: 'orders',
+        component: AdminCart,
+        data: {
+          title: "Gestión de Pedidos | Admin MAA Hair Studio",
+          description: "Gestión de pedidos y ventas.",
+          keywords: "admin, dashboard, management, orders, pedidos",
         }
       },
       {

@@ -67,47 +67,80 @@ export class AdminCartTemplate implements OnInit {
 
     const statData = stats.data;
     const totalRevenue = statData.revenue?.total ?? 0;
-    const pendingCount = statData.ordersByStatus?.['pending'] ?? 0;
-    const completedCount = statData.ordersByStatus?.['completed'] ?? 0;
+    const ordersByStatus = statData.ordersByStatus || {};
+    const pendingCount = ordersByStatus['pending'] ?? 0;
+    const completedCount = ordersByStatus['confirmed'] ?? 0;
 
-    return [
+    // Map de estatuses adicionales que queremos mostrar
+    const additionalStatuses: Record<string, { title: string; icon: string; color: 'primary' | 'info' | 'success' | 'warning' | 'secondary'; subtitle: string }> = {
+      'delivered': {
+        title: 'Entregados',
+        icon: '✅',
+        color: 'success',
+        subtitle: 'Entregados exitosamente'
+      },
+      'paid': {
+        title: 'Pagados',
+        icon: '💳',
+        color: 'success',
+        subtitle: 'Pagados exitosamente'
+      }
+    };
+
+    // Construir array de cards base
+    const cards: StatsCardData[] = [
       {
         title: 'Total Pedidos',
         value: statData.totalOrders || 0,
         subtitle: 'Todos los pedidos',
-        icon: '📦',
+        icon: '📊',
         color: 'info',
         loading: this.isLoadingStats()
       },
       {
-        title: 'Pedidos Pendientes',
+        title: 'Pendiente',
         value: pendingCount,
         subtitle: 'Requieren atención',
         icon: '⏳',
         color: 'warning',
-        loading: this.isLoadingStats(),
-        trend: pendingCount > 0
-          ? { value: 5, direction: 'up' as const, label: 'vs mes anterior' }
-          : undefined
+        loading: this.isLoadingStats()
       },
       {
-        title: 'Pedidos Completados',
+        title: 'Completados',
         value: completedCount,
         subtitle: 'Finalizados exitosamente',
         icon: '✅',
         color: 'success',
         loading: this.isLoadingStats()
-      },
-      {
-        title: 'Ingresos Totales',
-        value: `$${totalRevenue.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-        subtitle: 'Pedidos completados',
-        icon: '💰',
-        color: 'primary',
-        loading: this.isLoadingStats(),
-        trend: { value: 12, direction: 'up' as const, label: 'vs mes anterior' }
       }
     ];
+
+    // Agregar cards adicionales solo si tienen datos
+    Object.entries(additionalStatuses).forEach(([status, config]) => {
+      const count = ordersByStatus[status] ?? 0;
+      if (count > 0) {
+        cards.push({
+          title: config.title,
+          value: count,
+          subtitle: config.subtitle,
+          icon: config.icon,
+          color: config.color,
+          loading: this.isLoadingStats()
+        });
+      }
+    });
+
+    // Card de Ingresos Totales al final
+    cards.push({
+      title: 'Ingresos Totales',
+      value: `$${totalRevenue.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+      subtitle: 'Ingresos generados',
+      icon: '💰',
+      color: 'primary',
+      loading: this.isLoadingStats()
+    });
+
+    return cards;
   });
 
   // Table configuration
@@ -122,6 +155,7 @@ export class AdminCartTemplate implements OnInit {
       key: 'user',
       label: 'Cliente',
       type: 'text',
+      sortable: true,
       width: '150px'
     },
     {
@@ -135,12 +169,14 @@ export class AdminCartTemplate implements OnInit {
       key: 'status',
       label: 'Estado',
       type: 'status',
+      sortable: true,
       width: '120px'
     },
     {
       key: 'paymentStatus',
       label: 'Pago',
       type: 'status',
+      sortable: true,
       width: '120px'
     },
     {
@@ -216,14 +252,6 @@ export class AdminCartTemplate implements OnInit {
     }
   }
 
-  protected onViewOrder(order: OrderData): void {
-    this.selectedOrder.set(order);
-    // Show details modal or navigate to details page
-    // For now, we'll just log it and you can implement a detail modal
-    console.log('Viewing order details:', order);
-    // TODO: Implement order details modal component
-  }
-
   protected onChangeStatus(order: OrderData): void {
     this.selectedOrder.set(order);
     this.showStatusModal.set(true);
@@ -267,8 +295,17 @@ export class AdminCartTemplate implements OnInit {
   protected onSortOrders(sortData: {key: string, direction: 'asc' | 'desc'}): void {
     const currentOrders = this.orders();
     const sortedOrders = [...currentOrders].sort((a, b) => {
-      const aValue = (a as any)[sortData.key];
-      const bValue = (b as any)[sortData.key];
+      let aValue: any;
+      let bValue: any;
+
+      // Extract value based on key
+      if (sortData.key === 'user') {
+        aValue = a.user?.name || a.user?.email || '';
+        bValue = b.user?.name || b.user?.email || '';
+      } else {
+        aValue = (a as any)[sortData.key];
+        bValue = (b as any)[sortData.key];
+      }
 
       // Handle null/undefined values
       if (aValue == null && bValue == null) return 0;

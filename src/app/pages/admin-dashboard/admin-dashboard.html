@@ -1,0 +1,17 @@
+<!-- Dashboard Estilo Render Profesional -->
+<div class="admin-dashboard">
+  <!-- Header -->
+  <header class="admin-dashboard__header">
+    <div class="admin-dashboard__header-content">
+      <h1 class="admin-dashboard__title">Dashboard</h1>
+      <p class="admin-dashboard__subtitle">Resumen y estadísticas de pedidos</p>
+    </div>
+  </header>
+
+  <!-- Stats Cards -->
+  <section class="admin-dashboard__stats">
+    @for (card of statsCards(); track card.title) {
+      <app-stats-card [data]="card" />
+    }
+  </section>
+</div>
