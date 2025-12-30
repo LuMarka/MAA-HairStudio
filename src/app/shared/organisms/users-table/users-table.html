@@ -1,0 +1,73 @@
+<div class="users-table-container">
+  @if (isLoading()) {
+    <div class="users-table__loading">
+      <p>Cargando usuarios...</p>
+    </div>
+  } @else if (users().length === 0) {
+    <div class="users-table__empty">
+      <p>No hay usuarios disponibles</p>
+    </div>
+  } @else {
+    <div class="users-table__wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            @for (col of columns(); track col.key) {
+              <th [class.sortable]="col.sortable" (click)="col.sortable && onSort(col.key)">
+                <span class="column-label">
+                  {{ col.label }}
+                  @if (col.sortable) {
+                    <span class="sort-arrow">{{ getSortArrow(col.key) }}</span>
+                  }
+                </span>
+              </th>
+            }
+            <th class="actions-header">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of sortedUsers(); track user.id) {
+            <tr class="user-row" (click)="onSelectUser(user)">
+              @for (col of columns(); track col.key) {
+                <td [class]="'cell-' + col.key">
+                  @switch (col.key) {
+                    @case ('name') {
+                      <div class="user-cell">
+                        <div class="user-avatar">{{ (user.name || 'U').charAt(0).toUpperCase() }}</div>
+                        <span class="user-name">{{ user.name }}</span>
+                      </div>
+                    }
+                    @case ('role') {
+                      <select
+                        class="role-select"
+                        [value]="user.role"
+                        (change)="onRoleChange(user, $any($event.target).value, $event)"
+                      >
+                        <option value="user">Usuario</option>
+                        <option value="admin">Administrador</option>
+                        <option value="custom">Personalizado</option>
+                      </select>
+                    }
+                    @default {
+                      <span class="cell-value">{{ formatValue(user[col.key], col.key) }}</span>
+                    }
+                  }
+                </td>
+              }
+              <td class="actions-cell">
+                <div class="action-buttons">
+                  <button class="btn-icon btn-edit" title="Editar usuario" (click)="onEditUser(user, $event)">
+                    ✏️
+                  </button>
+                  <button class="btn-icon btn-delete" title="Eliminar usuario" (click)="onDeleteUser(user, $event)">
+                    🗑️
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
