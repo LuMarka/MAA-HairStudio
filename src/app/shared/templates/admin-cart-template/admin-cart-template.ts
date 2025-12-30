@@ -4,8 +4,7 @@ import { StatsCard, type StatsCardData } from '../../molecules/stats-card/stats-
 import { OrdersTable, type OrderTableColumn } from '../../organisms/orders-table/orders-table';
 import { StatusChangeModal, type StatusChangeData } from '../../organisms/status-change-modal/status-change-modal';
 import { OrderService } from '../../../core/services/order.service';
-import { WishlistService } from '../../../core/services/wishlist.service';
-import type { OrderData } from '../../../core/models/interfaces/order.interface';
+import type { OrderData, OrderStatisticsResponse } from '../../../core/models/interfaces/order.interface';
 
 @Component({
   selector: 'app-admin-cart-template',
@@ -15,31 +14,66 @@ import type { OrderData } from '../../../core/models/interfaces/order.interface'
 })
 export class AdminCartTemplate implements OnInit {
   private readonly orderService = inject(OrderService);
-  private readonly wishlistService = inject(WishlistService);
 
   // State signals
   protected readonly isLoadingOrders = signal(false);
   protected readonly isLoadingStats = signal(false);
   protected readonly orders = signal<OrderData[]>([]);
+  protected readonly statistics = signal<OrderStatisticsResponse | null>(null);
   protected readonly selectedOrder = signal<OrderData | null>(null);
   protected readonly showStatusModal = signal(false);
   protected readonly isUpdatingStatus = signal(false);
 
   // Computed stats
   protected readonly statsCards = computed((): StatsCardData[] => {
-    const ordersList = this.orders();
+    const stats = this.statistics();
 
-    const totalOrders = ordersList.length;
-    const pendingOrders = ordersList.filter(o => o.status === 'pending').length;
-    const completedOrders = ordersList.filter(o => o.status === 'completed').length;
-    const totalRevenue = ordersList
-      .filter(o => o.status === 'completed')
-      .reduce((sum, o) => sum + parseFloat(o.total), 0);
+    if (!stats || !stats.data) {
+      return [
+        {
+          title: 'Total Pedidos',
+          value: 0,
+          subtitle: 'Todos los pedidos',
+          icon: '📦',
+          color: 'info',
+          loading: this.isLoadingStats()
+        },
+        {
+          title: 'Pedidos Pendientes',
+          value: 0,
+          subtitle: 'Requieren atención',
+          icon: '⏳',
+          color: 'warning',
+          loading: this.isLoadingStats()
+        },
+        {
+          title: 'Pedidos Completados',
+          value: 0,
+          subtitle: 'Finalizados exitosamente',
+          icon: '✅',
+          color: 'success',
+          loading: this.isLoadingStats()
+        },
+        {
+          title: 'Ingresos Totales',
+          value: '$0,00',
+          subtitle: 'Pedidos completados',
+          icon: '💰',
+          color: 'primary',
+          loading: this.isLoadingStats()
+        }
+      ];
+    }
+
+    const statData = stats.data;
+    const totalRevenue = statData.revenue?.total ?? 0;
+    const pendingCount = statData.ordersByStatus?.['pending'] ?? 0;
+    const completedCount = statData.ordersByStatus?.['completed'] ?? 0;
 
     return [
       {
         title: 'Total Pedidos',
-        value: totalOrders,
+        value: statData.totalOrders || 0,
         subtitle: 'Todos los pedidos',
         icon: '📦',
         color: 'info',
@@ -47,16 +81,18 @@ export class AdminCartTemplate implements OnInit {
       },
       {
         title: 'Pedidos Pendientes',
-        value: pendingOrders,
+        value: pendingCount,
         subtitle: 'Requieren atención',
         icon: '⏳',
         color: 'warning',
         loading: this.isLoadingStats(),
-        trend: pendingOrders > 0 ? { value: 5, direction: 'up', label: 'vs mes anterior' } : undefined
+        trend: pendingCount > 0
+          ? { value: 5, direction: 'up' as const, label: 'vs mes anterior' }
+          : undefined
       },
       {
         title: 'Pedidos Completados',
-        value: completedOrders,
+        value: completedCount,
         subtitle: 'Finalizados exitosamente',
         icon: '✅',
         color: 'success',
@@ -69,7 +105,7 @@ export class AdminCartTemplate implements OnInit {
         icon: '💰',
         color: 'primary',
         loading: this.isLoadingStats(),
-        trend: { value: 12, direction: 'up', label: 'vs mes anterior' }
+        trend: { value: 12, direction: 'up' as const, label: 'vs mes anterior' }
       }
     ];
   });
@@ -129,17 +165,16 @@ export class AdminCartTemplate implements OnInit {
   protected async loadData(): Promise<void> {
     await Promise.all([
       this.loadOrders(),
-      this.loadWishlistStats()
+      this.loadStatistics()
     ]);
   }
 
   protected async loadOrders(): Promise<void> {
     this.isLoadingOrders.set(true);
-    this.isLoadingStats.set(true);
 
     try {
-      // Get all orders (you may want to add pagination later)
-      this.orderService.getAllOrders().subscribe({
+      // Get all orders with pagination
+      this.orderService.getAllOrders({ page: 1, limit: 50 }).subscribe({
         next: (response) => {
           if (response.success && response.data) {
             this.orders.set(response.data);
@@ -150,36 +185,43 @@ export class AdminCartTemplate implements OnInit {
         },
         complete: () => {
           this.isLoadingOrders.set(false);
-          this.isLoadingStats.set(false);
         }
       });
     } catch (error) {
       console.error('Error loading orders:', error);
       this.isLoadingOrders.set(false);
+    }
+  }
+
+  protected async loadStatistics(): Promise<void> {
+    this.isLoadingStats.set(true);
+
+    try {
+      this.orderService.getOrderStatistics().subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.statistics.set(response);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading statistics:', error);
+        },
+        complete: () => {
+          this.isLoadingStats.set(false);
+        }
+      });
+    } catch (error) {
+      console.error('Error loading statistics:', error);
       this.isLoadingStats.set(false);
     }
   }
 
-  protected async loadWishlistStats(): Promise<void> {
-    try {
-      this.wishlistService.getAnalytics().subscribe({
-        next: (response) => {
-          console.log('Wishlist analytics:', response);
-          // Handle wishlist analytics here when available
-        },
-        error: (error) => {
-          console.error('Error loading wishlist stats:', error);
-        }
-      });
-    } catch (error) {
-      console.error('Error loading wishlist stats:', error);
-    }
-  }
-
   protected onViewOrder(order: OrderData): void {
-    console.log('View order:', order);
-    // Implement order detail view
-    // You could navigate to a detail page or show a detail modal
+    this.selectedOrder.set(order);
+    // Show details modal or navigate to details page
+    // For now, we'll just log it and you can implement a detail modal
+    console.log('Viewing order details:', order);
+    // TODO: Implement order details modal component
   }
 
   protected onChangeStatus(order: OrderData): void {
@@ -223,7 +265,31 @@ export class AdminCartTemplate implements OnInit {
   }
 
   protected onSortOrders(sortData: {key: string, direction: 'asc' | 'desc'}): void {
-    // Implement sorting logic
-    console.log('Sort orders:', sortData);
+    const currentOrders = this.orders();
+    const sortedOrders = [...currentOrders].sort((a, b) => {
+      const aValue = (a as any)[sortData.key];
+      const bValue = (b as any)[sortData.key];
+
+      // Handle null/undefined values
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+
+      // Compare values
+      let comparison = 0;
+      if (typeof aValue === 'string') {
+        comparison = aValue.localeCompare(bValue);
+      } else if (typeof aValue === 'number') {
+        comparison = aValue - bValue;
+      } else if (aValue instanceof Date) {
+        comparison = aValue.getTime() - (bValue as Date).getTime();
+      } else {
+        comparison = String(aValue).localeCompare(String(bValue));
+      }
+
+      return sortData.direction === 'asc' ? comparison : -comparison;
+    });
+
+    this.orders.set(sortedOrders);
   }
 }

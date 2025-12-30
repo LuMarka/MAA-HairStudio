@@ -1,4 +1,4 @@
-import { Component, input, output, computed } from '@angular/core';
+import { Component, input, output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import type { OrderData, OrderStatus, PaymentStatus } from '../../../core/models/interfaces/order.interface';
 
@@ -13,7 +13,7 @@ export interface OrderTableColumn {
 @Component({
   selector: 'app-orders-table',
   imports: [CommonModule],
-  template: 'orders-table.html',
+  templateUrl: './orders-table.html',
   styleUrls: ['./orders-table.scss']
 })
 export class OrdersTable {
@@ -25,6 +25,8 @@ export class OrdersTable {
   readonly onChangeStatus = output<OrderData>();
   readonly onSort = output<{key: string, direction: 'asc' | 'desc'}>();
 
+  protected sortKey = signal<string | null>(null);
+  protected sortDirection = signal<'asc' | 'desc'>('asc');
   protected readonly skeletonRows = Array(5).fill(null);
 
   protected getCellValue(order: OrderData, key: string): any {
@@ -48,9 +50,9 @@ export class OrdersTable {
   protected formatCurrency(value: any): string {
     if (!value) return '-';
     const num = typeof value === 'string' ? parseFloat(value) : value;
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat('es-AR', {
       style: 'currency',
-      currency: 'EUR'
+      currency: 'ARS'
     }).format(num);
   }
 
@@ -102,7 +104,21 @@ export class OrdersTable {
   }
 
   protected handleSort(key: string): void {
-    // Toggle sort direction logic would go here
-    this.onSort.emit({key, direction: 'asc'}); // Simplified for now
+    const currentKey = this.sortKey();
+    let newDirection: 'asc' | 'desc' = 'asc';
+
+    // Si estamos ordenando la misma columna, alternar dirección
+    if (currentKey === key) {
+      newDirection = this.sortDirection() === 'asc' ? 'desc' : 'asc';
+    }
+
+    this.sortKey.set(key);
+    this.sortDirection.set(newDirection);
+    this.onSort.emit({ key, direction: newDirection });
+  }
+
+  protected getSortIcon(columnKey: string): string {
+    if (this.sortKey() !== columnKey) return '⇅';
+    return this.sortDirection() === 'asc' ? '↑' : '↓';
   }
 }

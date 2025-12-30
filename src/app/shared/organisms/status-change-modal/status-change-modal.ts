@@ -13,7 +13,7 @@ export interface StatusChangeData {
 @Component({
   selector: 'app-status-change-modal',
   imports: [CommonModule, FormsModule],
-  templateUrl: 'status-change-modal.html',
+  templateUrl: './status-change-modal.html',
   styleUrls: ['./status-change-modal.scss']
 })
 export class StatusChangeModal {
@@ -93,9 +93,9 @@ export class StatusChangeModal {
 
   protected formatCurrency(value: string): string {
     const num = parseFloat(value);
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat('es-AR', {
       style: 'currency',
-      currency: 'EUR'
+      currency: 'ARS'
     }).format(num);
   }
 

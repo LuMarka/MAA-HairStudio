@@ -38,20 +38,20 @@ export class LayoutDash {
       icon: '🛒',
       description: 'Gestión de pedidos y ventas'
     },
-    {
-      id: 'categories',
-      label: 'Categorías',
-      path: '/admin/category',
-      icon: '📂',
-      description: 'Administrar categorías'
-    },
-    {
-      id: 'products',
-      label: 'Productos',
-      path: '/admin/products',
-      icon: '🛍️',
-      description: 'Gestión de productos'
-    },
+    // {
+    //   id: 'categories',
+    //   label: 'Categorías',
+    //   path: '/admin/category',
+    //   icon: '📂',
+    //   description: 'Administrar categorías'
+    // },
+    // {
+    //   id: 'products',
+    //   label: 'Productos',
+    //   path: '/admin/products',
+    //   icon: '🛍️',
+    //   description: 'Gestión de productos'
+    // },
     {
       id: 'users',
       label: 'Usuarios',

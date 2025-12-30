@@ -20,12 +20,13 @@
                   <th
                     class="orders-table__header-cell"
                     [class.orders-table__header-cell--sortable]="column.sortable"
+                    [class.orders-table__header-cell--active]="sortKey() === column.key && column.sortable"
                     [style.width]="column.width"
                     (click)="column.sortable && handleSort(column.key)"
                   >
                     {{ column.label }}
                     @if (column.sortable) {
-                      <span class="orders-table__sort-icon">⇅</span>
+                      <span class="orders-table__sort-icon">{{ getSortIcon(column.key) }}</span>
                     }
                   </th>
                 }
