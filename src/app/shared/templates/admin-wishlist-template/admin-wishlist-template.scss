@@ -9,6 +9,10 @@
   width: 100%;
   box-sizing: border-box;
 
+  @media screen and (max-width: 399px) {
+    padding: 0.75rem;
+  }
+
   @include tablet-up {
     padding: 2rem;
   }
@@ -21,9 +25,19 @@
   // HEADER
   // ===================
   &__header {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
     border-bottom: 2px solid color(gray0);
+
+    @media screen and (max-width: 399px) {
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+    }
+
+    @include tablet-up {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+    }
   }
 
   &__title {
@@ -62,14 +76,25 @@
     gap: 1rem;
     margin-bottom: 1.5rem;
 
+    @media screen and (max-width: 399px) {
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    @media screen and (min-width: 400px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
     @include tablet-up {
       grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
+      gap: 1.25rem;
       margin-bottom: 2rem;
     }
 
     @include desktop-up {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 1.5rem;
       margin-bottom: 2.5rem;
     }
@@ -178,6 +203,11 @@
       color: color(text-dark);
       white-space: nowrap;
 
+      @media screen and (max-width: 399px) {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.65rem;
+      }
+
       @include tablet-up {
         padding: 1rem;
         font-size: 0.85rem;
@@ -190,6 +220,12 @@
 
       &--price {
         @include mobile-only {
+          display: none;
+        }
+      }
+
+      &--wishlist {
+        @media screen and (max-width: 399px) {
           display: none;
         }
       }
@@ -213,6 +249,11 @@
       font-size: 0.75rem;
       color: color(text-dark);
 
+      @media screen and (max-width: 399px) {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.65rem;
+      }
+
       @include tablet-up {
         padding: 1rem;
         font-size: 0.875rem;
@@ -228,6 +269,11 @@
         font-weight: 600;
         min-width: 40px;
 
+        @media screen and (max-width: 399px) {
+          min-width: 25px;
+          padding: 0.5rem 0.1rem;
+        }
+
         @include tablet-up {
           min-width: 50px;
         }
@@ -237,6 +283,11 @@
         text-align: center;
         min-width: 60px;
 
+        @media screen and (max-width: 399px) {
+          min-width: 45px;
+          padding: 0.4rem 0.2rem;
+        }
+
         @include tablet-up {
           min-width: 80px;
         }
@@ -244,6 +295,10 @@
 
       &--name {
         min-width: 120px;
+
+        @media screen and (max-width: 399px) {
+          min-width: 100px;
+        }
 
         @include tablet-up {
           min-width: 160px;
@@ -268,6 +323,11 @@
       &--wishlist {
         text-align: center;
         min-width: 70px;
+        display: none;
+
+        @media screen and (min-width: 400px) {
+          display: table-cell;
+        }
 
         @include tablet-up {
           min-width: 90px;
@@ -325,6 +385,12 @@
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 
+    @media screen and (max-width: 399px) {
+      width: 35px;
+      height: 35px;
+      border-radius: 4px;
+    }
+
     &:hover {
       transform: scale(1.05);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -356,6 +422,11 @@
       -webkit-line-clamp: 1;
       -webkit-box-orient: vertical;
       overflow: hidden;
+
+      @media screen and (max-width: 399px) {
+        font-size: 0.65rem;
+        margin: 0;
+      }
 
       @include tablet-up {
         font-size: 0.85rem;

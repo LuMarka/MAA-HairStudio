@@ -2,51 +2,94 @@
 @use '../../../../assets/styles/mixins' as *;
 
 .admin-dashboard {
-  padding: 2rem;
+  padding: 1rem;
   min-height: 100vh;
   background: color(bg-gray1);
   width: 100%;
   box-sizing: border-box;
 
+  @media screen and (max-width: 399px) {
+    padding: 0.75rem;
+  }
+
+  @include tablet-up {
+    padding: 2rem;
+  }
+
+  @include desktop-up {
+    padding: 1.5rem;
+  }
+
   &__header {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
     border-bottom: 2px solid color(gray0);
+
+    @media screen and (max-width: 399px) {
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+    }
+
+    @include tablet-up {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+    }
   }
 
   &__title {
-    font-size: 1.75rem;
-    font-weight: 700;
     color: color(text-dark);
+    font-size: 1.5rem;
+    font-weight: 700;
     margin: 0 0 0.5rem 0;
 
-    @include mobile-only {
-      font-size: 1.5rem;
+    @include tablet-up {
+      font-size: 1.75rem;
+    }
+
+    @include desktop-up {
+      font-size: 2rem;
     }
   }
 
   &__subtitle {
-    font-size: 0.95rem;
     color: color(text-muted);
+    font-size: 0.875rem;
     margin: 0;
     line-height: 1.5;
 
-    @include mobile-only {
-      font-size: 0.875rem;
+    @include tablet-up {
+      font-size: 0.95rem;
     }
   }
 
   &__stats {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     width: 100%;
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 
-    @include mobile-only {
-      grid-template-columns: 1fr;
+    @media screen and (max-width: 399px) {
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    @media screen and (min-width: 400px) {
+      grid-template-columns: repeat(2, 1fr);
       gap: 1rem;
       margin-bottom: 1.5rem;
+    }
+
+    @include tablet-up {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    @include desktop-up {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
     }
   }
 

@@ -11,6 +11,9 @@
             <div class="stats-card__icon-wrapper">
               <span class="stats-card__icon">{{ data().icon }}</span>
             </div>
+            <div class="stats-card__header-text">
+              <h3 class="stats-card__title">{{ data().title }}</h3>
+            </div>
             @if (data().trend; as trend) {
               <div class="stats-card__trend stats-card__trend--{{ trend.direction }}">
                 <span class="stats-card__trend-icon">
@@ -26,11 +29,12 @@
           </div>
 
           <div class="stats-card__body">
-            <h3 class="stats-card__title">{{ data().title }}</h3>
-            <div class="stats-card__value">{{ formatValue(data().value) }}</div>
-            @if (data().subtitle) {
-              <p class="stats-card__subtitle">{{ data().subtitle }}</p>
-            }
+            <div class="stats-card__value-wrapper">
+              <div class="stats-card__value">{{ formatValue(data().value) }}</div>
+              @if (data().subtitle) {
+                <p class="stats-card__subtitle">{{ data().subtitle }}</p>
+              }
+            </div>
             @if (data().trend?.label) {
               <p class="stats-card__trend-label">{{ data().trend?.label }}</p>
             }
