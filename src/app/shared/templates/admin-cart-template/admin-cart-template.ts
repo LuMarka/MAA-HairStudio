@@ -64,7 +64,7 @@ export class AdminCartTemplate implements OnInit {
       },
       {
         title: 'Ingresos Totales',
-        value: `$${totalRevenue.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`,
+        value: `$${totalRevenue.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
         subtitle: 'Pedidos completados',
         icon: '💰',
         color: 'primary',

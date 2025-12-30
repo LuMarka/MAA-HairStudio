@@ -174,9 +174,9 @@ export class AdminWishlistTemplate implements OnInit {
   }
 
   protected formatPrice(price: number): string {
-    return new Intl.NumberFormat('es-MX', {
+    return new Intl.NumberFormat('es-AR', {
       style: 'currency',
-      currency: 'MXN'
+      currency: 'ARS'
     }).format(price);
   }
 
