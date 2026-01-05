@@ -8,6 +8,8 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { PaymentService } from '../../core/services/payment.service';
 
 type PaymentStatusType =
@@ -23,11 +25,11 @@ type PaymentStatusType =
  * @responsibility Verificar pago, mostrar confirmación, e implementar polling para estados pending
  * @features
  * - Verifica estado real del pago con backend
- * - Implementa polling automático cada 1 segundo (como sugiere backend)
- * - Máximo 30 intentos (30 segundos)
+ * - Implementa polling automático cada 2 segundos
+ * - Máximo 30 intentos (60 segundos)
  * - Redirige a órdenes cuando se confirma el pago
  * - Manejo de errores y estados rechazados
- * - Auto-cleanup de polling al destruir componente
+ * - Auto-cleanup robusto con Subject
  */
 @Component({
   selector: 'app-payment-success',
@@ -49,84 +51,108 @@ export class PaymentSuccess implements OnInit, OnDestroy {
   protected readonly _pollingAttempts = signal(0);
 
   private pollingInterval: ReturnType<typeof setInterval> | null = null;
-  private readonly MAX_ATTEMPTS = 30; // 30 segundos máximo (1 intento por segundo)
+  private readonly destroy$ = new Subject<void>();
+  private readonly MAX_ATTEMPTS = 30; // 30 intentos * 2 segundos = 60 segundos
 
   ngOnInit(): void {
-    this.route.snapshot.params['id'] || this.route.queryParams.subscribe((params) => {
-      // Mercado Pago envía 'order_id' como parámetro
-      const orderId = this.route.snapshot.params['id'] || params['order_id'] || params['order'];
+    this.extractOrderId();
+  }
 
-      if (!orderId) {
-        this._errorMessage.set('Parámetros de pago inválidos');
+  ngOnDestroy(): void {
+    // ✅ Limpiar recursos (polling + observables)
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private extractOrderId(): void {
+    // 1️⃣ Intentar obtener del snapshot (route params)
+    let orderId = this.route.snapshot.params['id'];
+
+    // 2️⃣ Si no existe, intentar desde queryParams
+    if (!orderId) {
+      this.route.queryParams
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((params) => {
+          orderId = params['order_id'] || params['order'];
+          this.processOrderId(orderId);
+        });
+    } else {
+      // 3️⃣ Si ya tenemos el ID, procesar inmediatamente
+      this.processOrderId(orderId);
+    }
+  }
+
+  private processOrderId(orderId: string | null): void {
+    if (!orderId) {
+      this._errorMessage.set('❌ Parámetros de pago inválidos');
+      this._isLoading.set(false);
+      return;
+    }
+
+    console.log('📦 Order ID encontrado:', orderId);
+    this._orderId.set(orderId);
+
+    // ✅ Iniciar polling inmediatamente
+    this.startPollingPaymentStatus(orderId);
+  }
+
+  private startPollingPaymentStatus(orderId: string): void {
+    console.log('⏳ Iniciando polling cada 2 segundos...');
+    
+    // Verificar inmediatamente (no esperar 2 segundos)
+    this.verifyPaymentStatus(orderId);
+
+    // Luego verificar cada 2 segundos durante 60 segundos máximo
+    let attempts = 0;
+    const maxAttempts = this.MAX_ATTEMPTS;
+
+    this.pollingInterval = setInterval(() => {
+      attempts++;
+      
+      if (attempts >= maxAttempts) {
+        clearInterval(this.pollingInterval!);
+        this._errorMessage.set('⏱️ Timeout: El pago tardó demasiado en procesarse');
         this._isLoading.set(false);
         return;
       }
 
-      this._orderId.set(orderId);
-
-      // ✅ Iniciar polling inmediatamente como sugiere backend
-      this.startPollingPaymentStatus(orderId);
-    });
+      this.verifyPaymentStatus(orderId);
+    }, 2000);
   }
 
-  ngOnDestroy(): void {
-    // Limpiar polling al destruir componente
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval);
-    }
-  }
-
-  private startPollingPaymentStatus(orderId: string): void {
-    let attempts = 0;
-
-    this.pollingInterval = setInterval(() => {
-      this.paymentService.verifyPayment(orderId).subscribe({
+  private verifyPaymentStatus(orderId: string): void {
+    this.paymentService
+      .verifyPayment(orderId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
         next: (response) => {
-          attempts++;
-          this._pollingAttempts.set(attempts);
+          const currentAttempts = this._pollingAttempts() + 1;
+          this._pollingAttempts.set(currentAttempts);
           this._paymentStatus.set(response.status);
           this._paymentId.set(response.data.id);
 
           if (response.status === 'approved') {
-            // ✅ Pago aprobado
+            // ✅ PAGO APROBADO
+            console.log('✅ ¡Pago aprobado!');
             if (this.pollingInterval) {
               clearInterval(this.pollingInterval);
             }
             this._isLoading.set(false);
             this._errorMessage.set(null);
-            console.log('✅ Pago confirmado, redirigiendo a órdenes en 2 segundos');
+            console.log('✅ Pago confirmado, redirigiendo a órdenes');
 
             setTimeout(() => {
-              this.router.navigate(['/orders', orderId]);
+              this.router.navigate(['/order-me']);
             }, 2000);
-          } else if (
-            response.status === 'pending' ||
-            response.status === 'in_process'
-          ) {
-            // ⏳ Pago pendiente, continuar polling
-            this._isLoading.set(true);
-            this._errorMessage.set(
-              `⏳ Procesando pago... (${attempts}s)`
-            );
-
-            // Si alcanzamos máximo de intentos
-            if (attempts >= this.MAX_ATTEMPTS) {
-              if (this.pollingInterval) {
-                clearInterval(this.pollingInterval);
-              }
-              this._isLoading.set(false);
-              this._errorMessage.set(
-                '⏳ El pago está siendo procesado. Por favor, vuelva más tarde.'
-              );
-              console.log(
-                '⏳ Polling expirado después de 30 intentos (30 segundos)'
-              );
-            }
           } else if (
             response.status === 'rejected' ||
             response.status === 'cancelled'
           ) {
-            // ❌ Pago rechazado
+            // ❌ PAGO RECHAZADO
+            console.log('❌ Pago rechazado');
             if (this.pollingInterval) {
               clearInterval(this.pollingInterval);
             }
@@ -136,26 +162,24 @@ export class PaymentSuccess implements OnInit, OnDestroy {
                 response.status === 'rejected' ? 'rechazado' : 'cancelado'
               }`
             );
-            console.error('❌ Pago rechazado o cancelado');
+          } else if (
+            response.status === 'pending' ||
+            response.status === 'in_process'
+          ) {
+            // ⏳ PENDIENTE
+            console.log('⏳ Pago en proceso...');
+            this._isLoading.set(true);
+            this._errorMessage.set(
+              `⏳ Tu pago está siendo procesado. Por favor espera... (${currentAttempts * 2}s)`
+            );
           }
         },
         error: (error) => {
-          attempts++;
-          this._pollingAttempts.set(attempts);
-          console.error('⚠️ Error durante polling:', error);
-
-          // Si alcanzamos máximo de intentos
-          if (attempts >= this.MAX_ATTEMPTS) {
-            if (this.pollingInterval) {
-              clearInterval(this.pollingInterval);
-            }
-            this._isLoading.set(false);
-            this._errorMessage.set('Error al verificar el pago');
-            console.error('❌ Polling finalizado después de máximo de intentos');
-          }
+          console.error('❌ Error verificando pago:', error);
+          this._errorMessage.set('❌ Error al verificar el estado del pago. Reintentando...');
+          // El polling continuará reintentando
         }
       });
-    }, 1000); // Polling cada 1 segundo (como sugiere backend)
   }
 
   protected goToOrders(): void {
