@@ -11,8 +11,8 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   phone?: string;
-  address?: string;
-  address2?: string;
+ // address?: string;
+  //address2?: string;
 }
 
 /**
@@ -113,6 +113,9 @@ export interface ResetPasswordDto {
 export interface UpdateUserDto {
   name?: string;
   email?: string;
+  phone?: string;
+  //address?: string;
+  //address2?: string;
 }
 
 export interface UpdateRoleDto {

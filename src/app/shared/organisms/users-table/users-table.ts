@@ -24,6 +24,7 @@ export class UsersTable {
   readonly columns = input<UserTableColumn[]>([
     { key: 'name', label: 'Nombre', sortable: true },
     { key: 'email', label: 'Email', sortable: true },
+    { key: 'phone', label: 'Teléfono', sortable: false },
     { key: 'role', label: 'Rol', sortable: true },
     { key: 'createdAt', label: 'Fecha de Registro', sortable: true }
   ]);

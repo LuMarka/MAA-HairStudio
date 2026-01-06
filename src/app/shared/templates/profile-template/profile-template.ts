@@ -61,8 +61,8 @@ export class ProfileTemplate {
             name: profile.user.name ?? '',
             email: profile.user.email ?? '',
             phone: profile.user.phone ?? '',
-            address: profile.user.address ?? '',
-            address2: profile.user.address2 ?? ''
+           /*  address: profile.user.address ?? '',
+            address2: profile.user.address2 ?? '' */
           });
           this.form().disable();
         },

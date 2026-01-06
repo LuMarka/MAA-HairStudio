@@ -114,7 +114,13 @@ export class AdminUsersTemplate implements OnInit {
     if (!user) return;
 
     try {
-      this.usersService.updateUser(user.id, { name: user.name, email: user.email }).subscribe({
+      this.usersService.updateUser(user.id, {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+/*         address: user.address,
+        address2: user.address2 */
+      }).subscribe({
         next: () => {
           this.loadUsers();
           this.onCloseModal();
