@@ -48,36 +48,46 @@ export class StatusChangeModal {
 
     const statusOptions = [
       { value: 'pending' as OrderStatus, label: 'Pendiente' },
-      { value: 'confirmed' as OrderStatus, label: 'Confirmado' },
-      { value: 'processing' as OrderStatus, label: 'Preparando' },
-      { value: 'ready_pickup' as OrderStatus, label: 'Listo para recoger' },
-      { value: 'shipped' as OrderStatus, label: 'Enviado' },
-      { value: 'in_transit' as OrderStatus, label: 'En tránsito' },
+      { value: 'confirmed' as OrderStatus, label: 'Completado' },
       { value: 'delivered' as OrderStatus, label: 'Entregado' },
-      { value: 'completed' as OrderStatus, label: 'Completado' },
-      { value: 'cancelled' as OrderStatus, label: 'Cancelado' },
-      { value: 'refunded' as OrderStatus, label: 'Reembolsado' }
+      { value: 'cancelled' as OrderStatus, label: 'Cancelado' }
     ];
 
-    // Filter based on current status
     const currentStatus = currentOrder.status;
 
-    return statusOptions.filter(option => {
-      // Allow all transitions except backwards for completed states
-      if (['cancelled', 'refunded', 'completed'].includes(currentStatus)) {
-        return option.value === currentStatus;
-      }
-      return true;
-    });
+    // Permitir transiciones más flexibles para corregir errores
+    switch (currentStatus) {
+      case 'pending':
+        // Desde pendiente puede ir a cualquier estado
+        return statusOptions;
+
+      case 'confirmed':
+        // Desde confirmado puede ir a entregado o volver a pendiente (para corregir errores)
+        return statusOptions.filter(option =>
+          ['pending', 'confirmed', 'delivered', 'cancelled'].includes(option.value)
+        );
+
+      case 'delivered':
+        // Desde entregado puede volver a confirmado (para corregir errores)
+        return statusOptions.filter(option =>
+          ['confirmed', 'delivered','pending', 'cancelled'].includes(option.value)
+        );
+
+      case 'cancelled':
+        // Desde cancelado puede volver a pendiente o confirmado (para reactivar)
+        return statusOptions.filter(option =>
+          ['pending', 'confirmed', 'delivered', 'confirmed'].includes(option.value)
+        );
+
+      default:
+        return statusOptions;
+    }
   });
 
   protected readonly availablePaymentStatuses = computed(() => [
     { value: 'pending' as PaymentStatus, label: 'Pendiente' },
-    { value: 'payment_pending' as PaymentStatus, label: 'Pago pendiente' },
     { value: 'approved' as PaymentStatus, label: 'Aprobado' },
-    { value: 'rejected' as PaymentStatus, label: 'Rechazado' },
-    { value: 'refunded' as PaymentStatus, label: 'Reembolsado' },
-    { value: 'cancelled' as PaymentStatus, label: 'Cancelado' }
+    { value: 'rejected' as PaymentStatus, label: 'Rechazado' }
   ]);
 
   protected readonly hasChanges = computed(() => {

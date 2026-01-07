@@ -1,0 +1,115 @@
+<div class="modal-overlay" [class.visible]="isVisible()" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Detalles del Pedido</h2>
+      <button class="modal-close-btn" (click)="closeModal()" type="button">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
+    @if (orderDetails(); as details) {
+      <div class="modal-body">
+        <!-- Información principal -->
+        <div class="order-info-grid">
+          <div class="info-item">
+            <span class="info-label">Número de Pedido:</span>
+            <span class="info-value">{{ details.orderNumber }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Cliente:</span>
+            <span class="info-value">{{ details.customer }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Tipo de Entrega:</span>
+            <span class="info-value">{{ details.deliveryType }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Estado del Pedido:</span>
+            <span class="info-value status" [class]="order()?.status">{{ details.status }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Estado de Pago:</span>
+            <span class="info-value status" [class]="order()?.paymentStatus">{{ details.paymentStatus }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Fecha:</span>
+            <span class="info-value">{{ details.createdAt }}</span>
+          </div>
+        </div>
+
+        <!-- Productos -->
+        <div class="order-items-section">
+          <h3>Productos</h3>
+          <div class="items-list">
+            @for (item of details.items; track item.id) {
+              <div class="item">
+                <div class="item-info">
+                  <span class="item-name">{{ item.product.name }}</span>
+                  <span class="item-quantity">Cantidad: {{ item.quantity }}</span>
+                </div>
+                <div class="item-price">
+                  <span class="unit-price">{{ formatCurrency(item.unitPrice) }}</span>
+                  <span class="total-price">{{ formatCurrency(item.totalPrice) }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Resumen de costos -->
+        <div class="cost-summary">
+          <div class="cost-item">
+            <span class="cost-label">Subtotal:</span>
+            <span class="cost-value">{{ details.subtotal }}</span>
+          </div>
+          <div class="cost-item">
+            <span class="cost-label">Envío:</span>
+            <span class="cost-value">{{ details.shippingCost }}</span>
+          </div>
+          <div class="cost-item">
+            <span class="cost-label">Impuestos:</span>
+            <span class="cost-value">{{ details.tax }}</span>
+          </div>
+          <div class="cost-item total">
+            <span class="cost-label">Total:</span>
+            <span class="cost-value">{{ details.total }}</span>
+          </div>
+        </div>
+
+        <!-- Dirección de envío -->
+        @if (details.address; as address) {
+          <div class="address-section">
+            <h3>Dirección de Envío</h3>
+            <div class="address-info">
+              <p>{{ address.streetAddress }}</p>
+              @if (address.addressLine2) {
+                <p>{{ address.addressLine2 }}</p>
+              }
+              <p>{{ address.city }}, {{ address.province }} {{ address.postalCode }}</p>
+              @if (address.neighborhood) {
+                <p>{{ address.neighborhood }}</p>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Notas -->
+        @if (details.notes && details.notes !== 'Sin notas') {
+          <div class="notes-section">
+            <h3>Notas</h3>
+            <p>{{ details.notes }}</p>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn--secondary" (click)="closeModal()">
+          Cerrar
+        </button>
+        <button class="btn btn--primary" (click)="changeStatus()">
+          Cambiar Estado
+        </button>
+      </div>
+    }
+  </div>
+</div>

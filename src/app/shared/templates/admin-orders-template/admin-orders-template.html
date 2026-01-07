@@ -17,6 +17,7 @@
         [loading]="isLoadingOrders()"
         (onChangeStatus)="onChangeStatus($event)"
         (onSort)="onSortOrders($event)"
+        (onRowClick)="onRowClick($event)"
       />
     </div>
   </section>
@@ -28,5 +29,13 @@
     [loading]="isUpdatingStatus()"
     (onClose)="onCloseStatusModal()"
     (onSave)="onSaveStatusChange($event)"
+  />
+
+  <!-- Order Details Modal -->
+  <app-order-details-modal
+    [isVisible]="showDetailsModal()"
+    [order]="selectedOrderForDetails()"
+    (onClose)="onCloseDetailsModal()"
+    (onChangeStatus)="onChangeStatusFromDetails($event)"
   />
 </div>

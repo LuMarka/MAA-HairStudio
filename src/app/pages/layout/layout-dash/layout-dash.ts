@@ -102,5 +102,10 @@ export class LayoutDash {
       }
     });
   }
+
+  protected goToHome(): void {
+    this.router.navigate(['/']);
+    this.closeSidebar();
+  }
 }
 

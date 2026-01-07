@@ -2,13 +2,14 @@ import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OrdersTable, type OrderTableColumn } from '../../organisms/orders-table/orders-table';
 import { StatusChangeModal, type StatusChangeData } from '../../organisms/status-change-modal/status-change-modal';
+import { OrderDetailsModal } from '../../organisms/order-details-modal/order-details-modal';
 import { OrderService } from '../../../core/services/order.service';
 import type { OrderData } from '../../../core/models/interfaces/order.interface';
 
 @Component({
   selector: 'app-admin-orders-template',
   standalone: true,
-  imports: [CommonModule, OrdersTable, StatusChangeModal],
+  imports: [CommonModule, OrdersTable, StatusChangeModal, OrderDetailsModal],
   templateUrl: './admin-orders-template.html',
   styleUrl: './admin-orders-template.scss'
 })
@@ -21,6 +22,10 @@ export class AdminOrdersTemplate implements OnInit {
   protected readonly selectedOrder = signal<OrderData | null>(null);
   protected readonly showStatusModal = signal(false);
   protected readonly isUpdatingStatus = signal(false);
+  
+  // Signals for details modal
+  protected readonly selectedOrderForDetails = signal<OrderData | null>(null);
+  protected readonly showDetailsModal = signal(false);
 
   // Table configuration
   protected readonly orderColumns: OrderTableColumn[] = [
@@ -176,5 +181,22 @@ export class AdminOrdersTemplate implements OnInit {
     });
 
     this.orders.set(sortedOrders);
+  }
+
+  // Methods for details modal
+  protected onRowClick(order: OrderData): void {
+    this.selectedOrderForDetails.set(order);
+    this.showDetailsModal.set(true);
+  }
+
+  protected onCloseDetailsModal(): void {
+    this.showDetailsModal.set(false);
+    this.selectedOrderForDetails.set(null);
+  }
+
+  protected onChangeStatusFromDetails(order: OrderData): void {
+    // Close details modal and open status change modal
+    this.onCloseDetailsModal();
+    this.onChangeStatus(order);
   }
 }

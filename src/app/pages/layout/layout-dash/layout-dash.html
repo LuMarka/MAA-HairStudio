@@ -61,6 +61,13 @@
     <!-- Sidebar Footer -->
     <div class="admin-layout__sidebar-footer">
       <button
+        class="admin-layout__home-btn"
+        (click)="goToHome()"
+      >
+        <span>🏠</span>
+        <span>Volver al Inicio</span>
+      </button>
+      <button
         class="admin-layout__logout-btn"
         (click)="logout()"
       >

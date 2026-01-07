@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { UsersService } from '../../../core/services/users.service';
 import { UserProfile, UpdateUserDto } from '../../../core/models/interfaces/users.interface';
 import { AddressService } from '../../../core/services/address.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import type { Datum as AddressData } from '../../../core/models/interfaces/address.interface';
@@ -18,9 +19,12 @@ import type { Datum as AddressData } from '../../../core/models/interfaces/addre
 export class ProfileTemplate {
   private readonly usersService = inject(UsersService);
   private readonly addressService = inject(AddressService);
+  private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+
+  readonly isAdmin = computed(() => this.authService.isAdmin());
 
   readonly isEditing = signal(false);
   readonly isLoadingProfile = computed(() => this.usersService.isLoading());
@@ -229,5 +233,9 @@ export class ProfileTemplate {
 
   verPedidos(): void {
     this.router.navigate(['order-me']);
+  }
+
+  goToDashboard(): void {
+    this.router.navigate(['/admin']);
   }
 }

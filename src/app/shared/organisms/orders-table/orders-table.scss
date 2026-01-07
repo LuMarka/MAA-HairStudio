@@ -311,3 +311,103 @@
   }
 }
 
+// Responsive styles and row click functionality
+.orders-table {
+  &__row {
+    &--clickable {
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: color('bg-gray1');
+      }
+
+      &:active {
+        background-color: color('bg-gray2');
+      }
+    }
+  }
+
+  &__info-cell {
+    width: 40px;
+    text-align: center;
+    padding: 0.5rem !important;
+
+    @media (min-width: 1025px) {
+      display: none !important;
+    }
+  }
+
+  &__info-icon {
+    font-size: 1.2rem;
+    opacity: 0.7;
+  }
+
+  // Responsive table adjustments
+  @media (max-width: 510px) {
+    &__table {
+      min-width: 350px;
+    }
+
+    &__cell {
+      padding: 0.5rem 0.25rem;
+      font-size: 0.8rem;
+    }
+
+    &__header-cell {
+      padding: 0.5rem 0.25rem;
+      font-size: 0.7rem;
+    }
+  }
+
+  // Ajuste específico para iPhone 14 Pro (492px) - hacer columnas más compactas
+  @media (max-width: 500px) and (min-width: 480px) {
+    &__table {
+      table-layout: fixed; // Control fijo de anchos
+      width: 100%;
+    }
+
+    &__header-cell {
+      padding: 0.4rem 0.05rem;
+      font-size: 0.8rem;
+
+      // Ajustar anchos específicos para las 3 columnas en responsive
+      &:nth-child(1) { width: 90px !important; }  // N° Pedido - reducido de 120px
+      &:nth-child(2) { width: 70px !important; }  // Total - reducido de 100px
+      &:nth-child(3) { width: 100px !important; }  // Pago - reducido de 120px
+    }
+
+    &__cell {
+      padding: 0.4rem 0.05rem;
+      font-size: 0.8rem;
+
+      // Mismos anchos para las celdas
+      &:nth-child(1) {
+        width: 90px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      &:nth-child(2) { width: 80px !important; }
+      &:nth-child(3) { width: 95px !important; }
+    }
+
+    &__status {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.4rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    &__table {
+      min-width: 450px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    &__table {
+      min-width: 600px;
+    }
+  }
+}
+

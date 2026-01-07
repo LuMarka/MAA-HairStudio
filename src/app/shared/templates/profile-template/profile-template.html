@@ -59,6 +59,9 @@
         }
         <button type="button" class="profile-template__delete-btn" (click)="deleteAccount()">Eliminar cuenta</button>
         <button type="button" class="profile-template__action profile-template__action--secondary" (click)="verPedidos()">Ver mis pedidos</button>
+        @if (isAdmin()) {
+          <button type="button" class="profile-template__action profile-template__action--admin" (click)="goToDashboard()">📊 Ir al Dashboard Admin</button>
+        }
       </form>
     }
   </div>
