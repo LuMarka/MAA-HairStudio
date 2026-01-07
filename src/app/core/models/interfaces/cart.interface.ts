@@ -144,7 +144,42 @@ export interface CartValidationDetail {
 export interface AbandonedCartsResponse {
   readonly success: boolean;
   readonly message: string;
-  readonly data: {
-    readonly note: string;
+  readonly data: readonly AbandonedCart[];
+  readonly meta: {
+    readonly total: number;
+    readonly page: number;
+    readonly limit: number;
+    readonly totalPages: number;
+    readonly hasNextPage: boolean;
+    readonly hasPrevPage: boolean;
   };
+}
+
+export interface AbandonedCart {
+  readonly id: string;
+  readonly user: {
+    readonly id: string;
+    readonly name: string;
+    readonly email: string;
+  };
+  readonly items: readonly AbandonedCartItem[];
+  readonly totalAmount: number;
+  readonly totalItems: number;
+  readonly lastActivityAt: Date;
+  readonly createdAt: Date;
+  readonly status: 'abandoned';
+}
+
+export interface AbandonedCartItem {
+  readonly id: string;
+  readonly product: {
+    readonly id: string;
+    readonly name: string;
+    readonly image: string;
+    readonly price: number;
+    readonly slug: string;
+  };
+  readonly quantity: number;
+  readonly unitPrice: number;
+  readonly subtotal: number;
 }

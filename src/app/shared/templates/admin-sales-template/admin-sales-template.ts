@@ -4,7 +4,7 @@ import { StatsCard, type StatsCardData } from '../../molecules/stats-card/stats-
 import { OrderService } from '../../../core/services/order.service';
 import { CartService } from '../../../core/services/cart.service';
 import type { OrderStatisticsResponse } from '../../../core/models/interfaces/order.interface';
-import type { AbandonedCartsResponse } from '../../../core/models/interfaces/cart.interface';
+import type { AbandonedCartsResponse, AbandonedCart } from '../../../core/models/interfaces/cart.interface';
 
 @Component({
   selector: 'app-admin-sales-template',
@@ -21,7 +21,7 @@ export class AdminSalesTemplate implements OnInit {
   protected readonly isLoadingStats = signal(false);
   protected readonly isLoadingAbandoned = signal(false);
   protected readonly statistics = signal<OrderStatisticsResponse | null>(null);
-  protected readonly abandonedCarts = signal<any[]>([]);
+  protected readonly abandonedCarts = signal<readonly AbandonedCart[]>([]);
   protected readonly abandonedCount = signal(0);
 
   // Computed stats for sales
@@ -75,7 +75,7 @@ export class AdminSalesTemplate implements OnInit {
     return [
       {
         title: 'Ingresos Totales',
-        value: `$${totalRevenue.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+        value: this.formatCurrency(totalRevenue),
         subtitle: 'Ingresos generados',
         icon: '💰',
         color: 'primary',
@@ -99,7 +99,7 @@ export class AdminSalesTemplate implements OnInit {
       },
       {
         title: 'Ticket Promedio',
-        value: `$${averageTicket.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+        value: this.formatCurrency(averageTicket),
         subtitle: 'Monto promedio por pedido',
         icon: '📈',
         color: 'info',
@@ -141,18 +141,19 @@ export class AdminSalesTemplate implements OnInit {
 
     try {
       this.cartService.getAbandonedCarts(24, { page: 1, limit: 10 }).subscribe({
-        next: (response: any) => {
+        next: (response: AbandonedCartsResponse) => {
           if (response.success && response.data) {
-            // Asumiendo que la API retorna una lista de carritos abandonados
-            // Ajusta según la estructura real de la respuesta
-            const carts = Array.isArray(response.data) ? response.data : [response.data];
-            this.abandonedCarts.set(carts);
-            this.abandonedCount.set(carts.length);
+            this.abandonedCarts.set(response.data);
+            this.abandonedCount.set(response.meta.total);
+          } else {
+            this.abandonedCarts.set([]);
+            this.abandonedCount.set(0);
           }
         },
         error: (error: any) => {
           console.error('Error loading abandoned carts:', error);
           this.abandonedCarts.set([]);
+          this.abandonedCount.set(0);
         },
         complete: () => {
           this.isLoadingAbandoned.set(false);
@@ -162,5 +163,12 @@ export class AdminSalesTemplate implements OnInit {
       console.error('Error loading abandoned carts:', error);
       this.isLoadingAbandoned.set(false);
     }
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS'
+    }).format(amount);
   }
 }

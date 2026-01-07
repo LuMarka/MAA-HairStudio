@@ -44,8 +44,8 @@
               <tr class="abandoned-row">
                 <td class="user-cell">
                   <div class="user-info">
-                    <span class="user-name">{{ cart.user?.name || 'Usuario Anónimo' }}</span>
-                    <span class="user-email">{{ cart.user?.email || 'Sin email' }}</span>
+                    <span class="user-name">{{ cart.user.name || 'Usuario sin nombre' }}</span>
+                    <span class="user-email">{{ cart.user.email || 'Sin email' }}</span>
                   </div>
                 </td>
                 <td class="products-cell">
@@ -53,7 +53,7 @@
                     @if (cart.items && cart.items.length > 0) {
                       @for (item of cart.items.slice(0, 2); track item.id) {
                         <div class="product-item">
-                          <span class="product-name">{{ item.product?.name }}</span>
+                          <span class="product-name">{{ item.product.name }}</span>
                           <span class="product-qty">x{{ item.quantity }}</span>
                         </div>
                       }
@@ -66,7 +66,7 @@
                   </div>
                 </td>
                 <td class="amount-cell">
-                  ${{ cart.summary?.estimatedTotal?.toLocaleString('es-AR', { minimumFractionDigits: 2 }) || '0,00' }}
+                  {{ formatCurrency(cart.totalAmount) }}
                 </td>
                 <td class="date-cell">
                   {{ cart.lastActivityAt ? (cart.lastActivityAt | date: 'short') : 'No disponible' }}

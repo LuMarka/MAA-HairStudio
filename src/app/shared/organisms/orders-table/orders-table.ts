@@ -187,7 +187,8 @@ export class OrdersTable implements OnInit, OnDestroy {
   }
 
   protected canChangeStatus(order: OrderData): boolean {
-    return !['completed', 'cancelled', 'refunded'].includes(order.status);
+    // Permitir editar todos los pedidos excepto los completados y reembolsados
+    return !['completed', 'refunded'].includes(order.status);
   }
 
   protected handleSort(key: string): void {
