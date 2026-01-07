@@ -93,8 +93,14 @@ export class LayoutDash {
   }
 
   protected logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    this.authService.logout().subscribe({
+      next: () => {
+        console.log('✅ Sesión cerrada exitosamente');
+      },
+      error: (err) => {
+        console.error('❌ Error al cerrar sesión:', err);
+      }
+    });
   }
 }
 
