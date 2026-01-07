@@ -1,5 +1,277 @@
-div {
-  display: grid;
-  min-height: 100dvh;
-  grid-template-columns: auto 1fr;
+@use '../../../../assets/styles/variables' as *;
+@use '../../../../assets/styles/mixins' as *;
+
+.admin-layout {
+  min-height: 100vh;
+  display: block;
+  background: color(bg-gray1);
+  position: relative;
+
+  @include desktop-up {
+    display: flex;
+  }
+
+  // ===================
+  // SIDEBAR
+  // ===================
+  &__sidebar {
+    width: 280px;
+    background: color(white1);
+    border-right: 1px solid color(gray0);
+    overflow-y: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+
+    @include desktop-up {
+      position: static;
+      transform: translateX(0);
+      height: auto;
+      flex-shrink: 0;
+      overflow: auto;
+    }
+
+    &--open {
+      transform: translateX(0);
+    }
+  }
+
+  &__sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid color(gray0);
+  }
+
+  &__sidebar-brand {
+    color: color(primary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+
+  // ===================
+  // NAVIGATION
+  // ===================
+  &__nav {
+    padding: 1rem 0;
+  }
+
+  &__nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__nav-item {
+    margin-bottom: 0;
+  }
+
+  &__nav-link {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 1rem 1.5rem;
+    color: color(text-muted);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+    width: 100%;
+    text-align: left;
+
+    &:hover {
+      background: color(bg-gray2);
+      color: color(text-dark);
+      border-left-color: color(primary);
+    }
+
+    &--active {
+      background: color(green-50);
+      color: color(primary);
+      border-left-color: color(primary);
+
+      .admin-layout__nav-description {
+        color: color(text-muted);
+      }
+    }
+  }
+
+  &__nav-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  &__nav-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    opacity: 0.9;
+  }
+
+  &__nav-details {
+    flex: 1;
+  }
+
+  &__nav-text {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin: 0 0 0.25rem 0;
+  }
+
+  &__nav-description {
+    font-size: 0.75rem;
+    color: color(gray6);
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  // ===================
+  // SIDEBAR FOOTER
+  // ===================
+  &__sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid color(gray0);
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__home-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    color: color(text-muted);
+    font-size: 0.875rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: color(primary);
+      color: color(white1);
+    }
+  }
+
+  &__logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    color: color(text-muted);
+    font-size: 0.875rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: color(error);
+      color: color(white1);
+    }
+  }
+
+  // ===================
+  // MAIN CONTENT
+  // ===================
+  &__content {
+    width: 100%;
+    background: color(bg-gray1);
+    min-height: 100vh;
+    overflow-y: auto;
+
+    @include desktop-up {
+      flex: 1;
+      //margin-left: 280px;
+    }
+  }
+
+  // ===================
+  // MOBILE OVERLAY
+  // ===================
+  &__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+
+    @include desktop-up {
+      display: none;
+    }
+
+    &--visible {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  // ===================
+  // MOBILE HEADER
+  // ===================
+  &__header {
+    background: color(white1);
+    color: color(text-dark);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid color(gray0);
+
+    @include desktop-up {
+      display: none;
+    }
+  }
+
+  &__menu-btn {
+    background: none;
+    border: none;
+    color: color(text-dark);
+    font-size: 1.25rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background: color(bg-gray2);
+    }
+  }
+
+  &__brand-mobile {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    color: color(primary);
+
+    @include desktop-up {
+      display: none;
+    }
+  }
 }

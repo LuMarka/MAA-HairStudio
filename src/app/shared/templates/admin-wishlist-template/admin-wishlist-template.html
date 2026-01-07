@@ -1,12 +1,166 @@
-<section class="admin-wishlist-template">
-	<h2>Mi Wishlist</h2>
-	<!-- @if (products().length > 0) {
-		<div class="admin-wishlist-template__grid">
-			@for (product of products(); track product.id) {
-				<app-product-card [product]="product"></app-product-card>
-			}
-		</div>
-	} @else {
-		<p class="admin-wishlist-template__empty">No tienes productos en tu wishlist.</p>
-	} -->
-</section>
+<!-- Admin Wishlist Analytics -->
+<div class="admin-wishlist-analytics">
+  <!-- Header -->
+  <header class="admin-wishlist-analytics__header">
+    <div class="admin-wishlist-analytics__header-content">
+      <h1 class="admin-wishlist-analytics__title">Estadísticas de Lista de Deseos</h1>
+      <p class="admin-wishlist-analytics__subtitle">
+        Analiza las preferencias de tus clientes y productos más deseados
+      </p>
+    </div>
+  </header>
+
+  <!-- Stats Cards Grid -->
+  <section class="admin-wishlist-analytics__stats" aria-label="Estadísticas de wishlist">
+    @for (card of statsCards(); track card.title) {
+      <app-stats-card [data]="card" />
+    }
+  </section>
+
+  <!-- Most Wished Products -->
+  <section class="admin-wishlist-analytics__products" aria-label="Productos más deseados">
+    <div class="section-header">
+      <h2 class="section-header__title">
+        <span class="section-header__icon">🏆</span>
+        Productos Más Deseados
+      </h2>
+      <p class="section-header__description">
+        Los productos que más aparecen en las listas de deseos de tus clientes
+      </p>
+    </div>
+
+    @if (isLoadingProducts()) {
+      <div class="products-loading">
+        <div class="products-skeleton">
+          @for (item of [1,2,3,4,5]; track $index) {
+            <div class="product-skeleton-card">
+              <div class="product-skeleton-card__image"></div>
+              <div class="product-skeleton-card__content">
+                <div class="product-skeleton-card__title"></div>
+                <div class="product-skeleton-card__price"></div>
+                <div class="product-skeleton-card__stats"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="products-table-wrapper">
+        <table class="products-table">
+          <thead class="products-table__head">
+            <tr>
+              <th class="products-table__header" style="width: 8%">#</th>
+              <th class="products-table__header" style="width: 18%">Imagen</th>
+              <th class="products-table__header" style="width: 28%">Producto</th>
+              <th class="products-table__header products-table__header--price" style="width: 15%">Precio</th>
+              <th class="products-table__header products-table__header--wishlist" style="width: 14%">Deseos</th>
+              <th class="products-table__header" style="width: 17%">Conversión</th>
+            </tr>
+          </thead>
+          <tbody class="products-table__body">
+            @for (item of mostWishedProducts(); track item.product.id; let idx = $index) {
+              <tr class="products-table__row">
+                <td class="products-table__cell products-table__cell--rank">
+                  <span class="product-rank-badge">{{ idx + 1 }}</span>
+                </td>
+                <td class="products-table__cell products-table__cell--image">
+                  <img
+                    class="product-thumbnail"
+                    [src]="item.product.image"
+                    [alt]="item.product.name"
+                    loading="lazy"
+                    (click)="openImageModal(item.product.image, item.product.name, item.product.price, item.product.originalPrice, item.product.discountPercentage)"
+                  >
+                </td>
+                <td class="products-table__cell products-table__cell--name">
+                  <div class="product-info">
+                    <h4 class="product-info__title">{{ item.product.name }}</h4>
+                    <p class="product-info__brand">{{ item.product.brand }}</p>
+                    <div class="product-info__rating">
+                      <strong>{{ item.product.rating.toFixed(1) }}</strong> ⭐
+                      ({{ item.product.reviewCount }})
+                    </div>
+                  </div>
+                </td>
+                <td class="products-table__cell products-table__cell--price">
+                  <div class="product-price">
+                    @if (item.product.discountPercentage !== '0') {
+                      <span class="product-price__original">
+                        {{ formatPrice(item.product.originalPrice) }}
+                      </span>
+                      <span class="product-price__current">
+                        {{ formatPrice(item.product.price) }}
+                      </span>
+                      <span class="product-price__discount">
+                        -{{ item.product.discountPercentage }}%
+                      </span>
+                    } @else {
+                      <span class="product-price__current">
+                        {{ formatPrice(item.product.price) }}
+                      </span>
+                    }
+                  </div>
+                </td>
+                <td class="products-table__cell products-table__cell--wishlist">
+                  <div class="wishlist-stat">
+                    <span class="wishlist-stat__icon">❤️</span>
+                    <span class="wishlist-stat__value">{{ item.wishlistCount }}</span>
+                  </div>
+                </td>
+                <td class="products-table__cell products-table__cell--conversion">
+                  @if (item.conversionRate) {
+                    <span
+                      class="conversion-badge conversion-badge--{{ getConversionColor(item.conversionRate) }}"
+                    >
+                      {{ item.conversionRate.toFixed(1) }}%
+                    </span>
+                  } @else {
+                    <span class="conversion-badge conversion-badge--low">N/A</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        @if (mostWishedProducts().length === 0) {
+          <div class="products-empty">
+            <div class="products-empty__content">
+              <span class="products-empty__icon">💔</span>
+              <h3 class="products-empty__title">No hay datos disponibles</h3>
+              <p class="products-empty__description">
+                Aún no hay suficientes datos de wishlist para mostrar estadísticas.
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>
+
+<!-- Image Modal -->
+@if (selectedImage(); as image) {
+  <div class="image-modal" (click)="closeImageModal()">
+    <div class="image-modal__overlay"></div>
+    <div class="image-modal__content" (click)="$event.stopPropagation()">
+      <button class="image-modal__close" (click)="closeImageModal()" aria-label="Cerrar modal">
+        ✕
+      </button>
+      <div class="image-modal__image-container">
+        <img [src]="image.url" [alt]="image.alt" class="image-modal__image" />
+      </div>
+      <div class="image-modal__footer">
+        <h3 class="image-modal__title">{{ image.alt }}</h3>
+        <div class="image-modal__price">
+          @if (image.originalPrice && image.discount && image.discount !== '0') {
+            <span class="image-modal__price-original">{{ formatPrice(image.originalPrice) }}</span>
+            <span class="image-modal__price-current">{{ formatPrice(image.price) }}</span>
+            <span class="image-modal__price-discount">-{{ image.discount }}%</span>
+          } @else {
+            <span class="image-modal__price-current">{{ formatPrice(image.price) }}</span>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -56,12 +56,12 @@
 
     p {
       margin: v.$spacing-sm 0;
-      color: v.color('text-darker');
+      color: v.color('text-dark');
       font-size: 0.95rem;
       line-height: 1.6;
 
       strong {
-        color: v.color('text-darker');
+        color: v.color('text-dark');
         font-weight: 600;
         margin-right: v.$spacing-xs;
       }
@@ -106,7 +106,7 @@
       }
 
       &:last-child {
-        color: v.color('text-darker');
+        color: v.color('text-dark');
         font-size: 0.95rem;
 
         @include m.mobile-only() {

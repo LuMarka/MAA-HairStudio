@@ -1,0 +1,338 @@
+@use '../../../../assets/styles/variables' as *;
+@use '../../../../assets/styles/mixins' as *;
+
+.users-table-container {
+  width: 100%;
+}
+
+.users-table__loading,
+.users-table__empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: color(text-muted);
+  font-size: 0.95rem;
+
+  @media screen and (max-width: 399px) {
+    padding: 2rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.users-table__wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  background: white;
+
+  @media screen and (max-width: 399px) {
+    font-size: 0.75rem;
+  }
+
+  @include tablet-up {
+    font-size: 0.95rem;
+  }
+
+  thead {
+    background: color(gray0);
+    border-bottom: 2px solid color(gray0);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: color(text-dark);
+      user-select: none;
+
+      @media screen and (max-width: 399px) {
+        padding: 0.75rem 0.5rem;
+      }
+
+      @include tablet-up {
+        padding: 1.25rem;
+      }
+
+      &.sortable {
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background: color(gray1);
+        }
+      }
+
+      &.actions-header {
+        text-align: center;
+        width: 100px;
+
+        @media screen and (max-width: 399px) {
+          width: 80px;
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid color(gray0);
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: rgba(59, 130, 246, 0.02);
+      }
+
+      &.user-row {
+        cursor: pointer;
+      }
+
+      td {
+        padding: 1rem;
+        vertical-align: middle;
+
+        @media screen and (max-width: 399px) {
+          padding: 0.75rem 0.5rem;
+        }
+
+        @include tablet-up {
+          padding: 1.25rem;
+        }
+
+        &.cell-name {
+          font-weight: 500;
+        }
+
+        &.cell-email {
+          color: color(text-muted);
+        }
+
+        &.cell-role {
+          width: 130px;
+
+          @media screen and (max-width: 399px) {
+            width: 100px;
+          }
+        }
+
+        &.cell-createdAt,
+        &.cell-updatedAt {
+          color: color(text-muted);
+          font-size: 0.85rem;
+
+          @media screen and (max-width: 399px) {
+            font-size: 0.75rem;
+          }
+        }
+
+        &.cell-isActive {
+          text-align: center;
+        }
+
+        &.actions-cell {
+          text-align: center;
+          padding: 0.75rem;
+
+          @media screen and (max-width: 399px) {
+            padding: 0.5rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+// ============================================
+// USER CELL STYLES
+// ============================================
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  @media screen and (max-width: 399px) {
+    gap: 0.5rem;
+  }
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  background: color(primary);
+  color: white;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 0.875rem;
+
+  @media screen and (max-width: 399px) {
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+}
+
+.user-name {
+  font-weight: 500;
+  color: color(text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @media screen and (max-width: 399px) {
+    max-width: 80px;
+  }
+}
+
+// ============================================
+// ROLE SELECT
+// ============================================
+.role-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid color(gray0);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: color(text-dark);
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+
+  @media screen and (max-width: 399px) {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  &:hover {
+    border-color: color(primary);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: color(primary);
+    box-shadow: 0 0 0 2px rgba(color(primary), 0.1);
+  }
+}
+
+// ============================================
+// STATUS BADGE
+// ============================================
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  @media screen and (max-width: 399px) {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+  }
+
+  &.active {
+    background: color(success);
+    color: white;
+  }
+
+  &.inactive {
+    background: color(warning);
+    color: white;
+  }
+}
+
+// ============================================
+// ACTION BUTTONS
+// ============================================
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+
+  @media screen and (max-width: 399px) {
+    gap: 0.25rem;
+  }
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+
+  @media screen and (max-width: 399px) {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.875rem;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  &.btn-edit {
+    &:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+  }
+
+  &.btn-delete {
+    &:hover {
+      background: rgba(220, 38, 38, 0.1);
+    }
+  }
+}
+
+// ============================================
+// COLUMN LABEL WITH SORT ARROW
+// ============================================
+.column-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.sort-arrow {
+  display: inline-block;
+  width: 12px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: color(primary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  .sortable:hover & {
+    opacity: 1;
+  }
+
+  th.sortable:hover & {
+    opacity: 1;
+  }
+}
+
+.cell-value {
+  color: color(text-dark);
+}

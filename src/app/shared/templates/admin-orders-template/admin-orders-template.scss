@@ -1,7 +1,7 @@
 @use '../../../../assets/styles/variables' as *;
 @use '../../../../assets/styles/mixins' as *;
 
-.admin-dashboard {
+.admin-orders {
   padding: 1rem;
   min-height: 100vh;
   background: color(bg-gray1);
@@ -62,61 +62,25 @@
     }
   }
 
-  &__stats {
-    display: grid;
-    grid-template-columns: 1fr;
-    width: 100%;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-
-    @media screen and (max-width: 399px) {
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-      grid-template-columns: 1fr;
-    }
-
-    @media screen and (min-width: 400px) and (max-width: 599px) {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    @include tablet-up {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    @include desktop-up {
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2.5rem;
-    }
-  }
-
-  &__orders {
+  &__section {
     background: color(white1);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     overflow: hidden;
-    border: 1px solid color(gray0);
-    padding: 1rem;
-  }
-
-  &__orders-header {
     padding: 1.5rem;
-    border-bottom: 1px solid color(gray0);
-    background: color(white1);
-  }
 
-  &__orders-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0;
-    color: color(text-dark);
-  }
+    @media screen and (max-width: 399px) {
+      padding: 1rem;
+      border-radius: 8px;
+    }
 
-  &__orders-content {
-    padding: 0;
+    @include tablet-up {
+      padding: 2rem;
+    }
   }
+}
+
+.orders-container {
+  width: 100%;
+  overflow-x: auto;
 }

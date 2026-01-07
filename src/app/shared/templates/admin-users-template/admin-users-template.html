@@ -1,1 +1,128 @@
-<p>admin-users-template works!</p>
+<div class="admin-users">
+  <!-- HEADER -->
+  <div class="admin-users__header">
+    <h1 class="admin-users__title">Gestión de Usuarios</h1>
+    <p class="admin-users__subtitle">Administra los usuarios del sistema y sus permisos</p>
+  </div>
+
+  <!-- USERS SECTION -->
+  <div class="admin-users__users-section">
+    <div class="admin-users__section-header">
+      <h2 class="admin-users__section-title">Lista de Usuarios</h2>
+      <div class="admin-users__pagination-info">{{ pageInfo() }}</div>
+    </div>
+
+    <!-- Users Table -->
+    <app-users-table
+      [users]="users()"
+      [isLoading]="isLoadingUsers()"
+      (userSelected)="onUserSelected($event)"
+      (userEdit)="onUserEdit($event)"
+      (userDelete)="onUserDelete($event)"
+      (userRoleChange)="onUserRoleChange($event)"
+    />
+
+    <!-- Pagination Controls -->
+    @if (totalPages() > 1) {
+      <div class="admin-users__pagination">
+        <button
+          class="btn-pagination"
+          [disabled]="currentPage() === 1"
+          (click)="onPreviousPage()"
+        >
+          ← Anterior
+        </button>
+        <span class="pagination-text">{{ pageInfo() }}</span>
+        <button
+          class="btn-pagination"
+          [disabled]="currentPage() === totalPages()"
+          (click)="onNextPage()"
+        >
+          Siguiente →
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- USER DETAILS MODAL -->
+  @if (showUserModal() && editingUser()) {
+    <div class="modal-overlay" (click)="onCloseModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title">Editar Usuario</h2>
+          <button class="modal-close" (click)="onCloseModal()">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Nombre</label>
+            <input
+              type="text"
+              class="form-input"
+              [value]="editingUser()!.name"
+              (input)="editingUser()!.name = $any($event.target).value"
+              placeholder="Nombre del usuario"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input
+              type="email"
+              class="form-input"
+              [value]="editingUser()!.email"
+              (input)="editingUser()!.email = $any($event.target).value"
+              placeholder="Email del usuario"
+              readonly
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input
+              type="tel"
+              class="form-input"
+              [value]="editingUser()!.phone || ''"
+              (input)="editingUser()!.phone = $any($event.target).value"
+              placeholder="Teléfono del usuario"
+            />
+          </div>
+
+          <!--<div class="form-group">
+             <label class="form-label">Dirección</label>
+              <input
+              type="text"
+              class="form-input"
+              [value]="editingUser()!.address || ''"
+              (input)="editingUser()!.address = $any($event.target).value"
+              placeholder="Dirección del usuario"
+            />
+          </div> -->
+
+          <div class="form-group">
+            <label class="form-label">Rol</label>
+            <select
+              class="form-input"
+              [value]="editingUser()!.role"
+              (change)="editingUser()!.role = $any($event.target).value"
+            >
+              <option value="user">Usuario</option>
+              <option value="admin">Administrador</option>
+              <option value="custom">Personalizado</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Fecha de Registro</label>
+            <div class="date-display">{{ editingUser()!.createdAt | date: 'medium' }}</div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="onCloseModal()">Cancelar</button>
+          <button class="btn btn-primary" (click)="onSaveUser()">Guardar Cambios</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

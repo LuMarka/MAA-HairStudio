@@ -1,6 +1,84 @@
-<div>
-  <header>header</header>
-  <main>
+<!-- Admin Layout with Professional Sidebar -->
+<div class="admin-layout">
+  <!-- Mobile Header -->
+  <header class="admin-layout__header">
+    <button
+      class="admin-layout__menu-btn"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="isSidebarOpen() ? 'Cerrar menú' : 'Abrir menú'"
+      [attr.aria-expanded]="isSidebarOpen()"
+    >
+      @if (isSidebarOpen()) {
+        ✕
+      } @else {
+        ☰
+      }
+    </button>
+
+    <h1 class="admin-layout__brand-mobile">MAA Hair Studio</h1>
+  </header>
+
+  <!-- Sidebar Overlay (Mobile) -->
+  <div
+    class="admin-layout__overlay"
+    [class.admin-layout__overlay--visible]="isSidebarOpen()"
+    (click)="closeSidebar()"
+  ></div>
+
+  <!-- Sidebar -->
+  <aside
+    class="admin-layout__sidebar"
+    [class.admin-layout__sidebar--open]="isSidebarOpen()"
+  >
+    <!-- Sidebar Header -->
+    <div class="admin-layout__sidebar-header">
+      <h1 class="admin-layout__sidebar-brand">MAA Hair Studio</h1>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="admin-layout__nav">
+      <ul class="admin-layout__nav-list">
+        @for (route of navigationRoutes(); track route.path) {
+          <li class="admin-layout__nav-item">
+            <button
+              class="admin-layout__nav-link"
+              [class.admin-layout__nav-link--active]="route.path === activeRoute()"
+              (click)="navigateTo(route.path)"
+            >
+              <div class="admin-layout__nav-content">
+                <span class="admin-layout__nav-icon">{{ route.icon }}</span>
+                <div class="admin-layout__nav-details">
+                  <div class="admin-layout__nav-text">{{ route.label }}</div>
+                  <div class="admin-layout__nav-description">{{ route.description }}</div>
+                </div>
+              </div>
+            </button>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="admin-layout__sidebar-footer">
+      <button
+        class="admin-layout__home-btn"
+        (click)="goToHome()"
+      >
+        <span>🏠</span>
+        <span>Volver al Inicio</span>
+      </button>
+      <button
+        class="admin-layout__logout-btn"
+        (click)="logout()"
+      >
+        <span>🚪</span>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-layout__content">
     <router-outlet />
   </main>
 </div>

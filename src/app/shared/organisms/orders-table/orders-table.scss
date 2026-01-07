@@ -1,0 +1,413 @@
+@use '../../../../assets/styles/variables' as *;
+@use '../../../../assets/styles/mixins' as *;
+
+.orders-table {
+  background: color('surface');
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid color('bg-gray2');
+
+  &__wrapper {
+    overflow-x: auto;
+
+    @include mobile-only {
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+
+    @include mobile-only {
+      min-width: 700px;
+    }
+  }
+
+  // Header
+  &__header {
+    background-color: color('bg-gray1');
+  }
+
+  &__header-cell {
+    padding: 0.75rem 0.5rem 0.5rem 0.5rem;
+    text-align: left;
+    font-weight: 600;
+    color: color('text-dark');
+    border-bottom: 3px solid color('primary');
+    white-space: nowrap;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: color('bg-gray2');
+    }
+
+    &--sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    &--active {
+      background-color: rgba(99, 102, 241, 0.1);
+      color: color('primary');
+    }
+  }
+
+  &__sort-icon {
+    margin-left: 0.5rem;
+    opacity: 0.6;
+    font-size: 0.8rem;
+    display: inline-block;
+    transition: opacity 0.2s ease;
+  }
+
+  &__header-cell--active &__sort-icon {
+    opacity: 1;
+    color: color('primary');
+  }
+
+  // Body
+  &__body {
+    tr:hover {
+      background-color: color('bg-gray1');
+    }
+  }
+
+  &__row {
+    border-bottom: 1px solid color('bg-gray2');
+    transition: background-color 0.2s ease;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__cell {
+    padding: 0.75rem 0.5rem;
+    color: color('text-dark');
+    vertical-align: middle;
+    border-bottom: 1px solid color('bg-gray2');
+    font-size: 0.8rem;
+  }
+
+  // Status badges
+  &__status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    white-space: nowrap;
+
+    &--success {
+      background-color: rgba(33, 184, 54, 0.1);
+      color: color('success');
+      border: 1px solid rgba(33, 184, 54, 0.2);
+    }
+
+    &--warning {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: color('warning');
+      font-weight: 700;
+      border: 1px solid rgba(245, 159, 11, 0.716);
+    }
+
+    &--info {
+      background-color: rgba(37, 99, 235, 0.1);
+      color: color('info');
+      border: 1px solid rgba(37, 99, 235, 0.2);
+    }
+
+    &--error {
+      background-color: rgba(220, 38, 38, 0.1);
+      color: color('error');
+      border: 1px solid rgba(220, 38, 38, 0.2);
+    }
+
+    &--default {
+      background-color: color('bg-gray2');
+      color: color(text-muted);
+      border: 1px solid color('bg-gray2');
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+
+    &--default {
+      background-color: color('bg-gray2');
+      color: color('text-muted');
+    }
+  }
+
+  // Actions
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+
+    &--view {
+      background-color: color('bg-gray2');
+      color: color('text-muted');
+
+      &:hover,
+      &:focus {
+        background-color: color('info');
+        color: color('surface');
+        transform: scale(1.05);
+      }
+    }
+
+    &--edit {
+      background-color: color('bg-gray2');
+      color: color('text-muted');
+
+      &:hover,
+      &:focus {
+        background-color: color('primary');
+        color: color('surface');
+        transform: scale(1.05);
+      }
+    }
+
+    @include focused;
+  }
+
+  // Empty state
+  &__empty {
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+
+  &__empty-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__empty-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+  }
+
+  &__empty-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: color('text-dark');
+    margin: 0;
+  }
+
+  &__empty-description {
+    color: color('text-muted');
+    margin: 0;
+  }
+
+  // Loading state
+  &__loading {
+    padding: 1rem;
+  }
+
+  &__skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__skeleton-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  &__skeleton-cell {
+    height: 1.5rem;
+    background: linear-gradient(
+      90deg,
+      color('bg-gray2') 25%,
+      rgba(203, 213, 225, 0.5) 50%,
+      color('bg-gray2') 75%
+    );
+    background-size: 200% 100%;
+    border-radius: 4px;
+    animation: shimmer 1.5s infinite;
+    flex: 1;
+
+    &:first-child {
+      max-width: 3rem;
+    }
+
+    &:last-child {
+      max-width: 5rem;
+    }
+  }
+}
+
+// Responsive adjustments
+@include mobile-only {
+  .orders-table {
+    &__table {
+      min-width: 800px; // Force horizontal scroll on mobile
+    }
+
+    &__header-cell {
+      padding: 0.75rem 0.5rem 0.5rem 0.5rem;
+      font-size: 0.75rem;
+      border-bottom: 3px solid color(primary);
+    }
+
+    &__cell {
+      padding: 0.75rem 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    &__status {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    &__action-btn {
+      width: 1.75rem;
+      height: 1.75rem;
+      font-size: 0.75rem;
+    }
+  }
+}
+
+// Animation keyframes
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Responsive styles and row click functionality
+.orders-table {
+  &__row {
+    &--clickable {
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: color('bg-gray1');
+      }
+
+      &:active {
+        background-color: color('bg-gray2');
+      }
+    }
+  }
+
+  &__info-cell {
+    width: 40px;
+    text-align: center;
+    padding: 0.5rem !important;
+
+    @media (min-width: 1025px) {
+      display: none !important;
+    }
+  }
+
+  &__info-icon {
+    font-size: 1.2rem;
+    opacity: 0.7;
+  }
+
+  // Responsive table adjustments
+  @media (max-width: 510px) {
+    &__table {
+      min-width: 350px;
+    }
+
+    &__cell {
+      padding: 0.5rem 0.25rem;
+      font-size: 0.8rem;
+    }
+
+    &__header-cell {
+      padding: 0.5rem 0.25rem;
+      font-size: 0.7rem;
+    }
+  }
+
+  // Ajuste específico para iPhone 14 Pro (492px) - hacer columnas más compactas
+  @media (max-width: 500px) and (min-width: 480px) {
+    &__table {
+      table-layout: fixed; // Control fijo de anchos
+      width: 100%;
+    }
+
+    &__header-cell {
+      padding: 0.4rem 0.05rem;
+      font-size: 0.8rem;
+
+      // Ajustar anchos específicos para las 3 columnas en responsive
+      &:nth-child(1) { width: 90px !important; }  // N° Pedido - reducido de 120px
+      &:nth-child(2) { width: 70px !important; }  // Total - reducido de 100px
+      &:nth-child(3) { width: 100px !important; }  // Pago - reducido de 120px
+    }
+
+    &__cell {
+      padding: 0.4rem 0.05rem;
+      font-size: 0.8rem;
+
+      // Mismos anchos para las celdas
+      &:nth-child(1) {
+        width: 90px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      &:nth-child(2) { width: 80px !important; }
+      &:nth-child(3) { width: 95px !important; }
+    }
+
+    &__status {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.4rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    &__table {
+      min-width: 450px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    &__table {
+      min-width: 600px;
+    }
+  }
+}
+

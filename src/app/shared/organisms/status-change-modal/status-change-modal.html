@@ -1,0 +1,104 @@
+@if (isVisible()) {
+      <div class="modal-overlay" (click)="closeModal()">
+        <div class="modal" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="modal-title">
+          <header class="modal__header">
+            <h2 id="modal-title" class="modal__title">
+              Cambiar Estado del Pedido
+            </h2>
+            <button
+              class="modal__close-btn"
+              (click)="closeModal()"
+              aria-label="Cerrar modal"
+            >
+              ✕
+            </button>
+          </header>
+
+          <div class="modal__content">
+            @if (order()) {
+              <div class="order-info">
+                <div class="order-info__item">
+                  <span class="order-info__label">Pedido:</span>
+                  <span class="order-info__value">{{ order()!.orderNumber }}</span>
+                </div>
+                <div class="order-info__item">
+                  <span class="order-info__label">Cliente:</span>
+                  <span class="order-info__value">{{ order()!.user.name }}</span>
+                </div>
+                <div class="order-info__item">
+                  <span class="order-info__label">Total:</span>
+                  <span class="order-info__value">{{ formatCurrency(order()!.total) }}</span>
+                </div>
+              </div>
+
+              <div class="status-form">
+                <div class="form-group">
+                  <label for="order-status" class="form-label">
+                    Estado del Pedido
+                  </label>
+                  <select
+                    id="order-status"
+                    class="form-select"
+                    [(ngModel)]="selectedStatus"
+                  >
+                    @for (status of availableStatuses(); track status.value) {
+                      <option [value]="status.value">{{ status.label }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="payment-status" class="form-label">
+                    Estado del Pago
+                  </label>
+                  <select
+                    id="payment-status"
+                    class="form-select"
+                    [(ngModel)]="selectedPaymentStatus"
+                  >
+                    @for (paymentStatus of availablePaymentStatuses(); track paymentStatus.value) {
+                      <option [value]="paymentStatus.value">{{ paymentStatus.label }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="notes" class="form-label">
+                    Notas adicionales (opcional)
+                  </label>
+                  <textarea
+                    id="notes"
+                    class="form-textarea"
+                    [(ngModel)]="notes"
+                    placeholder="Agregar notas sobre el cambio de estado..."
+                    rows="3"
+                  ></textarea>
+                </div>
+              </div>
+            }
+          </div>
+
+          <footer class="modal__footer">
+            <button
+              class="btn btn--secondary"
+              (click)="closeModal()"
+              type="button"
+            >
+              Cancelar
+            </button>
+            <button
+              class="btn btn--primary"
+              (click)="saveChanges()"
+              [disabled]="isLoading() || !hasChanges()"
+              type="button"
+            >
+              @if (isLoading()) {
+                Guardando...
+              } @else {
+                Guardar Cambios
+              }
+            </button>
+          </footer>
+        </div>
+      </div>
+    }
