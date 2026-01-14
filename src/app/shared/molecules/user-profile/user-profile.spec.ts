@@ -33,7 +33,7 @@ describe('UserProfile', () => {
   });
 
   it('should call authService.logout on logout', () => {
-    const mockResponse: LogoutResponse = { success: true, message: 'Logout successful' };
+    const mockResponse: LogoutResponse = { message: 'Logout successful' };
     authService.logout.and.returnValue(of(mockResponse));
 
     component.logout();
