@@ -358,18 +358,6 @@
       font-size: 0.75rem;
     }
 
-    &.abandoned {
-      background: red;
-      color: white;
-      font-weight: 900;
 
-      @media screen and (max-width: 399px) {
-        font-size: 0.65rem;
-      }
-
-      @include tablet-up {
-        font-size: 0.8rem;
-      }
-    }
   }
 }

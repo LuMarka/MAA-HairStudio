@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { OrderData } from '../../../core/models/interfaces/order.interface';
 import { OrderService } from '../../../core/services/order.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { DatePipe } from '@angular/common';
+import { DatePipe, CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-orders-history',
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe, CurrencyPipe],
   templateUrl: './orders-history.html',
   styleUrl: './orders-history.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -91,5 +91,24 @@ export class OrdersHistory implements OnInit {
       'pickup': 'Retiro en Local'
     };
     return labels[deliveryType] ?? deliveryType;
+  }
+
+  /**
+   * Calcula el total correcto para una orden específica
+   * usando el totalPrice de cada item (monto realmente abonado)
+   */
+  calculateOrderTotal(order: OrderData): number {
+    if (!order?.items || order.items.length === 0) return 0;
+
+    // Usar directamente el totalPrice de cada item (monto realmente abonado)
+    const itemsTotal = order.items.reduce((sum, item) => {
+      // Usar totalPrice que es el precio total ya calculado correctamente
+      const totalPrice = parseFloat(item.totalPrice);
+      return sum + totalPrice;
+    }, 0);
+
+    // Agregar shipping cost si existe
+    const shippingCost = parseFloat(order.shippingCost || '0');
+    return itemsTotal + shippingCost;
   }
 }

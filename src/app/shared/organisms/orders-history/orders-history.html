@@ -39,7 +39,7 @@
 
             <div class="orders-history__info-group">
               <span class="orders-history__label">Total:</span>
-              <span class="orders-history__value orders-history__value--amount">${{ order.total }}</span>
+              <span class="orders-history__value orders-history__value--amount">{{ calculateOrderTotal(order) | currency }}</span>
             </div>
 
             <div class="orders-history__info-group">

@@ -2,9 +2,7 @@ import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StatsCard, type StatsCardData } from '../../molecules/stats-card/stats-card';
 import { OrderService } from '../../../core/services/order.service';
-import { CartService } from '../../../core/services/cart.service';
 import type { OrderStatisticsResponse } from '../../../core/models/interfaces/order.interface';
-import type { AbandonedCartsResponse, AbandonedCart } from '../../../core/models/interfaces/cart.interface';
 
 @Component({
   selector: 'app-admin-sales-template',
@@ -15,14 +13,10 @@ import type { AbandonedCartsResponse, AbandonedCart } from '../../../core/models
 })
 export class AdminSalesTemplate implements OnInit {
   private readonly orderService = inject(OrderService);
-  private readonly cartService = inject(CartService);
 
   // State signals
   protected readonly isLoadingStats = signal(false);
-  protected readonly isLoadingAbandoned = signal(false);
   protected readonly statistics = signal<OrderStatisticsResponse | null>(null);
-  protected readonly abandonedCarts = signal<readonly AbandonedCart[]>([]);
-  protected readonly abandonedCount = signal(0);
 
   // Computed stats for sales
   protected readonly salesCards = computed((): StatsCardData[] => {
@@ -110,7 +104,6 @@ export class AdminSalesTemplate implements OnInit {
 
   ngOnInit(): void {
     this.loadStatistics();
-    this.loadAbandonedCarts();
   }
 
   private loadStatistics(): void {
@@ -133,35 +126,6 @@ export class AdminSalesTemplate implements OnInit {
     } catch (error) {
       console.error('Error loading sales statistics:', error);
       this.isLoadingStats.set(false);
-    }
-  }
-
-  private loadAbandonedCarts(): void {
-    this.isLoadingAbandoned.set(true);
-
-    try {
-      this.cartService.getAbandonedCarts(24, { page: 1, limit: 10 }).subscribe({
-        next: (response: AbandonedCartsResponse) => {
-          if (response.success && response.data) {
-            this.abandonedCarts.set(response.data);
-            this.abandonedCount.set(response.meta.total);
-          } else {
-            this.abandonedCarts.set([]);
-            this.abandonedCount.set(0);
-          }
-        },
-        error: (error: any) => {
-          console.error('Error loading abandoned carts:', error);
-          this.abandonedCarts.set([]);
-          this.abandonedCount.set(0);
-        },
-        complete: () => {
-          this.isLoadingAbandoned.set(false);
-        }
-      });
-    } catch (error) {
-      console.error('Error loading abandoned carts:', error);
-      this.isLoadingAbandoned.set(false);
     }
   }
 

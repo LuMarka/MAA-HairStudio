@@ -13,6 +13,7 @@ import { AdminProducts } from './admin-products/admin-products';
 import { AdminSales } from './admin-sales/admin-sales';
 import { AdminUsers } from './admin-users/admin-users';
 import { AdminWishlist } from './admin-wishlist/admin-wishlist';
+import { AdminAbandonedCarts } from './admin-abandoned-carts/admin-abandoned-carts';
 import { Cart } from './cart/cart';
 import { Cheking } from './cheking/cheking';
 import { DetailProduct } from './detail-product/detail-product';
@@ -253,6 +254,15 @@ export const pagesRoutes: Routes = [
           title: "Lista de Deseos | Admin MAA Hair Studio",
           description: "Panel de administración de la lista de deseos.",
           keywords: "admin, dashboard, management, wishlist",
+        }
+      },
+      {
+        path: 'abandoned-carts',
+        component: AdminAbandonedCarts,
+        data: {
+          title: "Carritos Abandonados | Admin MAA Hair Studio",
+          description: "Panel de administración de carritos abandonados.",
+          keywords: "admin, dashboard, management, abandoned carts, carritos abandonados",
         }
       }
     ]

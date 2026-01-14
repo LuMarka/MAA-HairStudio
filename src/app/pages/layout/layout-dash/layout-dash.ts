@@ -72,6 +72,13 @@ export class LayoutDash {
       path: '/admin/wishlist',
       icon: '❤️',
       description: 'Estadísticas de wishlist'
+    },
+    {
+      id: 'abandoned-carts',
+      label: 'Carritos Abandonados',
+      path: '/admin/abandoned-carts',
+      icon: '🛒❌',
+      description: 'Carritos abandonados'
     }
   ]);
 
