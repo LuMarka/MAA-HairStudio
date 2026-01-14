@@ -52,7 +52,7 @@ export class AdminAbandonedCartsTemplate implements OnInit {
   });
   readonly currentPage = signal(1);
   readonly totalPages = signal(1);
-  readonly hoursThreshold = signal(24);
+  readonly hoursThreshold = signal<number | null>(null);
   readonly selectedCart = signal<AbandonedCart | null>(null);
   readonly showCartModal = signal(false);
 
@@ -102,29 +102,30 @@ export class AdminAbandonedCartsTemplate implements OnInit {
   private loadAbandonedCarts(): void {
     this.isLoading.set(true);
 
+    const hours = this.hoursThreshold();
     this.cartService
-      .getAbandonedCarts(this.hoursThreshold(), {
+      .getAbandonedCarts(hours ?? undefined, {
         page: this.currentPage(),
         limit: 20,
       })
       .subscribe({
         next: (response: AbandonedCartsResponse) => {
-          const transformedCarts: AbandonedCart[] = response.data.map((cart: AbandonedCartInterface) => ({
+          const transformedCarts: AbandonedCart[] = response.data.map((cart: any) => ({
             id: cart.id,
-            userId: cart.user.id,
-            userEmail: cart.user.email,
-            userName: cart.user.name,
+            userId: cart.userId || cart.user?.id || 'N/A',
+            userEmail: cart.userEmail || cart.user?.email || 'N/A',
+            userName: cart.userName || cart.user?.name || 'Usuario',
             status: 'abandoned' as const,
             totalAmount: cart.totalAmount,
             totalItems: cart.totalItems,
             lastActivityAt: new Date(cart.lastActivityAt).toISOString(),
             createdAt: new Date(cart.createdAt).toISOString(),
             abandonedSince: this.calculateAbandondedTime(cart.lastActivityAt),
-            items: cart.items.map((item) => ({
-              productId: item.product.id,
-              productName: item.product.name,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
+            items: (cart.items || []).map((item: any) => ({
+              productId: item.productId || 'N/A',
+              productName: item.productName || 'Desconocido',
+              quantity: item.quantity || 0,
+              unitPrice: parseFloat(item.unitPrice) || 0,
             })),
           }));
 
@@ -183,7 +184,7 @@ export class AdminAbandonedCartsTemplate implements OnInit {
     }
   }
 
-  onChangeHours(hours: number): void {
+  onChangeHours(hours: number | null): void {
     this.hoursThreshold.set(hours);
     this.currentPage.set(1);
     this.loadAbandonedCarts();

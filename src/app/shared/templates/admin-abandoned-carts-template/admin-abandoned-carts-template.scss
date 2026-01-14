@@ -139,11 +139,15 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 0.875rem;
+    table-layout: fixed;
   }
 
   &__table-head {
     background: color('bg-gray1');
     border-bottom: 2px solid color('primary');
+    display: table;
+    width: 100%;
+    table-layout: fixed;
   }
 
   &__table-header {
@@ -152,16 +156,25 @@
     font-weight: 600;
     font-size: 0.875rem;
     color: color('text-dark');
+    display: table-cell;
+    vertical-align: middle;
+
+    &:nth-child(1) { width: 30%; } /* Cliente */
+    &:nth-child(2) { width: 20%; } /* Email */
+    &:nth-child(3) { width: 12%; } /* Productos */
+    &:nth-child(4) { width: 15%; } /* Valor */
+    &:nth-child(5) { width: 15%; } /* Abandonado Hace */
+    &:nth-child(6) { width: 8%; }  /* Acciones */
   }
 
   &__table-body {
     display: block;
-    overflow: auto;
   }
 
   &__table-row {
     display: table;
     width: 100%;
+    table-layout: fixed;
     border-bottom: 1px solid color('bg-gray2');
     transition: all 0.2s ease;
     cursor: pointer;
@@ -178,6 +191,13 @@
     vertical-align: middle;
     font-size: 0.875rem;
     color: color('text-dark');
+
+    &:nth-child(1) { width: 30%; } /* Cliente */
+    &:nth-child(2) { width: 20%; } /* Email */
+    &:nth-child(3) { width: 12%; } /* Productos */
+    &:nth-child(4) { width: 15%; } /* Valor */
+    &:nth-child(5) { width: 15%; } /* Abandonado Hace */
+    &:nth-child(6) { width: 8%; }  /* Acciones */
   }
 
   &__user-cell {
@@ -321,22 +341,27 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
     padding: 1rem;
+    backdrop-filter: blur(2px);
   }
 
   &__modal-content {
     position: relative;
-    background: color('white');
-    border-radius: 8px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 12px;
     max-width: 90vw;
     max-height: 90vh;
+    width: 100%;
+    max-width: 600px;
     overflow-y: auto;
-    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.8);
   }
 
   &__modal-header {
@@ -344,16 +369,16 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid color('bg-gray2');
-    background: color('bg-gray1');
-    border-radius: 8px 8px 0 0;
+    border-bottom: 2px solid color('primary');
+    background: linear-gradient(135deg, color('primary') 0%, rgba(59, 130, 246, 0.8) 100%);
+    border-radius: 12px 12px 0 0;
   }
 
   &__modal-title {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: color('text-dark');
+    color: color('white');
   }
 
   &__modal-close {
@@ -361,12 +386,12 @@
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: color('text-muted');
+    color: color('white');
     transition: all 0.2s ease;
 
     &:hover {
-      color: color('primary');
-      transform: rotate(90deg);
+      color: rgba(255, 255, 255, 0.8);
+      transform: rotate(90deg) scale(1.1);
     }
   }
 
@@ -504,40 +529,49 @@
     display: flex;
     gap: 1rem;
     padding: 1.5rem;
-    border-top: 1px solid color('bg-gray2');
-    background: color('bg-gray1');
+    border-top: 2px solid color('bg-gray2');
+    background: linear-gradient(135deg, color('bg-gray1') 0%, rgba(248, 249, 250, 0.5) 100%);
     justify-content: flex-end;
+    border-radius: 0 0 12px 12px;
   }
 
   &__btn-primary,
   &__btn-secondary {
     padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     font-size: 0.875rem;
   }
 
   &__btn-primary {
-    background: color('primary');
+    background: linear-gradient(135deg, color('primary') 0%, rgba(59, 130, 246, 0.8) 100%);
     color: color('white');
 
     &:hover {
-      background: color('primary-dark');
       transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+      box-shadow: 0 8px 16px rgba(59, 130, 246, 0.4);
+    }
+
+    &:active {
+      transform: translateY(0);
     }
   }
 
   &__btn-secondary {
-    background: color('gray0');
+    background: color('bg-gray2');
     color: color('text-dark');
-    border: 1px solid color('bg-gray2');
+    border: 1px solid color('bg-gray3');
 
     &:hover {
-      background: color('bg-gray1');
+      background: color('bg-gray3');
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: translateY(0);
     }
   }
 }

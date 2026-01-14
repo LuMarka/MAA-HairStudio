@@ -26,12 +26,13 @@
         </p>
       </div>
       <div class="admin-abandoned-carts__filters">
-        <label class="admin-abandoned-carts__filter-label">Inactividad:</label>
+        <label class="admin-abandoned-carts__filter-label">Filtrar por inactividad:</label>
         <select
           class="admin-abandoned-carts__filter-select"
-          [value]="hoursThreshold()"
-          (change)="onChangeHours(+$any($event.target).value)"
+          [value]="hoursThreshold() ?? ''"
+          (change)="onChangeHours($any($event.target).value === '' ? null : +$any($event.target).value)"
         >
+          <option value="">Todos los carritos</option>
           <option value="24">Últimas 24 horas</option>
           <option value="48">Últimas 48 horas</option>
           <option value="168">Últimos 7 días</option>
