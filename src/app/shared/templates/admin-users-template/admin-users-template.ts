@@ -65,6 +65,7 @@ export class AdminUsersTemplate implements OnInit {
 
   protected onUserSelected(user: User): void {
     this.selectedUser.set(user);
+    this.showUserModal.set(true);
   }
 
   protected onUserEdit(user: User): void {
