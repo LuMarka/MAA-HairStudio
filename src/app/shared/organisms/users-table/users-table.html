@@ -12,54 +12,82 @@
       <table class="users-table">
         <thead>
           <tr>
-            @for (col of columns(); track col.key) {
-              <th [class.sortable]="col.sortable" (click)="col.sortable && onSort(col.key)">
-                <span class="column-label">
-                  {{ col.label }}
-                  @if (col.sortable) {
-                    <span class="sort-arrow">{{ getSortArrow(col.key) }}</span>
-                  }
-                </span>
-              </th>
-            }
+            <th class="col-name" [class.sortable]="true" (click)="onSort('name')">
+              <span class="column-label">
+                Nombre
+                <span class="sort-arrow">{{ getSortArrow('name') }}</span>
+              </span>
+            </th>
+            <th class="col-email col-hidden-mobile" [class.sortable]="true" (click)="onSort('email')">
+              <span class="column-label">
+                Email
+                <span class="sort-arrow">{{ getSortArrow('email') }}</span>
+              </span>
+            </th>
+            <th class="col-phone col-hidden-tablet" [class.sortable]="false">
+              <span class="column-label">Teléfono</span>
+            </th>
+            <th class="col-role" [class.sortable]="true" (click)="onSort('role')">
+              <span class="column-label">
+                Rol
+                <span class="sort-arrow">{{ getSortArrow('role') }}</span>
+              </span>
+            </th>
+            <th class="col-date col-hidden-mobile" [class.sortable]="true" (click)="onSort('createdAt')">
+              <span class="column-label">
+                Registro
+                <span class="sort-arrow">{{ getSortArrow('createdAt') }}</span>
+              </span>
+            </th>
             <th class="actions-header">Acciones</th>
           </tr>
         </thead>
         <tbody>
           @for (user of sortedUsers(); track user.id) {
             <tr class="user-row" (click)="onSelectUser(user)">
-              @for (col of columns(); track col.key) {
-                <td [class]="'cell-' + col.key">
-                  @switch (col.key) {
-                    @case ('name') {
-                      <div class="user-cell">
-                        <div class="user-avatar">{{ (user.name || 'U').charAt(0).toUpperCase() }}</div>
-                        <span class="user-name">{{ user.name }}</span>
-                      </div>
-                    }
-                    @case ('role') {
-                      <select
-                        class="role-select"
-                        [value]="user.role"
-                        (change)="onRoleChange(user, $any($event.target).value, $event)"
-                      >
-                        <option value="user">Usuario</option>
-                        <option value="admin">Administrador</option>
-                        <option value="custom">Personalizado</option>
-                      </select>
-                    }
-                    @default {
-                      <span class="cell-value">{{ formatValue(user[col.key], col.key) }}</span>
-                    }
-                  }
-                </td>
-              }
+              <td class="col-name">
+                <div class="user-cell">
+                  <div class="user-avatar">{{ (user.name || 'U').charAt(0).toUpperCase() }}</div>
+                  <span class="user-name">{{ user.name }}</span>
+                </div>
+              </td>
+              <td class="col-email col-hidden-mobile">
+                <span class="cell-value">{{ user.email }}</span>
+              </td>
+              <td class="col-phone col-hidden-tablet">
+                <span class="cell-value">{{ user.phone || '—' }}</span>
+              </td>
+              <td class="col-role">
+                <select
+                  class="role-select"
+                  [value]="user.role"
+                  (change)="onRoleChange(user, $any($event.target).value, $event)"
+                  (click)="$event.stopPropagation()"
+                >
+                  <option value="user">Usuario</option>
+                  <option value="admin">Administrador</option>
+                  <option value="custom">Personalizado</option>
+                </select>
+              </td>
+              <td class="col-date col-hidden-mobile">
+                <span class="cell-value">{{ user.createdAt | date: 'short' }}</span>
+              </td>
               <td class="actions-cell">
                 <div class="action-buttons">
-                  <button class="btn-icon btn-edit" title="Editar usuario" (click)="onEditUser(user, $event)">
+                  <button
+                    class="btn-icon btn-edit"
+                    title="Editar usuario"
+                    (click)="onEditUser(user, $event)"
+                    aria-label="Editar"
+                  >
                     ✏️
                   </button>
-                  <button class="btn-icon btn-delete" title="Eliminar usuario" (click)="onDeleteUser(user, $event)">
+                  <button
+                    class="btn-icon btn-delete"
+                    title="Eliminar usuario"
+                    (click)="onDeleteUser(user, $event)"
+                    aria-label="Eliminar"
+                  >
                     🗑️
                   </button>
                 </div>
