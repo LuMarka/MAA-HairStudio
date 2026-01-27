@@ -175,20 +175,23 @@
 } */
 
 @mixin focused() {
-  outline: 0 none;
-  outline-offset: 0;
-  transition: box-shadow variables.$transitionDuration;
-  box-shadow: var(--focus-ring);
+  & {
+    outline: 0 none;
+    outline-offset: 0;
+    transition: box-shadow variables.$transitionDuration;
+    box-shadow: var(--focus-ring, 0 0 0 0.2rem rgba(114, 143, 112, 0.5));
+  }
 }
 
 @mixin focused-inset() {
-  outline: 0 none;
-  outline-offset: 0;
-  transition: box-shadow variables.$transitionDuration;
-  box-shadow: inset var(--focus-ring);
+  & {
+    outline: 0 none;
+    outline-offset: 0;
+    transition: box-shadow variables.$transitionDuration;
+    box-shadow: inset var(--focus-ring, 0 0 0 0.2rem rgba(114, 143, 112, 0.5));
+  }
 }
 
-
 @mixin use-secondary-font {
-  font-family: v.$font-family-secondary;
+  font-family: variables.$font-family-secondary;
 }

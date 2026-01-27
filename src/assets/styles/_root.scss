@@ -50,6 +50,9 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+
+  // Define el valor de la sombra para el foco
+  --focus-ring: 0 0 0 0.2rem #{variables.color(green-300)};
 }
 
 // Utility class for secondary font

@@ -120,8 +120,8 @@ $btn-size-desktop: 2.5rem;  // 40px
   }
 
   &:focus-visible {
-    @include m.focused();
     z-index: 1;
+    @include m.focused();
   }
 
   &.active {
@@ -205,9 +205,9 @@ $btn-size-desktop: 2.5rem;  // 40px
   }
 
   // Usa tu mixin de SASS para el foco
-  &:focus-visible {
-    @include m.focused();
-    --focus-ring: 0 0 0 3px #{v.color(secondary)};
-  }
+&:focus-visible {
+  --focus-ring: 0 0 0 3px #{v.color(secondary)}; // ✅ Propiedad primero
+  @include m.focused(); // ✅ Mixin al final
+}
 }
 
