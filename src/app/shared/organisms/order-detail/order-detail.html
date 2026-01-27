@@ -48,7 +48,7 @@
             <span class="order-detail__value">{{ order()!.items.length }}</span>
           </div>
           <div class="order-detail__info-item">
-            <span class="order-detail__label">Subtotal</span>
+            <span class="order-detail__label">Monto</span>
             <span class="order-detail__value">{{ order()!.subtotal | currency }}</span>
           </div>
         </div>
@@ -98,23 +98,21 @@
         <div class="order-detail__summary">
           <div class="order-detail__summary-row">
             <span class="order-detail__summary-label">Subtotal</span>
-            <span class="order-detail__summary-value">{{ order()!.subtotal | currency }}</span>
+            <span class="order-detail__summary-value">{{ calculatedSubtotal() | currency }}</span>
           </div>
-          @if (order()!.shippingCost) {
+          @if (shippingCost() > 0) {
             <div class="order-detail__summary-row">
               <span class="order-detail__summary-label">Costo de Envío</span>
-              <span class="order-detail__summary-value">{{ order()!.shippingCost | currency }}</span>
+              <span class="order-detail__summary-value">{{ shippingCost() | currency }}</span>
             </div>
           }
-          @if (order()!.tax && order()!.tax !== '0') {
-            <div class="order-detail__summary-row">
-              <span class="order-detail__summary-label">Impuestos</span>
-              <span class="order-detail__summary-value">{{ order()!.tax | currency }}</span>
-            </div>
-          }
+          <div class="order-detail__summary-row">
+            <span class="order-detail__summary-label">IVA (21%)</span>
+            <span class="order-detail__summary-value">{{ calculatedTax() | currency }}</span>
+          </div>
           <div class="order-detail__summary-row order-detail__summary-row--total">
             <span class="order-detail__summary-label">Total</span>
-            <span class="order-detail__summary-value">{{ order()!.total | currency }}</span>
+            <span class="order-detail__summary-value">{{ calculatedTotal() | currency }}</span>
           </div>
         </div>
       </div>

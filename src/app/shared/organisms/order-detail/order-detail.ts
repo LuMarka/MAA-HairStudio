@@ -23,6 +23,59 @@ export class OrderDetail {
   readonly isLoading = computed(() => this.orderService.isLoading());
   readonly errorMessage = computed(() => this.orderService.errorMessage());
 
+  // ========== COMPUTED PARA CALCULAR TOTALES CORRECTOS ==========
+
+  /**
+   * Calcula el subtotal sin IVA basándose en los totalPrice de los items
+   */
+  readonly calculatedSubtotal = computed(() => {
+    const orderData = this.order();
+    if (!orderData?.items) return 0;
+
+    // Usar totalPrice y dividir entre 1.21 para obtener precio sin IVA
+    const total = orderData.items.reduce((sum, item) => {
+      const totalPrice = parseFloat(item.totalPrice);
+      // Dividir entre 1.21 para obtener precio sin IVA
+      const priceWithoutTax = totalPrice / 1.21;
+      return sum + priceWithoutTax;
+    }, 0);
+
+    return total;
+  });
+
+  /**
+   * Calcula el IVA (21%) sobre el subtotal calculado
+   */
+  readonly calculatedTax = computed(() => {
+    return this.calculatedSubtotal() * 0.21;
+  });
+
+  /**
+   * Calcula el total con IVA usando el totalPrice de cada item
+   */
+  readonly calculatedTotal = computed(() => {
+    const orderData = this.order();
+    if (!orderData?.items) return 0;
+
+    // Usar directamente el totalPrice de cada item (monto realmente abonado)
+    const total = orderData.items.reduce((sum, item) => {
+      const totalPrice = parseFloat(item.totalPrice);
+      return sum + totalPrice;
+    }, 0);
+
+    // Agregar shipping cost si existe
+    const shippingCost = parseFloat(orderData.shippingCost || '0');
+    return total + shippingCost;
+  });
+
+  /**
+   * Obtiene el costo de shipping
+   */
+  readonly shippingCost = computed(() => {
+    const orderData = this.order();
+    return parseFloat(orderData?.shippingCost || '0');
+  });
+
   constructor() {
 
     effect(() => {

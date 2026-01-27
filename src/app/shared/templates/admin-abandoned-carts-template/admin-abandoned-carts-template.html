@@ -1,0 +1,240 @@
+<div class="admin-abandoned-carts">
+  <!-- Header -->
+  <header class="admin-abandoned-carts__header">
+    <div class="admin-abandoned-carts__header-content">
+      <h1 class="admin-abandoned-carts__title">Carritos Abandonados</h1>
+      <p class="admin-abandoned-carts__subtitle">
+        Monitorea y gestiona carritos abandonados para recuperar ventas potenciales
+      </p>
+    </div>
+  </header>
+
+  <!-- Stats Cards Grid -->
+  <div class="admin-abandoned-carts__stats-grid">
+    @for (card of statsCards(); track card.title) {
+      <app-stats-card [data]="card" />
+    }
+  </div>
+
+  <!-- Abandoned Carts Section -->
+  <div class="admin-abandoned-carts__section">
+    <div class="admin-abandoned-carts__section-header">
+      <div>
+        <h2 class="admin-abandoned-carts__section-title">Lista de Carritos</h2>
+        <p class="admin-abandoned-carts__section-subtitle">
+          Últimas {{ abandonedCarts().length }} de {{ totalPages() * 20 }} carritos
+        </p>
+      </div>
+      <div class="admin-abandoned-carts__filters">
+        <label class="admin-abandoned-carts__filter-label">Filtrar por inactividad:</label>
+        <select
+          class="admin-abandoned-carts__filter-select"
+          [value]="hoursThreshold() ?? ''"
+          (change)="onChangeHours($any($event.target).value === '' ? null : +$any($event.target).value)"
+        >
+          <option value="">Todos los carritos</option>
+          <option value="24">Últimas 24 horas</option>
+          <option value="48">Últimas 48 horas</option>
+          <option value="168">Últimos 7 días</option>
+          <option value="720">Últimos 30 días</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Carts Table -->
+    <div class="admin-abandoned-carts__table-container">
+      @if (isLoading()) {
+        <div class="admin-abandoned-carts__loading">
+          <p>Cargando carritos abandonados...</p>
+        </div>
+      } @else if (abandonedCarts().length === 0) {
+        <div class="admin-abandoned-carts__empty">
+          <p>No hay carritos abandonados en este período</p>
+        </div>
+      } @else {
+        <table class="admin-abandoned-carts__table">
+          <thead class="admin-abandoned-carts__table-head">
+            <tr>
+              <th class="admin-abandoned-carts__table-header">Cliente</th>
+              <th class="admin-abandoned-carts__table-header col-hidden-mobile">Email</th>
+              <th class="admin-abandoned-carts__table-header">Productos</th>
+              <th class="admin-abandoned-carts__table-header">Valor</th>
+              <th class="admin-abandoned-carts__table-header col-hidden-tablet">Abandonado Hace</th>
+              <th class="admin-abandoned-carts__table-header">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="admin-abandoned-carts__table-body">
+            @for (cart of abandonedCarts(); track cart.id) {
+              <tr
+                class="admin-abandoned-carts__table-row"
+                (click)="onViewCart(cart)"
+              >
+                <td class="admin-abandoned-carts__table-cell">
+                  <div class="admin-abandoned-carts__user-cell">
+                    <div class="admin-abandoned-carts__user-avatar">
+                      {{ (cart.userName || 'U').charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="admin-abandoned-carts__user-info">
+                      <div class="admin-abandoned-carts__user-name">{{ cart.userName }}</div>
+                      <div class="admin-abandoned-carts__user-email-mobile">{{ cart.userEmail }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="admin-abandoned-carts__table-cell col-hidden-mobile">
+                  <span class="admin-abandoned-carts__email">{{ cart.userEmail }}</span>
+                </td>
+                <td class="admin-abandoned-carts__table-cell">
+                  <span class="admin-abandoned-carts__badge">
+                    {{ getCartItemsTotal(cart) }} items
+                  </span>
+                </td>
+                <td class="admin-abandoned-carts__table-cell">
+                  <span class="admin-abandoned-carts__price">
+                    {{ formatPrice(cart.totalAmount) }}
+                  </span>
+                </td>
+                <td class="admin-abandoned-carts__table-cell col-hidden-tablet">
+                  <span class="admin-abandoned-carts__time">{{ cart.abandonedSince }}</span>
+                </td>
+                <td class="admin-abandoned-carts__table-cell admin-abandoned-carts__actions-cell">
+                  <button
+                    class="admin-abandoned-carts__btn-view"
+                    (click)="onViewCart(cart); $event.stopPropagation()"
+                    title="Ver detalles"
+                  >
+                    👁️
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+      <div class="admin-abandoned-carts__pagination">
+        <button
+          class="admin-abandoned-carts__btn-pagination"
+          [disabled]="currentPage() === 1"
+          (click)="onPreviousPage()"
+        >
+          ← Anterior
+        </button>
+        <span class="admin-abandoned-carts__pagination-info">
+          Página {{ currentPage() }} de {{ totalPages() }}
+        </span>
+        <button
+          class="admin-abandoned-carts__btn-pagination"
+          [disabled]="currentPage() === totalPages()"
+          (click)="onNextPage()"
+        >
+          Siguiente →
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Cart Details Modal -->
+  @if (showCartModal() && selectedCart()) {
+    <div class="admin-abandoned-carts__modal-overlay" (click)="onCloseModal()">
+      <div
+        class="admin-abandoned-carts__modal-content"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="admin-abandoned-carts__modal-header">
+          <h2 class="admin-abandoned-carts__modal-title">
+            Detalles del Carrito - {{ selectedCart()!.userName }}
+          </h2>
+          <button
+            class="admin-abandoned-carts__modal-close"
+            (click)="onCloseModal()"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="admin-abandoned-carts__modal-body">
+          <div class="admin-abandoned-carts__modal-section">
+            <h3 class="admin-abandoned-carts__modal-section-title">
+              Información del Cliente
+            </h3>
+            <div class="admin-abandoned-carts__modal-grid">
+              <div class="admin-abandoned-carts__modal-field">
+                <label>Nombre</label>
+                <p>{{ selectedCart()!.userName }}</p>
+              </div>
+              <div class="admin-abandoned-carts__modal-field">
+                <label>Email</label>
+                <p>{{ selectedCart()!.userEmail }}</p>
+              </div>
+              <div class="admin-abandoned-carts__modal-field">
+                <label>Carrito Abandonado Hace</label>
+                <p>{{ selectedCart()!.abandonedSince }}</p>
+              </div>
+              <div class="admin-abandoned-carts__modal-field">
+                <label>Última Actividad</label>
+                <p>{{ selectedCart()!.lastActivityAt | date: 'medium' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-abandoned-carts__modal-section">
+            <h3 class="admin-abandoned-carts__modal-section-title">
+              Productos en el Carrito
+            </h3>
+            <div class="admin-abandoned-carts__products-list">
+              @for (item of selectedCart()!.items; track item.productId) {
+                <div class="admin-abandoned-carts__product-item">
+                  <div class="admin-abandoned-carts__product-info">
+                    <div class="admin-abandoned-carts__product-name">
+                      {{ item.productName }}
+                    </div>
+                    <div class="admin-abandoned-carts__product-sku">
+                      ID: {{ item.productId }}
+                    </div>
+                  </div>
+                  <div class="admin-abandoned-carts__product-quantity">
+                    Cantidad: {{ item.quantity }}
+                  </div>
+                  <div class="admin-abandoned-carts__product-price">
+                    {{ formatPrice(item.unitPrice) }}
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="admin-abandoned-carts__modal-section">
+            <h3 class="admin-abandoned-carts__modal-section-title">Resumen</h3>
+            <div class="admin-abandoned-carts__summary">
+              <div class="admin-abandoned-carts__summary-row">
+                <span>Total de Productos:</span>
+                <strong>{{ getCartItemsTotal(selectedCart()!) }}</strong>
+              </div>
+              <div class="admin-abandoned-carts__summary-row">
+                <span>Monto Total:</span>
+                <strong class="admin-abandoned-carts__summary-amount">
+                  {{ formatPrice(selectedCart()!.totalAmount) }}
+                </strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-abandoned-carts__modal-footer">
+          <button
+            class="admin-abandoned-carts__btn-secondary"
+            (click)="onCloseModal()"
+          >
+            Cerrar
+          </button>
+          <button class="admin-abandoned-carts__btn-primary">
+            Enviar Recordatorio
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

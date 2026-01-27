@@ -45,11 +45,11 @@
   </div>
 
   <!-- USER DETAILS MODAL -->
-  @if (showUserModal() && editingUser()) {
+  @if (showUserModal() && (editingUser() || selectedUser())) {
     <div class="modal-overlay" (click)="onCloseModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2 class="modal-title">Editar Usuario</h2>
+          <h2 class="modal-title">{{ editingUser() ? 'Editar Usuario' : 'Detalles del Usuario' }}</h2>
           <button class="modal-close" (click)="onCloseModal()">✕</button>
         </div>
 
@@ -59,8 +59,9 @@
             <input
               type="text"
               class="form-input"
-              [value]="editingUser()!.name"
-              (input)="editingUser()!.name = $any($event.target).value"
+              [value]="(editingUser() || selectedUser())!.name"
+              (input)="editingUser() ? editingUser()!.name = $any($event.target).value : null"
+              [readonly]="!editingUser()"
               placeholder="Nombre del usuario"
             />
           </div>
@@ -70,10 +71,9 @@
             <input
               type="email"
               class="form-input"
-              [value]="editingUser()!.email"
-              (input)="editingUser()!.email = $any($event.target).value"
-              placeholder="Email del usuario"
+              [value]="(editingUser() || selectedUser())!.email"
               readonly
+              placeholder="Email del usuario"
             />
           </div>
 
@@ -82,29 +82,20 @@
             <input
               type="tel"
               class="form-input"
-              [value]="editingUser()!.phone || ''"
-              (input)="editingUser()!.phone = $any($event.target).value"
+              [value]="(editingUser() || selectedUser())!.phone || ''"
+              (input)="editingUser() ? editingUser()!.phone = $any($event.target).value : null"
+              [readonly]="!editingUser()"
               placeholder="Teléfono del usuario"
             />
           </div>
-
-          <!--<div class="form-group">
-             <label class="form-label">Dirección</label>
-              <input
-              type="text"
-              class="form-input"
-              [value]="editingUser()!.address || ''"
-              (input)="editingUser()!.address = $any($event.target).value"
-              placeholder="Dirección del usuario"
-            />
-          </div> -->
 
           <div class="form-group">
             <label class="form-label">Rol</label>
             <select
               class="form-input"
-              [value]="editingUser()!.role"
-              (change)="editingUser()!.role = $any($event.target).value"
+              [value]="(editingUser() || selectedUser())!.role"
+              (change)="editingUser() ? editingUser()!.role = $any($event.target).value : null"
+              [disabled]="!editingUser()"
             >
               <option value="user">Usuario</option>
               <option value="admin">Administrador</option>
@@ -114,13 +105,18 @@
 
           <div class="form-group">
             <label class="form-label">Fecha de Registro</label>
-            <div class="date-display">{{ editingUser()!.createdAt | date: 'medium' }}</div>
+            <div class="date-display">{{ (editingUser() || selectedUser())!.createdAt | date: 'medium' }}</div>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="onCloseModal()">Cancelar</button>
-          <button class="btn btn-primary" (click)="onSaveUser()">Guardar Cambios</button>
+          @if (editingUser()) {
+            <button class="btn btn-secondary" (click)="onCloseModal()">Cancelar</button>
+            <button class="btn btn-primary" (click)="onSaveUser()">Guardar Cambios</button>
+          } @else {
+            <button class="btn btn-primary" (click)="onUserEdit(selectedUser()!)">Editar</button>
+            <button class="btn btn-secondary" (click)="onCloseModal()">Cerrar</button>
+          }
         </div>
       </div>
     </div>
