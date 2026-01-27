@@ -65,12 +65,19 @@ export class PaymentFailure implements OnInit {
   private verifyPaymentStatus(orderId: string): void {
     this.paymentService.verifyPayment(orderId).subscribe({
       next: (response) => {
+        // Verificar si el pago fue encontrado
+        if (!response.success || !response.status) {
+          console.log('⚠️ Pago no encontrado');
+          this._isLoading.set(false);
+          return;
+        }
+
         this._paymentStatus.set(response.status);
 
         if (response.status === 'approved') {
           // ✅ Si se aprobó (webhook llegó antes), redirigir a success
           console.log('✅ Pago aprobado, redirigiendo a success');
-          this.router.navigate(['/payment-success'], {
+          this.router.navigate(['/payment/success'], {
             queryParams: { order_id: orderId }
           });
         } else if (
@@ -79,7 +86,7 @@ export class PaymentFailure implements OnInit {
         ) {
           // ⏳ Si está pendiente, redirigir a pending
           console.log('⏳ Pago pendiente, redirigiendo a pending');
-          this.router.navigate(['/payment-pending'], {
+          this.router.navigate(['/payment/pending'], {
             queryParams: { order_id: orderId }
           });
         } else {

@@ -85,8 +85,22 @@ export class PaymentPending implements OnInit, OnDestroy {
         next: (response) => {
           attempts++;
           this._pollingAttempts.set(attempts);
+
+          // Verificar si el pago fue encontrado
+          if (!response.success || !response.status) {
+            this._statusMessage.set(`⏳ Esperando confirmación... (${attempts}s)`);
+            if (attempts >= this.MAX_ATTEMPTS) {
+              if (this.pollingInterval) {
+                clearInterval(this.pollingInterval);
+              }
+              this._isPolling.set(false);
+              this._statusMessage.set('⏳ El pago está siendo procesado. Por favor, vuelva más tarde.');
+            }
+            return;
+          }
+
           this._paymentStatus.set(response.status);
-          this._paymentId.set(response.data.id);
+          this._paymentId.set(response.data?.id ?? null);
 
           if (response.status === 'approved') {
             // ✅ Pago aprobado
@@ -96,7 +110,7 @@ export class PaymentPending implements OnInit, OnDestroy {
             this._isPolling.set(false);
             console.log('✅ Pago aprobado, redirigiendo a success');
 
-            this.router.navigate(['/payment-success'], {
+            this.router.navigate(['/payment/success'], {
               queryParams: { order_id: orderId }
             });
           } else if (
@@ -110,7 +124,7 @@ export class PaymentPending implements OnInit, OnDestroy {
             this._isPolling.set(false);
             console.error('❌ Pago rechazado, redirigiendo a failure');
 
-            this.router.navigate(['/payment-failure'], {
+            this.router.navigate(['/payment/failure'], {
               queryParams: { order_id: orderId }
             });
           } else if (
@@ -155,12 +169,7 @@ export class PaymentPending implements OnInit, OnDestroy {
   }
 
   protected goToOrders(): void {
-    const orderId = this._orderId();
-    if (orderId) {
-      this.router.navigate(['/orders', orderId]);
-    } else {
-      this.router.navigate(['/orders']);
-    }
+    this.router.navigate(['/order-me']);
   }
 
   protected goToHome(): void {

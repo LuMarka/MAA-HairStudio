@@ -84,8 +84,22 @@ export class PaymentSuccess implements OnInit, OnDestroy {
         next: (response) => {
           attempts++;
           this._pollingAttempts.set(attempts);
+
+          // Verificar si el pago fue encontrado
+          if (!response.success || !response.status) {
+            console.log('⏳ Esperando confirmación del pago...');
+            if (attempts >= this.MAX_ATTEMPTS) {
+              if (this.pollingInterval) {
+                clearInterval(this.pollingInterval);
+              }
+              this._isLoading.set(false);
+              this._errorMessage.set('⏳ El pago está siendo procesado. Por favor, vuelva más tarde.');
+            }
+            return;
+          }
+
           this._paymentStatus.set(response.status);
-          this._paymentId.set(response.data.id);
+          this._paymentId.set(response.data?.id ?? null);
 
           if (response.status === 'approved') {
             // ✅ Pago aprobado
@@ -97,7 +111,7 @@ export class PaymentSuccess implements OnInit, OnDestroy {
             console.log('✅ Pago confirmado, redirigiendo a órdenes en 2 segundos');
 
             setTimeout(() => {
-              this.router.navigate(['/orders', orderId]);
+              this.router.navigate(['/order-me']);
             }, 2000);
           } else if (
             response.status === 'pending' ||
@@ -159,12 +173,7 @@ export class PaymentSuccess implements OnInit, OnDestroy {
   }
 
   protected goToOrders(): void {
-    const orderId = this._orderId();
-    if (orderId) {
-      this.router.navigate(['/orders', orderId]);
-    } else {
-      this.router.navigate(['/orders']);
-    }
+    this.router.navigate(['/order-me']);
   }
 
   protected goToHome(): void {

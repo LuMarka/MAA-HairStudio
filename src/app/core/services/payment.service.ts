@@ -9,7 +9,10 @@ import type {
   VerifyPaymentResponse,
   PaymentHistoryResponse,
   PaymentDetailsResponse,
-  CreatePreferenceDto
+  CreatePreferenceDto,
+  SyncPaymentResponse,
+  CancelPaymentResponse,
+  AdminSearchPaymentsResponse
 } from '../models/interfaces/payment.interface';
 
 /**
@@ -79,6 +82,8 @@ export class PaymentService {
    * POST /payments/create-preference
    *
    * @param orderId - ID de la orden
+   * @param returnUrl - URL de retorno opcional
+   * @param notes - Notas adicionales opcionales
    * @returns Observable con la respuesta que incluye initPoint y sandboxInitPoint
    *
    * @example
@@ -92,11 +97,15 @@ export class PaymentService {
    * });
    * ```
    */
-  createPreference(orderId: string): Observable<CreatePreferenceResponse> {
+  createPreference(
+    orderId: string,
+    returnUrl?: string,
+    notes?: string
+  ): Observable<CreatePreferenceResponse> {
     this._isLoading.set(true);
     this._errorMessage.set(null);
 
-    const dto: CreatePreferenceDto = { orderId };
+    const dto: CreatePreferenceDto = { orderId, returnUrl, notes };
 
     return this.http
       .post<CreatePreferenceResponse>(`${this.apiUrl}/create-preference`, dto)
@@ -129,9 +138,14 @@ export class PaymentService {
    * @example
    * ```typescript
    * this.paymentService.verifyPayment(orderId).subscribe(response => {
-   *   // response.status: 'approved' | 'pending' | 'rejected' | 'in_process' | 'cancelled'
-   *   // response.order: { id, orderNumber, status, total }
-   *   // response.data: detalles completos del pago
+   *   if (response.success) {
+   *     // response.status: 'approved' | 'pending' | 'rejected' | 'in_process' | 'cancelled'
+   *     // response.order: { id, orderNumber, status, total }
+   *     // response.data: detalles completos del pago
+   *   } else {
+   *     // Pago no encontrado
+   *     // response.status: null
+   *   }
    * });
    * ```
    */
@@ -143,13 +157,17 @@ export class PaymentService {
       .get<VerifyPaymentResponse>(`${this.apiUrl}/verify/${orderId}`)
       .pipe(
         tap((response) => {
-          console.log('✅ [2️⃣ VERIFY] Pago verificado:', {
-            status: response.status,
-            orderNumber: response.order.orderNumber,
-            paymentStatus: response.order.status,
-            amount: response.order.total,
-            webhookProcessed: response.data.webhookProcessed
-          });
+          if (response.success && response.order) {
+            console.log('✅ [2️⃣ VERIFY] Pago verificado:', {
+              status: response.status,
+              orderNumber: response.order.orderNumber,
+              paymentStatus: response.order.status,
+              amount: response.order.total,
+              webhookProcessed: response.data?.webhookProcessed
+            });
+          } else {
+            console.log('⚠️ [2️⃣ VERIFY] Pago no encontrado:', response.message);
+          }
         }),
         catchError((error: HttpErrorResponse) =>
           this.handleError(error, 'verificar estado del pago')
@@ -172,7 +190,7 @@ export class PaymentService {
    * ```typescript
    * this.paymentService.getPaymentHistory(1, 10).subscribe(response => {
    *   // response.data: array de pagos
-   *   // response.meta: { total, page, limit, totalPages }
+   *   // response.page, response.limit, response.total
    * });
    * ```
    */
@@ -190,10 +208,10 @@ export class PaymentService {
       .pipe(
         tap((response) => {
           console.log('✅ [3️⃣ HISTORY] Historial obtenido:', {
-            total: response.meta.total,
-            page: response.meta.page,
-            limit: response.meta.limit,
-            totalPages: response.meta.totalPages,
+            total: response.total,
+            page: response.page,
+            limit: response.limit,
+            totalPages: Math.ceil(response.total / response.limit),
             itemsInPage: response.data.length
           });
         }),
@@ -211,12 +229,12 @@ export class PaymentService {
    * GET /payments/:paymentId
    *
    * @param paymentId - ID del pago
-   * @returns Observable con detalles completos del pago
+   * @returns Observable con detalles completos del pago (respuesta directa sin wrapper)
    *
    * @example
    * ```typescript
-   * this.paymentService.getPaymentDetails(paymentId).subscribe(response => {
-   *   // response.data contiene:
+   * this.paymentService.getPaymentDetails(paymentId).subscribe(payment => {
+   *   // payment contiene directamente:
    *   // - id, status, statusDetail, amount, currency
    *   // - paymentMethod, mercadoPagoPaymentId
    *   // - webhookProcessed, approvedAt
@@ -233,13 +251,13 @@ export class PaymentService {
       .pipe(
         tap((response) => {
           console.log('✅ [4️⃣ DETAILS] Detalles del pago obtenidos:', {
-            paymentId: response.data.id,
-            status: response.data.status,
-            statusDetail: response.data.statusDetail,
-            amount: response.data.amount,
-            currency: response.data.currency,
-            paymentMethod: response.data.paymentMethod,
-            webhookProcessed: response.data.webhookProcessed
+            paymentId: response.id,
+            status: response.status,
+            statusDetail: response.statusDetail,
+            amount: response.amount,
+            currency: response.currency,
+            paymentMethod: response.paymentMethod,
+            webhookProcessed: response.webhookProcessed
           });
         }),
         catchError((error: HttpErrorResponse) =>
@@ -295,21 +313,22 @@ export class PaymentService {
    * PATCH /payments/:paymentId/sync
    *
    * @param paymentId - ID del pago
-   * @returns Observable con confirmación de sincronización
+   * @returns Observable con confirmación de sincronización y pago actualizado
    *
    * @example
    * ```typescript
    * this.paymentService.syncPayment(paymentId).subscribe(response => {
    *   console.log('Pago sincronizado:', response.message);
+   *   console.log('Datos actualizados:', response.data);
    * });
    * ```
    */
-  syncPayment(paymentId: string): Observable<{ success: boolean; message: string }> {
+  syncPayment(paymentId: string): Observable<SyncPaymentResponse> {
     this._isLoading.set(true);
     this._errorMessage.set(null);
 
     return this.http
-      .patch<{ success: boolean; message: string }>(
+      .patch<SyncPaymentResponse>(
         `${this.apiUrl}/${paymentId}/sync`,
         {}
       )
@@ -331,13 +350,14 @@ export class PaymentService {
    * PATCH /payments/:paymentId/cancel
    *
    * @param paymentId - ID del pago
-   * @returns Observable con confirmación de cancelación
+   * @returns Observable con confirmación de cancelación y pago cancelado
    *
    * @example
    * ```typescript
    * this.paymentService.cancelPayment(paymentId).subscribe(
    *   response => {
    *     console.log('Pago cancelado:', response.message);
+   *     console.log('Datos:', response.data);
    *   },
    *   error => {
    *     // Error si ya está aprobado: "No se puede cancelar un pago ya aprobado"
@@ -345,12 +365,12 @@ export class PaymentService {
    * );
    * ```
    */
-  cancelPayment(paymentId: string): Observable<{ success: boolean; message: string }> {
+  cancelPayment(paymentId: string): Observable<CancelPaymentResponse> {
     this._isLoading.set(true);
     this._errorMessage.set(null);
 
     return this.http
-      .patch<{ success: boolean; message: string }>(
+      .patch<CancelPaymentResponse>(
         `${this.apiUrl}/${paymentId}/cancel`,
         {}
       )
@@ -377,10 +397,10 @@ export class PaymentService {
   /**
    * 8️⃣ BUSCAR PAGOS EN MERCADO PAGO (ADMIN)
    *
-   * Busca pagos en Mercado Pago por orden (solo admin)
-   * GET /payments/admin/search/:orderId
+   * Busca pagos en Mercado Pago por external reference (solo admin)
+   * GET /payments/admin/search/:externalReference
    *
-   * @param orderId - ID de la orden
+   * @param externalReference - External reference (order ID)
    * @returns Observable con resultados de búsqueda en MP
    *
    * @example
@@ -392,14 +412,14 @@ export class PaymentService {
    * ```
    */
   searchPaymentsInMercadoPago(
-    orderId: string
-  ): Observable<{ success: boolean; message: string; data: any[]; count: number }> {
+    externalReference: string
+  ): Observable<AdminSearchPaymentsResponse> {
     this._isLoading.set(true);
     this._errorMessage.set(null);
 
     return this.http
-      .get<{ success: boolean; message: string; data: any[]; count: number }>(
-        `${this.apiUrl}/admin/search/${orderId}`
+      .get<AdminSearchPaymentsResponse>(
+        `${this.apiUrl}/admin/search/${externalReference}`
       )
       .pipe(
         tap((response) => {

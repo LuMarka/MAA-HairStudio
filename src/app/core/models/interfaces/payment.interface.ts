@@ -3,6 +3,8 @@
  */
 export interface CreatePreferenceDto {
   orderId: string;
+  returnUrl?: string;  // ❌ Opcional
+  notes?: string;      // ❌ Opcional
 }
 
 /**
@@ -95,9 +97,10 @@ export interface GetPaymentByOrderResponse {
  */
 export interface VerifyPaymentResponse {
   success: boolean;
-  status: 'approved' | 'pending' | 'rejected' | 'in_process' | 'cancelled';
-  order: OrderPaymentInfo;
-  data: PaymentStatus;
+  message: string;
+  status: 'approved' | 'pending' | 'rejected' | 'in_process' | 'cancelled' | null;
+  order?: OrderPaymentInfo;
+  data?: PaymentStatus;
 }
 
 /**
@@ -105,25 +108,20 @@ export interface VerifyPaymentResponse {
  * GET /payments/history?page=1&limit=10
  */
 export interface PaymentHistoryResponse {
-  success: boolean;
-  message: string;
   data: PaymentStatus[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+  page: number;
+  limit: number;
+  total: number;
 }
 
 /**
  * 4️⃣ Interfaz para detalles completos de un pago específico
  * GET /payments/:paymentId
+ * Nota: Respuesta directa sin wrapper success/message/data
  */
-export interface PaymentDetailsResponse {
-  success: boolean;
-  message: string;
-  data: PaymentStatus;
+export interface PaymentDetailsResponse extends PaymentStatus {
+  order?: OrderPaymentInfo;
+  transactions?: PaymentTransaction[];
 }
 
 /**
@@ -133,6 +131,7 @@ export interface PaymentDetailsResponse {
 export interface SyncPaymentResponse {
   success: boolean;
   message: string;
+  data: PaymentStatus;
 }
 
 /**
@@ -142,6 +141,7 @@ export interface SyncPaymentResponse {
 export interface CancelPaymentResponse {
   success: boolean;
   message: string;
+  data: PaymentStatus;
 }
 
 /**
