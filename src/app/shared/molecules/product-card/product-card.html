@@ -64,7 +64,7 @@
         } @else if (isInCart()) {
         <button type="button" class="product-card__button product-card__button--primary product-card__button--in-cart"
           (click)="onAddToCart()">
-          ✓ En carrito ({{ cartQuantity() }})
+          ✓ Ver carrito ({{ cartQuantity() }})
         </button>
         } @else if (isOutOfStock()) {
         <button type="button" class="product-card__button product-card__button--secondary" (click)="onConsultAvailability()">
