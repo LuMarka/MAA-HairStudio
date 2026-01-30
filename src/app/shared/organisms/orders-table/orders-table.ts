@@ -99,6 +99,11 @@ export class OrdersTable implements OnInit, OnDestroy {
   protected getCellValue(order: OrderData, key: string): any {
     if (key === 'actions') return '';
     if (key === 'user') return order.user?.name || order.user?.email || 'N/A';
+    // Dividir el total por 1.21 para mostrar el valor sin IVA
+    if (key === 'total') {
+      const totalValue = Number((order as any)[key]);
+      return (totalValue / 1.21).toString();
+    }
     return (order as any)[key];
   }
 

@@ -103,10 +103,11 @@ export class StatusChangeModal {
 
   protected formatCurrency(value: string): string {
     const num = parseFloat(value);
+    const numWithoutTax = num / 1.21; // Dividir por 1.21 para obtener el valor sin IVA
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS'
-    }).format(num);
+    }).format(numWithoutTax);
   }
 
   protected closeModal(): void {
