@@ -12,7 +12,8 @@ import type {
   CreatePreferenceDto,
   SyncPaymentResponse,
   CancelPaymentResponse,
-  AdminSearchPaymentsResponse
+  AdminSearchPaymentsResponse,
+  WebhookVerifyPaymentResponse
 } from '../models/interfaces/payment.interface';
 
 /**
@@ -82,8 +83,6 @@ export class PaymentService {
    * POST /payments/create-preference
    *
    * @param orderId - ID de la orden
-   * @param returnUrl - URL de retorno opcional
-   * @param notes - Notas adicionales opcionales
    * @returns Observable con la respuesta que incluye initPoint y sandboxInitPoint
    *
    * @example
@@ -97,15 +96,11 @@ export class PaymentService {
    * });
    * ```
    */
-  createPreference(
-    orderId: string,
-    returnUrl?: string,
-    notes?: string
-  ): Observable<CreatePreferenceResponse> {
+  createPreference(orderId: string): Observable<CreatePreferenceResponse> {
     this._isLoading.set(true);
     this._errorMessage.set(null);
 
-    const dto: CreatePreferenceDto = { orderId, returnUrl, notes };
+    const dto: CreatePreferenceDto = { orderId };
 
     return this.http
       .post<CreatePreferenceResponse>(`${this.apiUrl}/create-preference`, dto)
@@ -476,6 +471,58 @@ export class PaymentService {
    */
   clearError(): void {
     this._errorMessage.set(null);
+  }
+
+  // ========== WEBHOOKS PÚBLICOS (SIN AUTH) ==========
+
+  /**
+   * 🔔 VERIFICAR PAGO PÚBLICO (Sin autenticación)
+   *
+   * Verifica el estado de un pago sin requerir autenticación
+   * GET /webhooks/mercado-pago/verify/:identifier
+   *
+   * @param identifier - UUID de orden o ID numérico de Mercado Pago
+   * @returns Observable con estado del pago
+   *
+   * @example
+   * ```typescript
+   * // Por UUID de orden
+   * this.paymentService.verifyPaymentPublic(orderId).subscribe(response => {
+   *   if (response.success) {
+   *     console.log('Estado:', response.status);
+   *   }
+   * });
+   *
+   * // Por ID de Mercado Pago
+   * this.paymentService.verifyPaymentPublic('144136787069').subscribe(...);
+   * ```
+   */
+  verifyPaymentPublic(identifier: string): Observable<WebhookVerifyPaymentResponse> {
+    this._isLoading.set(true);
+    this._errorMessage.set(null);
+
+    return this.http
+      .get<WebhookVerifyPaymentResponse>(
+        `${environment.apiUrl}webhooks/mercado-pago/verify/${identifier}`
+      )
+      .pipe(
+        tap((response) => {
+          if (response.success) {
+            console.log('✅ [🔔 WEBHOOK-VERIFY] Pago verificado (público):', {
+              status: response.status,
+              paymentStatus: response.paymentStatus,
+              orderId: response.orderId,
+              webhookProcessed: response.webhookProcessed
+            });
+          } else {
+            console.log('⚠️ [🔔 WEBHOOK-VERIFY] Pago no encontrado:', response.message);
+          }
+        }),
+        catchError((error: HttpErrorResponse) =>
+          this.handleError(error, 'verificar pago (público)')
+        ),
+        finalize(() => this._isLoading.set(false))
+      );
   }
 
   // ========== MÉTODOS PRIVADOS ==========

@@ -49,7 +49,7 @@ export class PaymentPending implements OnInit, OnDestroy {
   protected readonly _statusMessage = signal('Procesando pago...');
 
   private pollingInterval: ReturnType<typeof setInterval> | null = null;
-  private readonly MAX_ATTEMPTS = 30; // 30 segundos máximo (1 intento por segundo)
+  private readonly MAX_ATTEMPTS = 60; // 60 segundos máximo (1 intento por segundo)
 
   ngOnInit(): void {
     // Usar snapshot params primero, luego fallback a queryParams

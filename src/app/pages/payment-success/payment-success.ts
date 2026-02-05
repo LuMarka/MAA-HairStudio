@@ -49,7 +49,7 @@ export class PaymentSuccess implements OnInit, OnDestroy {
   protected readonly _pollingAttempts = signal(0);
 
   private pollingInterval: ReturnType<typeof setInterval> | null = null;
-  private readonly MAX_ATTEMPTS = 30; // 30 segundos máximo (1 intento por segundo)
+  private readonly MAX_ATTEMPTS = 60; // 60 segundos máximo (1 intento por segundo)
 
   ngOnInit(): void {
     this.route.snapshot.params['id'] || this.route.queryParams.subscribe((params) => {

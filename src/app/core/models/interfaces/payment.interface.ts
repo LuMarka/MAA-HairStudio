@@ -1,10 +1,9 @@
 /**
  * DTO para crear preferencia de pago
+ * POST /payments/create-preference
  */
 export interface CreatePreferenceDto {
   orderId: string;
-  returnUrl?: string;  // ❌ Opcional
-  notes?: string;      // ❌ Opcional
 }
 
 /**
@@ -141,7 +140,7 @@ export interface SyncPaymentResponse {
 export interface CancelPaymentResponse {
   success: boolean;
   message: string;
-  data: PaymentStatus;
+  data?: PaymentStatus;
 }
 
 /**
@@ -167,6 +166,32 @@ export interface AdminSearchPaymentsResponse {
   data: MercadoPagoSearchResult[];
   count: number;
 }
+
+// ========== INTERFACES PARA WEBHOOKS PÚBLICOS ==========
+
+/**
+ * 🔔 Interfaz para verificación pública de pago (sin auth)
+ * GET /webhooks/mercado-pago/verify/:identifier
+ * Acepta UUID de orden o ID numérico de Mercado Pago
+ */
+export interface WebhookVerifyPaymentResponse {
+  success: boolean;
+  message: string;
+  status: PaymentStatusType | 'not_found';
+  paymentStatus: PaymentStatusType | null;
+  paymentId?: string;
+  orderId?: string;
+  mercadoPagoPaymentId?: string;
+  preferenceId?: string;
+  amount?: number;
+  currency?: string;
+  webhookProcessed?: boolean;
+  approvedAt?: string;
+  searchedBy?: 'orderId' | 'mercadoPagoPaymentId';
+  data?: PaymentStatus;
+}
+
+// ========== TIPOS ==========
 
 /**
  * Estados posibles de un pago
