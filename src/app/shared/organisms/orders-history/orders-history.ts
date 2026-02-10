@@ -39,7 +39,14 @@ export class OrdersHistory implements OnInit {
       return;
     }
 
-    this.orderService.getMyOrders({ page: this.currentPage(), limit: 20 }).subscribe({
+    const isAdmin = this.authService.isAdmin();
+    
+    // Si es admin: obtener todas las órdenes, si no: obtener solo las del usuario
+    const ordersObservable = isAdmin
+      ? this.orderService.getAllOrders({ page: this.currentPage(), limit: 20 })
+      : this.orderService.getMyOrders({ page: this.currentPage(), limit: 20 });
+
+    ordersObservable.subscribe({
       next: (response) => {
         if (response?.data) {
           if (this.currentPage() === 1) {
