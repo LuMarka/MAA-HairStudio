@@ -33,29 +33,26 @@ export class OrdersHistory implements OnInit {
     this.errorMessage.set('');
 
     const currentUser = this.authService.currentUser();
-    const userId = currentUser?.id;
-
-    if (!userId) {
+    if (!currentUser?.id) {
       this.errorMessage.set('No se pudo obtener el ID del usuario');
       this.isLoading.set(false);
       return;
     }
 
-    this.orderService.getAllOrders({ page: this.currentPage(), limit: 20, userId }).subscribe({
-      next: (response: unknown) => {
-        const data = response as { data: OrderData[] };
-        if (data?.data) {
+    this.orderService.getMyOrders({ page: this.currentPage(), limit: 20 }).subscribe({
+      next: (response) => {
+        if (response?.data) {
           if (this.currentPage() === 1) {
-            this.orders.set(data.data);
+            this.orders.set(response.data);
           } else {
-            this.orders.update(current => [...current, ...data.data]);
+            this.orders.update(current => [...current, ...response.data]);
           }
         } else {
           this.orders.set([]);
         }
       },
       error: (error: unknown) => {
-        console.error('Error loading orders:', error);
+        console.error('Error al cargar las órdenes:', error);
         this.errorMessage.set('Error al cargar las órdenes');
       },
       complete: () => {
