@@ -40,7 +40,7 @@ export class OrdersHistory implements OnInit {
     }
 
     const isAdmin = this.authService.isAdmin();
-    
+
     // Si es admin: obtener todas las órdenes, si no: obtener solo las del usuario
     const ordersObservable = isAdmin
       ? this.orderService.getAllOrders({ page: this.currentPage(), limit: 20 })
