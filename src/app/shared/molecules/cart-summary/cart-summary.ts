@@ -1,5 +1,4 @@
 import { Component, input, computed, ChangeDetectionStrategy } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
 
 type PaymentMethod = 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
 
@@ -33,7 +32,6 @@ interface CartItem {
  */
 @Component({
   selector: 'app-cart-summary',
-  imports: [CurrencyPipe],
   templateUrl: './cart-summary.html',
   styleUrl: './cart-summary.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
