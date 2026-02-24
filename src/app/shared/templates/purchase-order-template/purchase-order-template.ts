@@ -4,10 +4,13 @@ import { CommonModule } from '@angular/common';
 import { FormPersonalData } from "../../organisms/form-personal-data/form-personal-data";
 import { MethodePay } from "../../organisms/methode-pay/methode-pay";
 import { Confirmation } from "../../organisms/confirmation/confirmation";
+import { ShippingOptionsComponent } from "../../organisms/shipping-options/shipping-options";
 import { OrderService } from "../../../core/services/order.service";
 import { CartService } from "../../../core/services/cart.service";
 import { PaymentService } from "../../../core/services/payment.service";
+import { ShippingService } from "../../../core/services/shipping.service";
 import type { DeliveryType, CreateOrderDto } from "../../../core/models/interfaces/order.interface";
+import type { SelectedShippingOption } from "../../../core/models/interfaces/shipping.interface";
 import { environment } from '../../../../environments/environment';
 
 type PaymentMethod = 'transfer' | 'cash' | 'mercadopago' | 'mercadopago-card';
@@ -50,7 +53,8 @@ interface OrderData {
     CommonModule,
     FormPersonalData,
     MethodePay,
-    Confirmation
+    Confirmation,
+    ShippingOptionsComponent
   ],
   templateUrl: './purchase-order-template.html',
   styleUrl: './purchase-order-template.scss'
@@ -60,6 +64,7 @@ export class PurchaseOrderTemplate {
   private readonly orderService = inject(OrderService);
   private readonly cartService = inject(CartService);
   private readonly paymentService = inject(PaymentService);
+  private readonly shippingService = inject(ShippingService);
 
   // ========== STATE SIGNALS ==========
   readonly currentStep = signal(1);
@@ -69,9 +74,18 @@ export class PurchaseOrderTemplate {
   readonly orderSent = signal(false);
   readonly isProcessing = signal(false);
   readonly personalFormData = signal<Omit<OrderData, 'paymentMethod' | 'deliveryOption'> | null>(null);
+  readonly selectedShippingOption = signal<SelectedShippingOption | null>(null);
+
+  /**
+   * ID de la orden creada en el backend.
+   * Para delivery: se crea al pasar del Step 1 al Step 2 (antes de cotizar envío).
+   * Para pickup: se crea en onFinalizeOrder (Step 4/3).
+   */
+  readonly createdOrderId = signal<string | null>(null);
+  readonly createdOrderNumber = signal<string | null>(null);
 
   private readonly WHATSAPP_NUMBER = '5493534015655';
-  private readonly totalSteps = 3;
+  private readonly totalSteps = 4; // 4 pasos para delivery, 3 para pickup
 
   // ========== COMPUTED VALUES - CART ==========
   readonly cartItems = computed(() => {
@@ -95,6 +109,18 @@ export class PurchaseOrderTemplate {
   readonly checkoutState = computed(() => this.orderService.checkoutState());
   readonly checkoutAddressId = computed(() => this.orderService.checkoutAddressId());
 
+  // ========== COMPUTED VALUES - SHIPPING ==========
+  readonly shippingOptions = computed(() => this.shippingService.shippingOptions());
+  readonly shippingIsLoading = computed(() => this.shippingService.isLoading());
+  readonly shippingError = computed(() => this.shippingService.errorMessage());
+
+  /**
+   * Determina si estamos en el paso de envío y si el envío es delivery
+   */
+  readonly shouldShowShipping = computed(() => {
+    return this.currentStep() === 2 && this.selectedDeliveryOption() === 'delivery';
+  });
+
   // ========== CONSTRUCTOR ==========
   constructor() {
     // Effect: Cargar deliveryType desde OrderService
@@ -106,6 +132,8 @@ export class PurchaseOrderTemplate {
         this.selectedDeliveryOption.set('pickup');
       }
     });
+
+    // La cotización de envío se dispara al crear la orden (createOrderAndGoToShipping)
   }
 
   // ========== NAVIGATION METHODS ==========
@@ -113,7 +141,16 @@ export class PurchaseOrderTemplate {
     const currentStepValue = this.currentStep();
 
     if (currentStepValue < this.totalSteps) {
-      if (currentStepValue === 2 && !this.selectedPaymentMethod()) {
+      // Validación para step 2 (shipping) si es delivery
+      if (currentStepValue === 2 && this.selectedDeliveryOption() === 'delivery') {
+        if (!this.selectedShippingOption()) {
+          console.warn('⚠️ [PurchaseOrder] Opción de envío requerida');
+          return;
+        }
+      }
+
+      // Validación para step 3 (payment)
+      if (currentStepValue === 3 && !this.selectedPaymentMethod()) {
         console.warn('⚠️ [PurchaseOrder] Método de pago requerido');
         return;
       }
@@ -150,10 +187,139 @@ export class PurchaseOrderTemplate {
   }
 
   onContinueFromForm(): void {
-    this.currentStep.set(2);
+    if (this.selectedDeliveryOption() === 'pickup') {
+      // Pickup: saltar directo a pago (no necesita shipping)
+      this.currentStep.set(3);
+    } else {
+      // Delivery: crear orden primero, luego ir a shipping
+      this.createOrderAndGoToShipping();
+    }
   }
 
-  // ========== STEP 2: PAYMENT METHOD HANDLERS ==========
+  // ========== STEP 2: SHIPPING METHOD HANDLERS (solo si es delivery) ==========
+
+  /**
+   * Crea la orden en el backend y luego va al paso de shipping.
+   * Según la API: primero crear orden, luego cotizar envío con el orderId real.
+   */
+  private createOrderAndGoToShipping(): void {
+    const createOrderDto = this.buildCreateOrderDto();
+    if (!createOrderDto) {
+      console.error('❌ [PurchaseOrder] No se pudo construir DTO para crear orden');
+      return;
+    }
+
+    this.isProcessing.set(true);
+    console.log('📦 [PurchaseOrder] Creando orden antes de cotizar envío...', createOrderDto);
+
+    this.orderService.createOrderFromCart(createOrderDto).subscribe({
+      next: (response) => {
+        const orderId = response.data.id;
+        const orderNumber = response.data.orderNumber;
+
+        this.createdOrderId.set(orderId);
+        this.createdOrderNumber.set(orderNumber);
+
+        console.log('✅ [PurchaseOrder] Orden creada para shipping:', {
+          orderId,
+          orderNumber,
+          deliveryType: response.data.deliveryType
+        });
+
+        this.isProcessing.set(false);
+        // Ir al paso 2 (shipping) y cotizar
+        this.currentStep.set(2);
+        this.quoteShipping(orderId);
+      },
+      error: (error) => {
+        console.error('❌ [PurchaseOrder] Error al crear orden:', error);
+        this.isProcessing.set(false);
+        alert('Hubo un error al crear tu pedido. Por favor intenta nuevamente.');
+      }
+    });
+  }
+
+  /**
+   * Cotiza opciones de envío desde Zipnova usando el orderId real
+   */
+  private quoteShipping(orderId: string): void {
+    const checkoutState = this.checkoutState();
+
+    if (!checkoutState?.selectedAddressId) {
+      console.warn('⚠️ [PurchaseOrder] No hay dirección seleccionada para cotizar envío');
+      return;
+    }
+
+    console.log('🚚 [PurchaseOrder] Cotizando envío...', {
+      orderId,
+      destinationAddressId: checkoutState.selectedAddressId
+    });
+
+    this.shippingService.getShippingQuote({
+      orderId,
+      destinationAddressId: checkoutState.selectedAddressId
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ [PurchaseOrder] Opciones de envío obtenidas:', {
+          optionsCount: response.data.options.length,
+          origin: response.data.origin,
+          destination: response.data.destination
+        });
+      },
+      error: (error) => {
+        console.error('❌ [PurchaseOrder] Error al cotizar envío:', error);
+      }
+    });
+  }
+
+  /**
+   * Maneja la selección de opción de envío.
+   * Crea el shipment en el backend y luego avanza al paso de pago.
+   */
+  onShippingSelected(selectedOption: SelectedShippingOption): void {
+    this.selectedShippingOption.set(selectedOption);
+
+    const orderId = this.createdOrderId();
+    const addressId = this.checkoutAddressId();
+
+    if (!orderId || !addressId) {
+      console.error('❌ [PurchaseOrder] Faltan datos para crear envío');
+      return;
+    }
+
+    this.isProcessing.set(true);
+    console.log('📦 [PurchaseOrder] Creando envío con opción seleccionada...', selectedOption);
+
+    this.shippingService.createShipment({
+      orderId,
+      destinationAddressId: addressId,
+      zipnovaQuoteId: selectedOption.carrierId,
+      shippingCost: selectedOption.price,
+      serviceType: selectedOption.serviceType,
+      logisticType: selectedOption.logisticType,
+      carrierId: selectedOption.carrierId,
+      pointId: selectedOption.pointId
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ [PurchaseOrder] Envío creado:', {
+          shipmentId: response.data.id,
+          trackingNumber: response.data.trackingNumber,
+          carrier: response.data.carrier,
+          shippingCost: response.data.shippingCost
+        });
+        this.isProcessing.set(false);
+        // Avanzar al paso de pago
+        this.currentStep.set(3);
+      },
+      error: (error) => {
+        console.error('❌ [PurchaseOrder] Error al crear envío:', error);
+        this.isProcessing.set(false);
+        alert('Hubo un error al confirmar el envío. Por favor intenta nuevamente.');
+      }
+    });
+  }
+
+  // ========== STEP 3: PAYMENT METHOD HANDLERS ==========
   onPaymentMethodChange(method: PaymentMethod): void {
     this.selectedPaymentMethod.set(method);
 
@@ -167,7 +333,7 @@ export class PurchaseOrderTemplate {
     }
   }
 
-  // ========== STEP 3: CONFIRMATION HANDLERS ==========
+  // ========== STEP 4: CONFIRMATION HANDLERS ==========
   onEditCart(): void {
     this.router.navigate(['/cart']);
   }
@@ -275,47 +441,73 @@ export class PurchaseOrderTemplate {
 
     this.isProcessing.set(true);
 
-    console.log('📦 [PurchaseOrder] Creando orden:', createOrderDto);
+    // Si es delivery, la orden ya fue creada en el paso 2
+    const existingOrderId = this.createdOrderId();
+    const existingOrderNumber = this.createdOrderNumber();
 
-    // Crear orden en el backend
+    if (existingOrderId && this.selectedDeliveryOption() === 'delivery') {
+      console.log('📦 [PurchaseOrder] Usando orden existente:', existingOrderId);
+      this.processPaymentForOrder(existingOrderId, existingOrderNumber || '', orderData, cartItems, total, paymentMethod);
+      return;
+    }
+
+    // Para pickup: crear la orden ahora
+    console.log('📦 [PurchaseOrder] Creando orden (pickup):', createOrderDto);
+
     this.orderService.createOrderFromCart(createOrderDto).subscribe({
       next: (response) => {
         console.log('✅ [PurchaseOrder] Orden creada:', {
           orderNumber: response.data.orderNumber,
           id: response.data.id,
           total: response.data.total,
-          deliveryType: response.data.deliveryType,
-          hasShippingAddress: !!response.data.shippingAddress
+          deliveryType: response.data.deliveryType
         });
 
-        const orderId = response.data.id;
+        this.createdOrderId.set(response.data.id);
+        this.createdOrderNumber.set(response.data.orderNumber);
 
-        // ✅ Si el método de pago es Mercado Pago, crear preferencia y redirigir
-        if (paymentMethod === 'mercadopago' || paymentMethod === 'mercadopago-card') {
-          this.handleMercadoPagoPayment(orderId, orderData, cartItems, total, response.data.orderNumber);
-          return;
-        }
-
-        // ✅ Para otros métodos de pago (efectivo, transferencia), flujo tradicional
-        this.cartService.clearCart().subscribe({
-          next: () => {
-            console.log('✅ [PurchaseOrder] Carrito limpiado');
-            this.sendToWhatsApp(orderData, cartItems, total, response.data.orderNumber);
-            this.orderService.clearCheckoutState();
-            this.handleOrderSuccess();
-          },
-          error: (error) => {
-            console.error('⚠️ [PurchaseOrder] Error al limpiar carrito:', error);
-            this.sendToWhatsApp(orderData, cartItems, total, response.data.orderNumber);
-            this.orderService.clearCheckoutState();
-            this.handleOrderSuccess();
-          }
-        });
+        this.processPaymentForOrder(response.data.id, response.data.orderNumber, orderData, cartItems, total, paymentMethod);
       },
       error: (error) => {
         console.error('❌ [PurchaseOrder] Error al crear orden:', error);
         this.isProcessing.set(false);
         alert('Hubo un error al crear tu pedido. Por favor intenta nuevamente.');
+      }
+    });
+  }
+
+  /**
+   * Procesa el pago para una orden ya creada
+   */
+  private processPaymentForOrder(
+    orderId: string,
+    orderNumber: string,
+    orderData: OrderData,
+    cartItems: CartItem[],
+    total: number,
+    paymentMethod: PaymentMethod
+  ): void {
+    // Si el método de pago es Mercado Pago, crear preferencia y redirigir
+    if (paymentMethod === 'mercadopago' || paymentMethod === 'mercadopago-card') {
+      this.handleMercadoPagoPayment(orderId, orderData, cartItems, total, orderNumber);
+      return;
+    }
+
+    // Para otros métodos de pago (efectivo, transferencia), flujo tradicional
+    this.cartService.clearCart().subscribe({
+      next: () => {
+        console.log('✅ [PurchaseOrder] Carrito limpiado');
+        this.sendToWhatsApp(orderData, cartItems, total, orderNumber);
+        this.orderService.clearCheckoutState();
+        this.shippingService.clearShippingOptions();
+        this.handleOrderSuccess();
+      },
+      error: (error) => {
+        console.error('⚠️ [PurchaseOrder] Error al limpiar carrito:', error);
+        this.sendToWhatsApp(orderData, cartItems, total, orderNumber);
+        this.orderService.clearCheckoutState();
+        this.shippingService.clearShippingOptions();
+        this.handleOrderSuccess();
       }
     });
   }

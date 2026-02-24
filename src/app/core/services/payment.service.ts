@@ -96,11 +96,13 @@ export class PaymentService {
    * });
    * ```
    */
-  createPreference(orderId: string): Observable<CreatePreferenceResponse> {
+  createPreference(orderId: string, returnUrl?: string, notes?: string): Observable<CreatePreferenceResponse> {
     this._isLoading.set(true);
     this._errorMessage.set(null);
 
     const dto: CreatePreferenceDto = { orderId };
+    if (returnUrl) dto.returnUrl = returnUrl;
+    if (notes) dto.notes = notes;
 
     return this.http
       .post<CreatePreferenceResponse>(`${this.apiUrl}/create-preference`, dto)

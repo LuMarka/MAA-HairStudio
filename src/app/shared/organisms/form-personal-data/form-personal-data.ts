@@ -550,7 +550,7 @@ export class FormPersonalData {
     this.orderForm.reset();
     this.formValid.set(false);
     this.selectedAddressId.set(null);
-    this.saveNewAddress.set(false);
+    this.saveNewAddress.set(true);
     this.isSavingAddress.set(false);
   }
 

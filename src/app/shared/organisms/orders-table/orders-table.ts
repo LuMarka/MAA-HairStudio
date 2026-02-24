@@ -130,58 +130,42 @@ export class OrdersTable implements OnInit, OnDestroy {
 
   protected getStatusClass(status: OrderStatus | PaymentStatus): string {
     const statusMap: Record<string, string> = {
-      // Estados de pedido activos
+      // Estados de pedido
       'pending': 'warning',
+      'awaiting_shipping_cost': 'warning',
+      'shipping_cost_set': 'info',
       'confirmed': 'info',
+      'paid': 'success',
+      'processing': 'info',
+      'shipped': 'info',
       'delivered': 'success',
       'cancelled': 'error',
 
-      // Estados de pago activos
+      // Estados de pago
       'approved': 'success',
       'rejected': 'error',
-
-      // Estados de pedido no utilizados actualmente
-      // 'processing': 'info',
-      // 'ready_pickup': 'success',
-      // 'shipped': 'info',
-      // 'in_transit': 'info',
-      // 'completed': 'success',
-      // 'refunded': 'error',
-
-      // Estados de pago no utilizados actualmente
-      // 'payment_pending': 'warning',
+      'refunded': 'warning',
     };
     return statusMap[status] || 'default';
   }
 
   protected getStatusLabel(status: OrderStatus | PaymentStatus): string {
     const statusLabels: Record<string, string> = {
-      // Estados compartidos (tanto para pedidos como pagos)
+      // Estados de pedido
       'pending': 'Pendiente',
-
-      // Estados de pedido activos
-      'confirmed': 'Completado',
+      'awaiting_shipping_cost': 'Esperando cotización',
+      'shipping_cost_set': 'Costo de envío listo',
+      'confirmed': 'Confirmado',
+      'paid': 'Pagado',
+      'processing': 'En proceso',
+      'shipped': 'Enviado',
       'delivered': 'Entregado',
       'cancelled': 'Cancelado',
 
-      // Estados de pago activos
+      // Estados de pago
       'approved': 'Aprobado',
       'rejected': 'Rechazado',
-
-      // Estados de pedido no utilizados actualmente
-      // 'processing': 'Preparando',
-      // 'ready_pickup': 'Listo para recoger',
-      // 'shipped': 'Enviado',
-      // 'in_transit': 'En tránsito',
-      // 'completed': 'Completado',
-      // 'refunded': 'Reembolsado',
-
-      // Estados de pago no utilizados actualmente
-      // 'payment_pending': 'Pago pendiente',
-
-      // Estados de pago no utilizados actualmente
-      //'payment_pending': 'Pago pendiente',
-
+      'refunded': 'Reembolsado',
     };
     return statusLabels[status] || status;
   }
@@ -192,8 +176,7 @@ export class OrdersTable implements OnInit, OnDestroy {
   }
 
   protected canChangeStatus(order: OrderData): boolean {
-    // Permitir editar todos los pedidos excepto los completados y reembolsados
-    return !['completed', 'refunded'].includes(order.status);
+    return !['delivered', 'cancelled'].includes(order.status);
   }
 
   protected handleSort(key: string): void {

@@ -4,6 +4,8 @@
  */
 export interface CreatePreferenceDto {
   orderId: string;
+  returnUrl?: string;
+  notes?: string;
 }
 
 /**

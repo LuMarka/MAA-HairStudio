@@ -192,27 +192,25 @@ export type DeliveryType = 'pickup' | 'delivery';
  * Estados de la orden
  */
 export type OrderStatus =
-  | 'pending'           // Pendiente
-  | 'confirmed'         // Confirmada
-  | 'processing'        // En preparación
-  | 'ready_pickup'      // Lista para retiro (tienda)
-  | 'shipped'           // Enviada (casa)
-  | 'in_transit'        // En tránsito (casa)
-  | 'delivered'         // Entregada
-  | 'completed'         // Completada
-  | 'cancelled'         // Cancelada
-  | 'refunded';         // Reembolsada
+  | 'pending'                 // Pendiente
+  | 'awaiting_shipping_cost'  // Esperando cotización de envío
+  | 'shipping_cost_set'       // Costo de envío establecido
+  | 'confirmed'               // Confirmada
+  | 'paid'                    // Pagada
+  | 'processing'              // En proceso
+  | 'shipped'                 // Enviada
+  | 'delivered'               // Entregada
+  | 'cancelled';              // Cancelada
 
 /**
  * Estados de pago
  */
 export type PaymentStatus =
   | 'pending'           // Pendiente
-  | 'payment_pending'   // Esperando confirmación
   | 'approved'          // Aprobado
   | 'rejected'          // Rechazado
-  | 'refunded'          // Reembolsado
-  | 'cancelled';        // Cancelado
+  | 'cancelled'         // Cancelado
+  | 'refunded';         // Reembolsado
 
 /**
  * DTO para crear una orden

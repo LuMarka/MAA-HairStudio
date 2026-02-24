@@ -662,6 +662,43 @@ export class OrderService {
   }
 
   /**
+   * Sincroniza el estado de pago de una orden con MercadoPago
+   *
+   * @param orderId - ID de la orden
+   * @returns Observable con el estado sincronizado
+   *
+   * @example
+   * ```typescript
+   * orderService.syncOrderPayment('order-uuid').subscribe({
+   *   next: (response) => console.log('Sincronizado:', response),
+   *   error: (error) => console.error('Error:', error)
+   * });
+   * ```
+   */
+  syncOrderPayment(orderId: string): Observable<{ success: boolean; message: string; paymentStatus: string; orderStatus: string }> {
+    this._isLoading.set(true);
+    this._errorMessage.set(null);
+
+    return this.http
+      .patch<{ success: boolean; message: string; paymentStatus: string; orderStatus: string }>(
+        `${this.apiUrl}/${orderId}/sync-payment`,
+        {}
+      )
+      .pipe(
+        tap((response) => {
+          console.log('✅ Pago sincronizado:', {
+            orderStatus: response.orderStatus,
+            paymentStatus: response.paymentStatus,
+          });
+        }),
+        catchError((error: HttpErrorResponse) =>
+          this.handleError(error, 'sincronizar pago de orden')
+        ),
+        finalize(() => this._isLoading.set(false))
+      );
+  }
+
+  /**
    * Obtiene estadísticas de órdenes (solo admin)
    *
    * @returns Observable con las estadísticas

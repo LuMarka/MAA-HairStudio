@@ -1,79 +1,9 @@
 <!-- Resumen de Compra - Columna derecha -->
 <div class="order-summary-section">
-    <!-- <h3 class="card-title">
-      <span class="card-icon">🛒</span>
-      Resumen del Pedido
-    </h3> -->
 
-    <!-- Productos -->
-    <!-- @if (hasCartItems()) {
-      <div class="order-items">
-        @for (item of cartItems(); track item.id) {
-          <div class="order-item">
-            <div class="item-info">
-              <p class="item-name">{{ item.name }}</p>
-              @if (item.brand) {
-                <span class="item-brand">{{ item.brand }}</span>
-              }
-            </div>
-            <span class="item-quantity">x{{ item.quantity }}</span>
-            <span class="item-total">{{ (item.price * item.quantity) | currency:'ARS':'symbol-narrow':'1.2-2' }}</span>
-          </div>
-        }
-      </div>
-    } @else {
-      <div class="order-items order-items--empty">
-        <p class="order-empty-message">No hay productos en el carrito</p>
-      </div>
-    } -->
-
-    <!-- Totales -->
-    <!-- <div class="order-totals">
-      <div class="total-line">
-        <span>Subtotal:</span>
-        <span>{{ subtotal() | currency:'ARS':'symbol-narrow':'1.2-2' }}</span>
-      </div>
-      <div class="total-line">
-        <span>Envío:</span>
-        <span>{{ shippingText() }}</span>
-      </div>
-      <div class="total-line">
-        <span>IVA (21%):</span>
-        <span>{{ ivaAmount() | currency:'ARS':'symbol-narrow':'1.2-2' }}</span>
-      </div>
-      <div class="total-line total-line--final">
-        <span>Total:</span>
-        <span>{{ totalWithIva() | currency:'ARS':'symbol-narrow':'1.2-2' }}</span>
-      </div>
-    </div> -->
-
-    <!-- Información de Entrega -->
-    <!-- <div class="delivery-info">
-      @if (selectedDeliveryOption() !== null) {
-        <div class="delivery-info__item" style="display: flex; gap: 0.5em; align-items: center;">
-          <span class="delivery-info__label">Modalidad:</span>
-          <span class="delivery-info__value" style="white-space: nowrap; min-width: 120px; display: inline-block;">{{ deliveryOptionText() }}</span>
-        </div>
-      }
-      <div class="delivery-info__item" style="display: flex; gap: 0.5em; align-items: center;">
-        <span class="delivery-info__label">Disponibilidad:</span>
-        <span class="delivery-info__value" style="white-space: nowrap; min-width: 120px; display: inline-block;">{{ selectedDeliveryOption() === 'delivery' ? '3-5 días hábiles' : 'Inmediata' }}</span>
-      </div>
-    </div> -->
-
-    <!-- Método de Pago (solo si está seleccionado) -->
-    <!-- @if (hasPaymentMethod()) {
-      <div class="payment-selected">
-        <span class="payment-selected__icon">💵</span>
-        <div class="payment-selected__content">
-          <span class="payment-selected__label">Método de pago</span>
-          <span class="payment-selected__value">{{ selectedPaymentMethodText() }}</span>
-        </div>
-      </div></div>
-    } -->
 
     <!-- Estado de Validación -->
-    @if (shouldShowValidation()) {
+    <!-- @if (shouldShowValidation()) {
       <div class="validation-status">
         @if (isFormValid()) {
           <div class="validation-status__success">
@@ -87,6 +17,6 @@
           </div>
         }
       </div>
-    }
+    } -->
 
 </div>

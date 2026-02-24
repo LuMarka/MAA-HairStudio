@@ -21,10 +21,29 @@
 
         <div class="step__separator"></div>
 
-        <div class="step" [class.active]="currentStep() >= 2" [class.completed]="currentStep() > 2">
+        <!-- Paso 2: Envío (solo si es delivery) -->
+        @if (selectedDeliveryOption() === 'delivery') {
+          <div class="step" [class.active]="currentStep() >= 2" [class.completed]="currentStep() > 2">
+            <div class="step__circle">
+              <span class="step__number">2</span>
+              @if (currentStep() > 2) {
+                <span class="step__check">✓</span>
+              }
+            </div>
+            <div class="step__content">
+              <span class="step__title">Envío</span>
+              <span class="step__subtitle">Selecciona opciones</span>
+            </div>
+          </div>
+
+          <div class="step__separator"></div>
+        }
+
+        <!-- Paso 3: Pago -->
+        <div class="step" [class.active]="currentStep() >= 3" [class.completed]="currentStep() > 3">
           <div class="step__circle">
-            <span class="step__number">2</span>
-            @if (currentStep() > 2) {
+            <span class="step__number">@if (selectedDeliveryOption() === 'delivery') { 3 } @else { 2 }</span>
+            @if (currentStep() > 3) {
               <span class="step__check">✓</span>
             }
           </div>
@@ -36,9 +55,10 @@
 
         <div class="step__separator"></div>
 
-        <div class="step" [class.active]="currentStep() >= 3">
+        <!-- Paso 4: Confirmación -->
+        <div class="step" [class.active]="currentStep() >= 4">
           <div class="step__circle">
-            <span class="step__number">3</span>
+            <span class="step__number">@if (selectedDeliveryOption() === 'delivery') { 4 } @else { 3 }</span>
           </div>
           <div class="step__content">
             <span class="step__title">Confirmación</span>
@@ -61,8 +81,29 @@
     </app-form-personal-data>
   }
 
-  <!-- Step 2: Payment Method -->
-  @if (currentStep() === 2) {
+  <!-- Step 2: Shipping Options (solo si es delivery) -->
+  @if (currentStep() === 2 && selectedDeliveryOption() === 'delivery') {
+    <div class="purchase-order__content">
+      <div class="container">
+        <app-shipping-options
+          [shippingOptions]="shippingOptions()"
+          (onShippingSelected)="onShippingSelected($event)">
+        </app-shipping-options>
+
+        <!-- Botón anterior para volver -->
+        <div class="shipping-actions">
+          <button type="button" class="btn btn--secondary" (click)="onPreviousStep()">
+            <span class="btn__icon">←</span>
+            <span class="btn__text">Volver</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Step 3: Payment Method -->
+  @if ((selectedDeliveryOption() === 'delivery' && currentStep() === 3) ||
+       (selectedDeliveryOption() === 'pickup' && currentStep() === 2)) {
     <app-methode-pay
       [orderData]="orderData()"
       [selectedPaymentMethod]="selectedPaymentMethod()"
@@ -73,8 +114,9 @@
     </app-methode-pay>
   }
 
-  <!-- Step 3: Final Confirmation -->
-  @if (currentStep() === 3) {
+  <!-- Step 4: Final Confirmation -->
+  @if ((selectedDeliveryOption() === 'delivery' && currentStep() === 4) ||
+       (selectedDeliveryOption() === 'pickup' && currentStep() === 3)) {
     <app-confirmation
       [orderData]="orderData()"
       [orderSent]="orderSent()"

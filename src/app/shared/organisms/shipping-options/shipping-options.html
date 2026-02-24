@@ -1,0 +1,215 @@
+<div class="shipping-options">
+  <!-- Header -->
+  <div class="shipping-options__header">
+    <h3 class="shipping-options__title">
+      <span class="shipping-options__icon">🚚</span>
+      Opciones de Envío
+    </h3>
+    <p class="shipping-options__description">
+      Selecciona el tipo de envío que prefieres
+    </p>
+  </div>
+
+  <!-- Loading State -->
+  @if (!shippingOptions() || shippingOptions().length === 0) {
+    <div class="shipping-options__empty">
+      <span class="shipping-options__empty-icon">📭</span>
+      <p class="shipping-options__empty-text">
+        No hay opciones de envío disponibles
+      </p>
+    </div>
+  }
+
+  <!-- Opciones disponibles -->
+  @if (shippingOptions() && shippingOptions().length > 0) {
+    <div class="shipping-options__list">
+      @for (option of shippingOptions(); track option.carrierId + option.serviceType; let idx = $index) {
+        <div class="shipping-option" [class.shipping-option--selected]="selectedIndex() === idx">
+          <!-- Botón principal de selección -->
+          <button
+            type="button"
+            class="shipping-option__card"
+            [class.shipping-option__card--selected]="selectedIndex() === idx"
+            (click)="selectOption(idx)"
+            [attr.aria-pressed]="selectedIndex() === idx">
+
+            <!-- Header de la tarjeta -->
+            <div class="shipping-option__header">
+              <div class="shipping-option__carrier">
+                <!-- Logo del carrier -->
+                @if (option.carrierLogo) {
+                  <img
+                    [src]="option.carrierLogo"
+                    [alt]="option.carrier"
+                    class="shipping-option__logo"
+                    width="32"
+                    height="32" />
+                }
+
+                <div class="shipping-option__carrier-info">
+                  <h4 class="shipping-option__carrier-name">{{ option.carrier }}</h4>
+                  <p class="shipping-option__service-name">{{ option.serviceName }}</p>
+                </div>
+              </div>
+
+              <!-- Badges -->
+              <div class="shipping-option__badges">
+                @if (hasTag(option, 'cheapest') || cheapestIndex() === idx) {
+                  <span class="badge badge--cheapest">💰 Más económico</span>
+                }
+                @if (hasTag(option, 'fastest') || fastestIndex() === idx) {
+                  <span class="badge badge--fastest">⚡ Más rápido</span>
+                }
+              </div>
+            </div>
+
+            <!-- Contenido de la tarjeta -->
+            <div class="shipping-option__content">
+              <!-- Información de envío -->
+              <div class="shipping-option__info">
+                <div class="shipping-option__info-item">
+                  <span class="shipping-option__label">Precio:</span>
+                  <span class="shipping-option__value shipping-option__value--price">
+                    {{ formatPrice(option.price) }}
+                  </span>
+                </div>
+
+                <div class="shipping-option__info-item">
+                  <span class="shipping-option__label">Entrega estimada:</span>
+                  <span class="shipping-option__value">
+                    {{ getEstimatedDaysText(option.estimatedDays) }}
+                  </span>
+                </div>
+
+                <div class="shipping-option__info-item">
+                  <span class="shipping-option__label">Fecha:</span>
+                  <span class="shipping-option__value">
+                    {{ option.estimatedDelivery | date: 'dd/MM/yyyy' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Detalles de precios (colapsable) -->
+              @if (selectedIndex() === idx) {
+                <div class="shipping-option__breakdown">
+                  <div class="breakdown-item">
+                    <span class="breakdown-item__label">Envío:</span>
+                    <span class="breakdown-item__value">{{ formatPrice(option.priceShipment) }}</span>
+                  </div>
+                  <div class="breakdown-item">
+                    <span class="breakdown-item__label">Seguro:</span>
+                    <span class="breakdown-item__value">{{ formatPrice(option.priceInsurance) }}</span>
+                  </div>
+                  <div class="breakdown-item breakdown-item--total">
+                    <span class="breakdown-item__label">Total (con IVA):</span>
+                    <span class="breakdown-item__value">{{ formatPrice(option.price) }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Indicador de selección (radio button visual) -->
+            <div class="shipping-option__selector">
+              <div class="radio-indicator" [class.radio-indicator--selected]="selectedIndex() === idx">
+                @if (selectedIndex() === idx) {
+                  <span class="radio-indicator__checkmark">✓</span>
+                }
+              </div>
+            </div>
+          </button>
+
+          <!-- Puntos de retiro (si aplica) -->
+          @if (option.serviceType === 'pickup_point' && selectedIndex() === idx && option.pickupPoints.length > 0) {
+            <div class="shipping-option__pickup-points">
+              <div class="pickup-header">
+                <span class="pickup-header__icon">📍</span>
+                <h5 class="pickup-header__title">Selecciona tu punto de retiro</h5>
+              </div>
+
+              <div class="pickup-points-list">
+                @for (point of option.pickupPoints; track point.pointId) {
+                  <button
+                    type="button"
+                    class="pickup-point"
+                    [class.pickup-point--selected]="selectedPickupPointId() === point.pointId"
+                    (click)="selectPickupPoint(point.pointId)">
+
+                    <div class="pickup-point__header">
+                      <div class="pickup-point__selector">
+                        <div class="checkbox-indicator" [class.checkbox-indicator--selected]="selectedPickupPointId() === point.pointId">
+                          @if (selectedPickupPointId() === point.pointId) {
+                            <span class="checkbox-indicator__checkmark">✓</span>
+                          }
+                        </div>
+                      </div>
+
+                      <div class="pickup-point__info">
+                        <h6 class="pickup-point__name">{{ point.description }}</h6>
+                        <p class="pickup-point__address">{{ point.address }}</p>
+                        <p class="pickup-point__location">{{ point.city }}, {{ point.zipcode }}</p>
+                      </div>
+                    </div>
+
+                    <div class="pickup-point__phone">
+                      <span class="pickup-point__phone-icon">📞</span>
+                      <a [href]="'tel:' + point.phone" class="pickup-point__phone-link">
+                        {{ point.phone }}
+                      </a>
+                    </div>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Resumen de selección -->
+    @if (selectedOption()) {
+      <div class="shipping-options__summary">
+        <div class="summary-selected">
+          <div class="summary-selected__content">
+            <span class="summary-selected__label">Opción seleccionada:</span>
+            <span class="summary-selected__value">
+              {{ selectedOption()!.carrier }} - {{ selectedOption()!.serviceName }}
+            </span>
+            <span class="summary-selected__price">
+              {{ formatPrice(selectedOption()!.price) }}
+            </span>
+          </div>
+
+          @if (selectedPickupPoint()) {
+            <div class="summary-selected__pickup">
+              <span class="summary-selected__pickup-label">Punto seleccionado:</span>
+              <span class="summary-selected__pickup-value">
+                {{ selectedPickupPoint()!.description }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Botones de acción -->
+    @if (selectedOption()) {
+      <div class="shipping-options__actions">
+        <button
+          type="button"
+          class="btn btn--secondary"
+          (click)="clearSelection()">
+          <span class="btn__text">Cambiar opción</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn btn--primary"
+          [disabled]="!isSelectionValid()"
+          (click)="confirmSelection()">
+          <span class="btn__text">Confirmar envío</span>
+          <span class="btn__icon">→</span>
+        </button>
+      </div>
+    }
+  }
+</div>
