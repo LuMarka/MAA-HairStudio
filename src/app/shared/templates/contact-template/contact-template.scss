@@ -70,7 +70,7 @@
 
     @include m.desktop-up {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: v.$spacing-xxl;
       max-width: 1200px;
       align-items: start;

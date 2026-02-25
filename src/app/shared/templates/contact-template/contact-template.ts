@@ -6,7 +6,7 @@ import { LocationVideo } from "../../molecules/location-video/location-video";
 
 @Component({
   selector: 'app-contact-template',
-  imports: [ContactForm, ContactMap, LocationVideo],
+  imports: [ ContactMap, LocationVideo],
   templateUrl: './contact-template.html',
   styleUrl: './contact-template.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
