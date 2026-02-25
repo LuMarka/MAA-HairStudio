@@ -36,25 +36,25 @@
   }
 
   &__title {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: v.color('white1');
     margin-bottom: v.$spacing-md;
 
     @include m.tablet-up {
-      font-size: 1.75rem;
+      font-size: 2.5rem;
     }
   }
 
   &__subtitle {
-    font-size: 1.1rem;
+    font-size: 2rem;
     font-weight: 600;
     color: v.color('white1');
     margin-bottom: v.$spacing-md;
   }
 
   &__description {
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     line-height: 1.6;
     color: rgba(v.color('white1'), 0.9);
     margin: 0;
@@ -70,7 +70,7 @@
     display: flex;
     align-items: center;
     gap: v.$spacing-sm;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     color: rgba(v.color('white1'), 0.9);
     margin: 0;
   }
@@ -86,7 +86,7 @@
   }
 
   &__schedule-item {
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     color: rgba(v.color('white1'), 0.9);
     margin: 0;
   }

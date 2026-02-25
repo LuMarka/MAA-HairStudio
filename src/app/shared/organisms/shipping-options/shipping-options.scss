@@ -79,6 +79,34 @@
     .btn {
       flex: 1;
       min-width: 150px;
+      background: v.color(primary);
+      padding: 20px !important;
+      color: v.color(text-light);
+
+      // Neumorfismo - Estado normal (elevado)
+      box-shadow:
+        6px 6px 12px rgba(0, 0, 0, 0.15),
+        -6px -6px 12px rgba(255, 255, 255, 0.7);
+      border: none;
+      transition: all 0.3s ease;
+
+      // Neumorfismo - Estado hover (más elevado)
+      &:hover {
+        background: v.color(green-600);
+        box-shadow:
+          8px 8px 16px rgba(0, 0, 0, 0.2),
+          -8px -8px 16px rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+      }
+
+      // Neumorfismo - Estado activo/presionado (hundido)
+      &:active {
+        background: v.color(green-700);
+        box-shadow:
+          inset 4px 4px 8px rgba(0, 0, 0, 0.15),
+          inset -4px -4px 8px rgba(255, 255, 255, 0.7);
+        transform: translateY(0);
+      }
 
       @media (max-width: 768px) {
         width: 100%;
@@ -114,9 +142,24 @@
     }
 
     &--selected {
-      border-color: var(--color-primary);
-      background: var(--color-background-secondary);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      border-color: v.color(green-600);
+      background: v.color(green-100);
+
+      // Neumorfismo - Estado seleccionado (hundido)
+      box-shadow:
+        inset 8px 8px 16px rgba(0, 0, 0, 0.12),
+        inset -8px -8px 16px rgba(255, 255, 255, 0.8);
+      transition: all 0.3s ease;
+
+      // Neumorfismo - Estado hover sobre seleccionado (semi-elevado)
+      &:hover {
+        background: v.color(green-200);
+        box-shadow:
+          inset 4px 4px 8px rgba(0, 0, 0, 0.08),
+          inset -4px -4px 8px rgba(255, 255, 255, 0.6),
+          2px 2px 8px rgba(0, 0, 0, 0.08);
+        transform: scale(1.01);
+      }
     }
   }
 
@@ -371,15 +414,50 @@
   transition: all 0.3s ease;
   text-align: left;
 
+  // Neumorfismo - Estado hover (elevado)
   &:hover {
     border-color: var(--color-primary);
     background: var(--color-background-secondary);
+    box-shadow:
+      6px 6px 12px rgba(0, 0, 0, 0.12),
+      -6px -6px 12px rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+  }
+
+  // Neumorfismo - Estado activo/presionado (hundido)
+  &:active {
+    border-color: var(--color-primary);
+    background: var(--color-background-secondary);
+    box-shadow:
+      inset 6px 6px 12px rgba(0, 0, 0, 0.1),
+      inset -6px -6px 12px rgba(255, 255, 255, 0.7);
+    transform: translateY(0);
   }
 
   &--selected {
-    border-color: var(--color-primary);
-    background: var(--color-background-secondary);
-    box-shadow: inset 0 0 0 2px var(--color-primary);
+    border: 3px solid v.color(green-600);
+    background: v.color(green-100);
+
+    // Neumorfismo - Estado seleccionado con relieve (elevado)
+    box-shadow:
+      8px 8px 16px rgba(0, 0, 0, 0.15),
+      -8px -8px 16px rgba(255, 255, 255, 0.8),
+      inset 2px 2px 4px rgba(255, 255, 255, 0.5),
+      inset -2px -2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    transform: translateY(-3px);
+
+    // Neumorfismo - Estado hover sobre seleccionado (más elevado)
+    &:hover {
+      background: v.color(green-200);
+      border-color: v.color(green-700);
+      box-shadow:
+        10px 10px 20px rgba(0, 0, 0, 0.18),
+        -10px -10px 20px rgba(255, 255, 255, 0.9),
+        inset 2px 2px 4px rgba(255, 255, 255, 0.6),
+        inset -2px -2px 4px rgba(0, 0, 0, 0.05);
+      transform: translateY(-4px) scale(1.005);
+    }
   }
 
   &__header {

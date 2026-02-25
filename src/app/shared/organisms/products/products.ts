@@ -19,7 +19,6 @@ export enum ProductType {
   ACONDICIONADOR = 'Acondicionador',
   MASCARILLA = 'Mascarilla',
   SERUM = 'Serum',
-  ACEITE = 'Oleo',
   CREMA = 'Crema para peinar',
   GEL = 'Gel',
   MOUSSE = 'Mousse',
@@ -121,11 +120,8 @@ export class Products implements OnInit {
     { label: 'Acondicionador', value: ProductType.ACONDICIONADOR },
     { label: 'Mascarilla', value: ProductType.MASCARILLA },
     { label: 'Serum', value: ProductType.SERUM },
-    { label: 'Oleo', value: ProductType.ACEITE },
-    { label: 'Mousse', value: ProductType.MOUSSE },
     { label: 'Gel', value: ProductType.GEL },
-    { label: 'Crema para peinar', value: ProductType.CREMA },
-    { label: 'Termoprotector', value: ProductType.PROTECTOR_TERMICO },
+   /*  { label: 'Crema para peinar', value: ProductType.CREMA }, */
    /*  { label: 'Anti-caspa', value: ProductType.ANTI_CASPA }, */
   ]);
 
