@@ -139,18 +139,24 @@ export class PurchaseOrderTemplate {
   // ========== NAVIGATION METHODS ==========
   onNextStep(): void {
     const currentStepValue = this.currentStep();
+    const isPickup = this.selectedDeliveryOption() === 'pickup';
+    const isDelivery = this.selectedDeliveryOption() === 'delivery';
+    const maxSteps = isPickup ? 3 : this.totalSteps;
 
-    if (currentStepValue < this.totalSteps) {
+    if (currentStepValue < maxSteps) {
       // Validación para step 2 (shipping) si es delivery
-      if (currentStepValue === 2 && this.selectedDeliveryOption() === 'delivery') {
+      if (currentStepValue === 2 && isDelivery) {
         if (!this.selectedShippingOption()) {
           console.warn('⚠️ [PurchaseOrder] Opción de envío requerida');
           return;
         }
       }
 
-      // Validación para step 3 (payment)
-      if (currentStepValue === 3 && !this.selectedPaymentMethod()) {
+      // Validación de método de pago:
+      // - Pickup: payment está en step 2
+      // - Delivery: payment está en step 3
+      const isPaymentStep = (isPickup && currentStepValue === 2) || (isDelivery && currentStepValue === 3);
+      if (isPaymentStep && !this.selectedPaymentMethod()) {
         console.warn('⚠️ [PurchaseOrder] Método de pago requerido');
         return;
       }
@@ -188,8 +194,8 @@ export class PurchaseOrderTemplate {
 
   onContinueFromForm(): void {
     if (this.selectedDeliveryOption() === 'pickup') {
-      // Pickup: saltar directo a pago (no necesita shipping)
-      this.currentStep.set(3);
+      // Pickup: ir al paso de método de pago (step 2 en pickup)
+      this.currentStep.set(2);
     } else {
       // Delivery: crear orden primero, luego ir a shipping
       this.createOrderAndGoToShipping();
