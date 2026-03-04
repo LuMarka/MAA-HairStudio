@@ -11,7 +11,7 @@
           Opciones de Pago
         </h3>
         <div class="payment-methods">
-          <label class="payment-option" [class.payment-option--selected]="selectedPaymentMethod() === 'cash'">
+          <!-- <label class="payment-option" [class.payment-option--selected]="selectedPaymentMethod() === 'cash'">
             <input type="radio" name="paymentMethod" value="cash" (change)="onPaymentMethodChange('cash')"
               class="payment-option__input">
             <div class="payment-option__card">
@@ -28,7 +28,7 @@
               </div>
               <div class="payment-option__check">✓</div>
             </div>
-          </label>
+          </label> -->
 
           <label class="payment-option" [class.payment-option--selected]="selectedPaymentMethod() === 'transfer'">
             <input type="radio" name="paymentMethod" value="transfer" (change)="onPaymentMethodChange('transfer')"
@@ -36,8 +36,8 @@
             <div class="payment-option__card">
               <span class="payment-option__icon">🏦</span>
               <div class="payment-option__content">
-                <strong class="payment-option__title">Transferencia bancaria</strong>
-                <span class="payment-option__subtitle">Te enviaremos los datos bancarios</span>
+                <strong class="payment-option__title">Efectivo / Transferencia bancaria</strong>
+                <span class="payment-option__subtitle">  Te enviaremos los datos bancarios</span>
               </div>
               <div class="payment-option__check">✓</div>
             </div>
@@ -50,21 +50,7 @@
               <span class="payment-option__icon">💳</span>
               <div class="payment-option__content">
                 <strong class="payment-option__title">Mercado Pago</strong>
-                <span class="payment-option__subtitle">Pago online seguro</span>
-              </div>
-              <div class="payment-option__check">✓</div>
-            </div>
-          </label>
-
-          <label class="payment-option"
-            [class.payment-option--selected]="selectedPaymentMethod() === 'mercadopago-card'">
-            <input type="radio" name="paymentMethod" value="mercadopago-card"
-              (change)="onPaymentMethodChange('mercadopago-card')" class="payment-option__input">
-            <div class="payment-option__card">
-              <span class="payment-option__icon">💳</span>
-              <div class="payment-option__content">
-                <strong class="payment-option__title">Tarjeta (Mercado Pago)</strong>
-                <span class="payment-option__subtitle">Crédito o débito</span>
+                <span class="payment-option__subtitle">     Pago online seguro</span>
               </div>
               <div class="payment-option__check">✓</div>
             </div>
