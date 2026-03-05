@@ -1,8 +1,9 @@
-import { Component, input, output, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import type { OrderData } from '../../../core/models/interfaces/order.interface';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-order-details-modal',
   imports: [CommonModule],
   templateUrl: './order-details-modal.html',

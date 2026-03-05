@@ -1,4 +1,4 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { forkJoin } from 'rxjs';
 import { StatsCard, type StatsCardData } from '../../shared/molecules/stats-card/stats-card';
@@ -6,6 +6,7 @@ import { OrderService } from '../../core/services/order.service';
 import type { OrderStatisticsResponse, OrderListResponse, OrderData } from '../../core/models/interfaces/order.interface';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [CommonModule, StatsCard],

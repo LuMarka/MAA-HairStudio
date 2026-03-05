@@ -1,4 +1,4 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface StatsCardData {
@@ -16,6 +16,7 @@ export interface StatsCardData {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-stats-card',
   imports: [CommonModule],
   templateUrl: './stats-card.html',

@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { AdminWishlistTemplate } from "../../shared/templates/admin-wishlist-template/admin-wishlist-template";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-wishlist',
   imports: [AdminWishlistTemplate],
   templateUrl: './admin-wishlist.html',

@@ -1,4 +1,4 @@
-import { Component, input, output, computed, signal, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, signal, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DOCUMENT } from '@angular/common';
 import type { OrderData, OrderStatus, PaymentStatus } from '../../../core/models/interfaces/order.interface';
@@ -12,6 +12,7 @@ export interface OrderTableColumn {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-orders-table',
   imports: [CommonModule],
   templateUrl: './orders-table.html',

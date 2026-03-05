@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { AdminCategoryTemplate } from "../../shared/templates/admin-category-template/admin-category-template";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-category',
   imports: [AdminCategoryTemplate],
   templateUrl: './admin-category.html',

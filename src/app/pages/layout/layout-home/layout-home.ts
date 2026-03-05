@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Navbar } from '../../../shared/organisms/navbar/navbar';
 import { Footer } from '../../../shared/organisms/footer/footer';
@@ -8,6 +8,7 @@ import { FloatingCtaButton } from '../../../shared/molecules/floating-cta-button
 
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-layout-home',
   imports: [RouterOutlet, Navbar, Search, Footer, FloatingCtaButton],
   templateUrl: './layout-home.html',

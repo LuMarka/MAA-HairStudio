@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { AdminAbandonedCartsTemplate } from '../../shared/templates/admin-abandoned-carts-template/admin-abandoned-carts-template';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-abandoned-carts',
   standalone: true,
   imports: [AdminAbandonedCartsTemplate],

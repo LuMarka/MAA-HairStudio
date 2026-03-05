@@ -1,10 +1,11 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StatsCard, type StatsCardData } from '../../molecules/stats-card/stats-card';
 import { OrderService } from '../../../core/services/order.service';
 import type { OrderStatisticsResponse } from '../../../core/models/interfaces/order.interface';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-sales-template',
   standalone: true,
   imports: [CommonModule, StatsCard],

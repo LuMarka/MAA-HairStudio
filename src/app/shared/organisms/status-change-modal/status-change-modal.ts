@@ -1,4 +1,4 @@
-import { Component, input, output, computed, signal, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import type { OrderData, OrderStatus, PaymentStatus } from '../../../core/models/interfaces/order.interface';
@@ -11,6 +11,7 @@ export interface StatusChangeData {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-status-change-modal',
   imports: [CommonModule, FormsModule],
   templateUrl: './status-change-modal.html',

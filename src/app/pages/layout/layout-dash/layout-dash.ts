@@ -1,4 +1,4 @@
-import { Component, computed, signal, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, signal, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
@@ -12,6 +12,7 @@ interface NavigationRoute {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-layout-dash',
   imports: [RouterOutlet, CommonModule],
   templateUrl: './layout-dash.html',

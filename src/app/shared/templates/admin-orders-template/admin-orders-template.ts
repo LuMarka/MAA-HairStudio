@@ -1,4 +1,4 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OrdersTable, type OrderTableColumn } from '../../organisms/orders-table/orders-table';
 import { StatusChangeModal, type StatusChangeData } from '../../organisms/status-change-modal/status-change-modal';
@@ -7,6 +7,7 @@ import { OrderService } from '../../../core/services/order.service';
 import type { OrderData } from '../../../core/models/interfaces/order.interface';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-orders-template',
   standalone: true,
   imports: [CommonModule, OrdersTable, StatusChangeModal, OrderDetailsModal],

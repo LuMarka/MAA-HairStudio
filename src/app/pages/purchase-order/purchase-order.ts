@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { PurchaseOrderTemplate } from "../../shared/templates/purchase-order-template/purchase-order-template";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-purchase-order',
   imports: [PurchaseOrderTemplate],
   templateUrl: './purchase-order.html',

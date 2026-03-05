@@ -1,4 +1,4 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StatsCard, type StatsCardData } from '../../molecules/stats-card/stats-card';
 import { WishlistService } from '../../../core/services/wishlist.service';
@@ -17,6 +17,7 @@ export interface WishlistStats {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-wishlist-template',
   imports: [CommonModule, StatsCard],
   templateUrl: './admin-wishlist-template.html',

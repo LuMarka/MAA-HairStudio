@@ -1,4 +1,4 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
 
 interface Step {
   id: number;
@@ -7,6 +7,7 @@ interface Step {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-stepper-progress',
   templateUrl: './stepper-progress.html',
   styleUrl: './stepper-progress.scss'

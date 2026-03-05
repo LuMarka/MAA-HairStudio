@@ -1,10 +1,11 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal } from '@angular/core';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NavItem } from '../../../core/models/interfaces/NavItem.interface';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-nav-menu',
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './nav-menu.html',

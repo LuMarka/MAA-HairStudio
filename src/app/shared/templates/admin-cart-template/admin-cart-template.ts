@@ -1,4 +1,4 @@
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StatsCard, type StatsCardData } from '../../molecules/stats-card/stats-card';
 import { OrdersTable, type OrderTableColumn } from '../../organisms/orders-table/orders-table';
@@ -7,6 +7,7 @@ import { OrderService } from '../../../core/services/order.service';
 import type { OrderData, OrderStatisticsResponse } from '../../../core/models/interfaces/order.interface';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-cart-template',
   imports: [CommonModule, StatsCard, OrdersTable, StatusChangeModal],
   templateUrl: './admin-cart-template.html',
